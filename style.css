@@ -1,0 +1,1355 @@
+/* ========================================
+   VARIABLES
+   ======================================== */
+
+:root {
+
+    --wine: #7a1f2b;
+    --wine-dark: #5e1720;
+    --wine-light: #9b3442;
+
+    --blue: #314f7d;
+    --blue-dark: #243c60;
+
+    --cream: #f6f2ec;
+    --cream-dark: #ece5dc;
+
+    --white: #ffffff;
+
+    --text: #292929;
+    --text-light: #686868;
+
+    --border: #e2ddd6;
+
+    --shadow:
+        0 8px 28px rgba(0, 0, 0, 0.08);
+
+}
+
+
+/* ========================================
+   RESET
+   ======================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+html {
+    scroll-behavior: smooth;
+}
+
+
+body {
+
+    margin: 0;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 18px;
+    line-height: 1.65;
+
+    background-color: var(--cream);
+
+    color: var(--text);
+
+}
+
+
+a {
+    color: inherit;
+}
+
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+
+/* ========================================
+   CONTENEDOR
+   ======================================== */
+
+.container {
+
+    width: 90%;
+    max-width: 1100px;
+
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+
+/* ========================================
+   BARRA SUPERIOR
+   ======================================== */
+
+.top-bar {
+
+    background-color: var(--wine-dark);
+
+    color: var(--white);
+
+    font-size: 14px;
+
+}
+
+
+.top-bar-content {
+
+    min-height: 38px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+}
+
+
+.top-bar p {
+    margin: 0;
+}
+
+
+.top-bar a {
+
+    color: var(--white);
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+}
+
+
+.top-bar a:hover {
+    text-decoration: underline;
+}
+
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.site-header {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+
+    background-color:
+        rgba(255, 255, 255, 0.97);
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.header-content {
+
+    min-height: 92px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 35px;
+
+}
+
+
+/* ========================================
+   MARCA
+   ======================================== */
+
+.brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    text-decoration: none;
+
+}
+
+
+.brand-symbol {
+
+    width: 55px;
+    height: 55px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid var(--wine);
+
+    border-radius: 50%;
+
+    color: var(--wine);
+
+    font-size: 31px;
+
+}
+
+
+.brand-text {
+
+    display: flex;
+
+    flex-direction: column;
+
+    line-height: 1.15;
+
+}
+
+
+.brand-small {
+
+    margin-bottom: 4px;
+
+    color: var(--text-light);
+
+    font-size: 15px;
+
+}
+
+
+.brand-name {
+
+    color: var(--wine);
+
+    font-size: 24px;
+
+    font-weight: 700;
+
+}
+
+
+/* ========================================
+   NAVEGACIÓN
+   ======================================== */
+
+.main-nav {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+}
+
+
+.main-nav a {
+
+    padding: 9px 13px;
+
+    border-radius: 5px;
+
+    text-decoration: none;
+
+    color: var(--text);
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+}
+
+
+.main-nav a:hover {
+
+    background-color: var(--cream);
+
+    color: var(--wine);
+
+}
+
+
+/* ========================================
+   HERO
+   ======================================== */
+
+.hero {
+
+    padding: 75px 0;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #ffffff 58%,
+            #eee8e0 100%
+        );
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.hero-layout {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.35fr)
+        minmax(280px, 0.65fr);
+
+    align-items: center;
+
+    gap: 70px;
+
+}
+
+
+.section-label {
+
+    margin:
+        0
+        0
+        12px;
+
+    color: var(--wine);
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+
+}
+
+
+.hero h1 {
+
+    max-width: 700px;
+
+    margin:
+        0
+        0
+        25px;
+
+    color: var(--wine-dark);
+
+    font-size: 52px;
+
+    line-height: 1.1;
+
+}
+
+
+.hero-description {
+
+    max-width: 650px;
+
+    margin:
+        0
+        0
+        32px;
+
+    color: var(--text-light);
+
+    font-size: 20px;
+
+    line-height: 1.65;
+
+}
+
+
+/* ========================================
+   BOTONES
+   ======================================== */
+
+.hero-buttons {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+}
+
+
+.button {
+
+    display: inline-block;
+
+    padding: 12px 23px;
+
+    border-radius: 5px;
+
+    text-decoration: none;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    transition:
+        transform 0.15s ease,
+        background-color 0.15s ease;
+
+}
+
+
+.button:hover {
+    transform: translateY(-1px);
+}
+
+
+.button-primary {
+
+    background-color: var(--wine);
+
+    color: var(--white);
+
+}
+
+
+.button-primary:hover {
+    background-color: var(--wine-dark);
+}
+
+
+.button-secondary {
+
+    background-color: transparent;
+
+    border:
+        1px solid var(--wine);
+
+    color: var(--wine);
+
+}
+
+
+.button-secondary:hover {
+    background-color: #faf5f5;
+}
+
+
+/* ========================================
+   TARJETA DEL HERO
+   ======================================== */
+
+.hero-card {
+
+    padding: 42px 30px;
+
+    background-color: var(--white);
+
+    border-top:
+        5px solid var(--wine);
+
+    border-radius: 8px;
+
+    box-shadow: var(--shadow);
+
+    text-align: center;
+
+}
+
+
+.hero-cross {
+
+    margin-bottom: 15px;
+
+    color: var(--wine);
+
+    font-size: 55px;
+
+    line-height: 1;
+
+}
+
+
+.hero-card h2 {
+
+    margin:
+        0
+        0
+        8px;
+
+    color: var(--wine);
+
+    font-size: 28px;
+
+    line-height: 1.2;
+
+}
+
+
+.hero-card p {
+
+    margin: 6px 0;
+
+    color: var(--text-light);
+
+}
+
+
+.hero-line {
+
+    width: 70px;
+    height: 2px;
+
+    margin: 22px auto;
+
+    background-color: var(--blue);
+
+}
+
+
+.hero-card .hero-card-small {
+
+    color: var(--blue);
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+}
+
+
+/* ========================================
+   SECCIONES GENERALES
+   ======================================== */
+
+.page-section {
+
+    padding: 75px 0;
+
+}
+
+
+.section-heading {
+
+    max-width: 690px;
+
+    margin:
+        0
+        auto
+        42px;
+
+    text-align: center;
+
+}
+
+
+.section-heading h2 {
+
+    margin:
+        0
+        0
+        12px;
+
+    color: var(--wine);
+
+    font-size: 38px;
+
+    line-height: 1.2;
+
+}
+
+
+.section-heading > p:last-child {
+
+    margin: 0;
+
+    color: var(--text-light);
+
+}
+
+
+/* ========================================
+   HORARIOS
+   ======================================== */
+
+.schedule-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 24px;
+
+}
+
+
+.schedule-card {
+
+    padding: 34px 26px;
+
+    background-color: var(--white);
+
+    border-top:
+        4px solid var(--wine);
+
+    border-radius: 8px;
+
+    box-shadow: var(--shadow);
+
+    text-align: center;
+
+}
+
+
+.schedule-icon {
+
+    margin-bottom: 12px;
+
+    color: var(--blue);
+
+    font-size: 32px;
+
+}
+
+
+.schedule-card h3 {
+
+    margin:
+        0
+        0
+        27px;
+
+    color: var(--blue);
+
+    font-size: 25px;
+
+    line-height: 1.25;
+
+}
+
+
+.schedule-info {
+
+    margin: 18px 0;
+
+}
+
+
+.schedule-info strong {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--wine);
+
+    font-size: 17px;
+
+}
+
+
+.schedule-info span {
+
+    display: block;
+
+    color: var(--text-light);
+
+    font-size: 17px;
+
+}
+
+
+/* ========================================
+   SOBRE EL SEMINARIO
+   ======================================== */
+
+.about-section {
+
+    padding: 80px 0;
+
+    background-color: var(--white);
+
+    border-top:
+        1px solid var(--border);
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.about-layout {
+
+    display: grid;
+
+    grid-template-columns:
+        0.75fr
+        1.25fr;
+
+    align-items: center;
+
+    gap: 65px;
+
+}
+
+
+.about-decoration {
+
+    min-height: 350px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background-color: var(--blue-dark);
+
+    border-radius: 8px;
+
+    box-shadow: var(--shadow);
+
+}
+
+
+.large-cross {
+
+    color:
+        rgba(255, 255, 255, 0.93);
+
+    font-size: 130px;
+
+}
+
+
+.about-text h2 {
+
+    margin:
+        0
+        0
+        24px;
+
+    color: var(--wine);
+
+    font-size: 40px;
+
+    line-height: 1.2;
+
+}
+
+
+.about-text p {
+
+    color: var(--text-light);
+
+    font-size: 18px;
+
+}
+
+
+.text-link {
+
+    display: inline-block;
+
+    margin-top: 12px;
+
+    color: var(--wine);
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+}
+
+
+.text-link:hover {
+    text-decoration: underline;
+}
+
+
+/* ========================================
+   AVISOS
+   ======================================== */
+
+.announcements-section {
+    background-color: var(--cream);
+}
+
+
+.announcement-card {
+
+    max-width: 850px;
+
+    margin: auto;
+
+    padding: 32px 36px;
+
+    background-color: var(--white);
+
+    border-left:
+        5px solid var(--blue);
+
+    border-radius: 7px;
+
+    box-shadow: var(--shadow);
+
+}
+
+
+.announcement-date {
+
+    margin:
+        0
+        0
+        6px;
+
+    color: var(--wine);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+
+}
+
+
+.announcement-card h3 {
+
+    margin:
+        0
+        0
+        10px;
+
+    color: var(--blue);
+
+    font-size: 25px;
+
+}
+
+
+.announcement-card p:last-child {
+
+    margin-bottom: 0;
+
+    color: var(--text-light);
+
+}
+
+
+/* ========================================
+   CONTACTO
+   ======================================== */
+
+.contact-section {
+
+    padding: 75px 0;
+
+    background-color: var(--white);
+
+    border-top:
+        1px solid var(--border);
+
+}
+
+
+.contact-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 22px;
+
+}
+
+
+.contact-card {
+
+    padding: 28px;
+
+    background-color: var(--cream);
+
+    border-radius: 7px;
+
+    text-align: center;
+
+}
+
+
+.contact-card h3 {
+
+    margin:
+        0
+        0
+        14px;
+
+    color: var(--wine);
+
+    font-size: 21px;
+
+}
+
+
+.contact-card p {
+
+    margin: 5px 0;
+
+    color: var(--text-light);
+
+    font-size: 16px;
+
+}
+
+
+/* ========================================
+   PORTAL ESCOLAR
+   ======================================== */
+
+.portal-section {
+
+    padding: 48px 0;
+
+    background-color: var(--blue-dark);
+
+    color: var(--white);
+
+}
+
+
+.portal-content {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 40px;
+
+}
+
+
+.portal-label {
+
+    margin:
+        0
+        0
+        5px;
+
+    color: #d9e1ef;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    letter-spacing: 1.5px;
+
+    text-transform: uppercase;
+
+}
+
+
+.portal-content h2 {
+
+    margin:
+        0
+        0
+        5px;
+
+    font-size: 30px;
+
+}
+
+
+.portal-content p {
+    margin-bottom: 0;
+}
+
+
+.portal-button {
+
+    flex-shrink: 0;
+
+    background-color: var(--white);
+
+    color: var(--blue-dark);
+
+}
+
+
+.portal-button:hover {
+    background-color: var(--cream);
+}
+
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.site-footer {
+
+    padding: 35px 0;
+
+    background-color: var(--wine-dark);
+
+    color: var(--white);
+
+}
+
+
+.footer-content {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+
+}
+
+
+.site-footer strong {
+    font-size: 19px;
+}
+
+
+.site-footer p {
+
+    margin: 4px 0;
+
+    font-size: 14px;
+
+    opacity: 0.9;
+
+}
+
+
+.footer-right {
+    text-align: right;
+}
+
+
+/* ========================================
+   TABLET
+   ======================================== */
+
+@media (max-width: 900px) {
+
+    .header-content {
+
+        padding:
+            18px
+            0;
+
+        flex-direction: column;
+
+        gap: 14px;
+
+    }
+
+
+    .main-nav {
+        justify-content: center;
+    }
+
+
+    .hero-layout {
+
+        grid-template-columns: 1fr;
+
+        gap: 40px;
+
+    }
+
+
+    .hero-text {
+        text-align: center;
+    }
+
+
+    .hero-description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+
+    .hero-card {
+
+        max-width: 470px;
+
+        width: 100%;
+
+        margin: auto;
+
+    }
+
+
+    .schedule-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .schedule-card {
+
+        max-width: 600px;
+
+        width: 100%;
+
+        margin: auto;
+
+    }
+
+
+    .about-layout {
+        grid-template-columns: 1fr;
+    }
+
+
+    .about-decoration {
+
+        max-width: 600px;
+
+        width: 100%;
+
+        min-height: 280px;
+
+        margin: auto;
+
+    }
+
+
+    .about-text {
+        text-align: center;
+    }
+
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* ========================================
+   CELULAR
+   ======================================== */
+
+@media (max-width: 650px) {
+
+    body {
+        font-size: 17px;
+    }
+
+
+    .container {
+        width: 92%;
+    }
+
+
+    .top-bar-content {
+
+        min-height: 44px;
+
+        text-align: center;
+
+        justify-content: center;
+
+    }
+
+
+    .top-bar-content p {
+        display: none;
+    }
+
+
+    .brand {
+
+        width: 100%;
+
+        justify-content: center;
+
+    }
+
+
+    .brand-symbol {
+
+        width: 46px;
+        height: 46px;
+
+        font-size: 26px;
+
+    }
+
+
+    .brand-small {
+        font-size: 13px;
+    }
+
+
+    .brand-name {
+        font-size: 20px;
+    }
+
+
+    .main-nav {
+
+        width: 100%;
+
+        gap: 2px;
+
+    }
+
+
+    .main-nav a {
+
+        padding: 8px 9px;
+
+        font-size: 14px;
+
+    }
+
+
+    .hero {
+        padding: 55px 0;
+    }
+
+
+    .hero h1 {
+
+        font-size: 38px;
+
+        line-height: 1.12;
+
+    }
+
+
+    .hero-description {
+        font-size: 18px;
+    }
+
+
+    .hero-buttons {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+
+    .button {
+        text-align: center;
+    }
+
+
+    .hero-card {
+        padding: 32px 20px;
+    }
+
+
+    .hero-card h2 {
+        font-size: 25px;
+    }
+
+
+    .page-section,
+    .about-section,
+    .contact-section {
+
+        padding:
+            55px
+            0;
+
+    }
+
+
+    .section-heading {
+        margin-bottom: 30px;
+    }
+
+
+    .section-heading h2,
+    .about-text h2 {
+
+        font-size: 32px;
+
+    }
+
+
+    .schedule-card {
+        padding: 28px 20px;
+    }
+
+
+    .about-layout {
+        gap: 35px;
+    }
+
+
+    .about-decoration {
+        min-height: 220px;
+    }
+
+
+    .large-cross {
+        font-size: 95px;
+    }
+
+
+    .announcement-card {
+        padding: 27px 24px;
+    }
+
+
+    .portal-content {
+
+        flex-direction: column;
+
+        text-align: center;
+
+        gap: 25px;
+
+    }
+
+
+    .footer-content {
+
+        flex-direction: column;
+
+        text-align: center;
+
+    }
+
+
+    .footer-right {
+        text-align: center;
+    }
+
+}
