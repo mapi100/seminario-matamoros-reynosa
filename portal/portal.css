@@ -1,1 +1,661 @@
+/* ========================================
+   COLORES
+   ======================================== */
 
+:root {
+    --red: #d21a1f;
+    --red-dark: #b11415;
+
+    --blue: #083279;
+    --blue-dark: #06265c;
+
+    --gold: #d8aa30;
+    --gold-light: #f2d535;
+
+    --white: #ffffff;
+    --cream: #f7f7f4;
+
+    --text: #292929;
+    --text-light: #626262;
+    --border: #d9dee5;
+
+    --shadow: 0 16px 42px rgba(0, 0, 0, 0.14);
+}
+
+
+/* ========================================
+   RESET / GENERAL
+   ======================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    font-family: Georgia, "Times New Roman", serif;
+
+    background-color: var(--cream);
+    color: var(--text);
+}
+
+button,
+input {
+    font: inherit;
+}
+
+a {
+    color: inherit;
+}
+
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.portal-header {
+    position: relative;
+    z-index: 10;
+
+    background-color: var(--white);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-container {
+    width: 90%;
+    max-width: 1100px;
+    min-height: 88px;
+
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    text-decoration: none;
+}
+
+.brand-logo {
+    width: 66px;
+    height: 66px;
+
+    object-fit: contain;
+
+    flex-shrink: 0;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+
+    line-height: 1.15;
+}
+
+.brand-small {
+    margin-bottom: 4px;
+
+    color: var(--red-dark);
+
+    font-size: 13px;
+}
+
+.brand-name {
+    color: var(--blue);
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.back-link {
+    padding: 9px 14px;
+
+    border: 1px solid var(--blue);
+    border-radius: 5px;
+
+    color: var(--blue);
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.back-link:hover {
+    background-color: var(--blue);
+    color: var(--white);
+}
+
+
+/* ========================================
+   IMAGEN PRINCIPAL
+   ======================================== */
+
+.portal-hero {
+    width: 100%;
+    height: 230px;
+
+    background-image:
+        linear-gradient(
+            to bottom,
+            rgba(6, 38, 92, 0.02),
+            rgba(6, 38, 92, 0.08)
+        ),
+        url("../images/jesus_discipulos-100kb.jpg");
+
+    background-size: 100% auto;
+    background-position: center 20%;
+    background-repeat: no-repeat;
+
+    background-color: #efe9dd;
+
+    border-bottom: 4px solid var(--gold);
+}
+
+
+/* ========================================
+   ÁREA DEL LOGIN
+   ======================================== */
+
+.login-main {
+    flex: 1;
+
+    width: 100%;
+
+    padding:
+        0
+        20px
+        65px;
+
+    display: flex;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            180deg,
+            #eef4f9 0%,
+            #f7f7f4 100%
+        );
+}
+
+
+/* ========================================
+   TARJETA DE LOGIN
+   ======================================== */
+
+.login-card {
+    width: 100%;
+    max-width: 470px;
+
+    margin-top: -155px;
+
+    padding:
+        38px
+        42px
+        34px;
+
+    position: relative;
+    z-index: 3;
+
+    background-color: var(--white);
+
+    border-radius: 12px;
+
+    box-shadow: var(--shadow);
+}
+
+
+/* ========================================
+   ENCABEZADO LOGIN
+   ======================================== */
+
+.login-heading {
+    margin-bottom: 28px;
+
+    text-align: center;
+}
+
+.login-logo {
+    width: 78px;
+    height: 78px;
+
+    margin:
+        0
+        auto
+        12px;
+
+    object-fit: contain;
+}
+
+.login-label {
+    margin:
+        0
+        0
+        4px;
+
+    color: var(--red-dark);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 1.8px;
+
+    text-transform: uppercase;
+}
+
+.login-heading h1 {
+    margin:
+        0
+        0
+        7px;
+
+    color: var(--blue);
+
+    font-size: 34px;
+    line-height: 1.2;
+}
+
+.login-subtitle {
+    margin: 0;
+
+    color: var(--text-light);
+
+    font-size: 14px;
+}
+
+
+/* ========================================
+   FORMULARIO
+   ======================================== */
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+.form-group label {
+    color: var(--blue-dark);
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.form-group input {
+    width: 100%;
+    min-height: 48px;
+
+    padding: 10px 12px;
+
+    background-color: var(--white);
+
+    border: 1px solid #c8d0da;
+    border-radius: 6px;
+
+    color: var(--text);
+
+    font-size: 15px;
+
+    outline: none;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.form-group input:focus {
+    border-color: var(--blue);
+
+    box-shadow:
+        0 0 0 3px rgba(8, 50, 121, 0.10);
+}
+
+.form-group input::placeholder {
+    color: #999999;
+}
+
+
+/* ========================================
+   CONTRASEÑA
+   ======================================== */
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 88px;
+}
+
+.password-toggle {
+    position: absolute;
+
+    top: 50%;
+    right: 11px;
+
+    transform: translateY(-50%);
+
+    padding: 5px;
+
+    background: transparent;
+
+    border: none;
+
+    color: var(--blue);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.password-toggle:hover {
+    text-decoration: underline;
+}
+
+
+/* ========================================
+   BOTÓN LOGIN
+   ======================================== */
+
+.login-button {
+    width: 100%;
+    min-height: 48px;
+
+    margin-top: 2px;
+
+    padding: 11px 18px;
+
+    background-color: var(--red);
+
+    border: none;
+    border-radius: 6px;
+
+    color: var(--white);
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.login-button:hover {
+    background-color: var(--red-dark);
+
+    transform: translateY(-1px);
+}
+
+.login-button:active {
+    transform: translateY(0);
+}
+
+
+/* ========================================
+   MENSAJES
+   ======================================== */
+
+.login-message {
+    display: none;
+
+    padding: 9px 11px;
+
+    border-radius: 5px;
+
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.login-message.visible {
+    display: block;
+}
+
+.login-message.info {
+    background-color: #edf4fb;
+
+    border: 1px solid #bfd2e8;
+
+    color: var(--blue-dark);
+}
+
+.login-message.error {
+    background-color: #fff1f1;
+
+    border: 1px solid #e9bcbc;
+
+    color: #8e1515;
+}
+
+
+/* ========================================
+   AYUDA
+   ======================================== */
+
+.login-help {
+    margin-top: 18px;
+
+    text-align: center;
+}
+
+.text-button {
+    padding: 0;
+
+    background: transparent;
+
+    border: none;
+
+    color: var(--blue);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.text-button:hover {
+    text-decoration: underline;
+}
+
+
+/* ========================================
+   NOTA DE ACCESO
+   ======================================== */
+
+.access-note {
+    max-width: 340px;
+
+    margin:
+        24px
+        auto
+        0;
+
+    padding-top: 18px;
+
+    border-top: 1px solid var(--border);
+
+    color: var(--text-light);
+
+    font-size: 12px;
+    line-height: 1.55;
+
+    text-align: center;
+}
+
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.portal-footer {
+    padding: 23px 0;
+
+    background-color: var(--red-dark);
+
+    border-top: 3px solid var(--gold);
+
+    color: var(--white);
+}
+
+.footer-container {
+    width: 90%;
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+}
+
+.portal-footer strong {
+    font-size: 15px;
+}
+
+.portal-footer p {
+    margin: 3px 0;
+
+    font-size: 12px;
+
+    opacity: 0.9;
+}
+
+.footer-right {
+    text-align: right;
+}
+
+
+/* ========================================
+   TABLET
+   ======================================== */
+
+@media (max-width: 900px) {
+
+    .portal-hero {
+        height: 340px;
+        background-size: cover;
+        background-position: center 32%;
+    }
+
+    .login-card {
+        margin-top: -125px;
+    }
+
+}
+
+
+/* ========================================
+   CELULAR
+   ======================================== */
+
+@media (max-width: 650px) {
+
+    .header-container {
+        width: 92%;
+
+        padding: 13px 0;
+
+        flex-direction: column;
+
+        gap: 11px;
+    }
+
+    .brand {
+        justify-content: center;
+    }
+
+    .brand-logo {
+        width: 56px;
+        height: 56px;
+    }
+
+    .brand-small {
+        font-size: 11px;
+    }
+
+    .brand-name {
+        font-size: 18px;
+    }
+
+    .back-link {
+        padding: 7px 11px;
+
+        font-size: 12px;
+    }
+
+    .login-main {
+        padding:
+            0
+            14px
+            45px;
+    }
+
+    .portal-hero {
+    height: 280px;
+    background-size: cover;
+    background-position: 65% center;
+    }
+
+    .login-card {
+        margin-top: -90px;
+    }
+
+    .login-logo {
+        width: 67px;
+        height: 67px;
+    }
+
+    .login-heading h1 {
+        font-size: 29px;
+    }
+
+    .login-subtitle {
+        font-size: 13px;
+    }
+
+    .footer-container {
+        width: 92%;
+
+        flex-direction: column;
+
+        text-align: center;
+    }
+
+    .footer-right {
+        text-align: center;
+    }
+
+}
