@@ -1,44 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        Seminario Diocesano | Diócesis de Matamoros-Reynosa
-    </title>
+    <title>Seminario | Diócesis de Matamoros-Reynosa</title>
 
     <meta
         name="description"
-        content="Seminario Diocesano de la Diócesis de Matamoros-Reynosa. Horarios de Misa, confesiones, adoración e información del Seminario."
+        content="Sitio web del Seminario Diocesano de la Diócesis de Matamoros-Reynosa. Información, historia, equipo formador y acceso al portal escolar."
     >
 
     <link rel="stylesheet" href="style.css">
 </head>
 
-
 <body>
 
-    <!-- ========================================
-         BARRA SUPERIOR
-         ======================================== -->
-
-    <div class="top-bar">
-        <div class="container top-bar-content">
-
-            <p>Diócesis de Matamoros-Reynosa</p>
-
-            <a href="#portal">
-                Portal Escolar
-            </a>
-
-        </div>
-    </div>
 
 
     <!-- ========================================
@@ -46,81 +23,52 @@
          ======================================== -->
 
     <header class="site-header">
-
         <div class="container header-content">
 
-            <!-- IDENTIDAD -->
+    <a href="#inicio" class="brand">
+        <img
+            src="images/escudo-seminario-matamoros.png"
+            alt="Escudo del Seminario Diocesano San José"
+            class="brand-logo"
+        >
+        <div class="brand-text">
+            <span class="brand-small">
+                Seminario Diocesano San José
+            </span>
+            <span class="brand-name">
+                Matamoros-Reynosa
+            </span>
+        </div>
 
-            <a
-                href="#inicio"
-                class="brand"
-            >
+    </a>
 
-                <div class="brand-symbol">
-                    ✠
-                </div>
-
-                <div class="brand-text">
-
-                    <span class="brand-small">
-                        Seminario Diocesano
-                    </span>
-
-                    <span class="brand-name">
-                        Matamoros-Reynosa
-                    </span>
-
-                </div>
-
-            </a>
-
-
-            <!-- NAVEGACIÓN -->
-
-            <nav class="main-nav">
-
-                <a href="#inicio">
-                    Inicio
-                </a>
-
-                <a href="#horarios">
-                    Horarios
-                </a>
-
-                <a href="#seminario">
-                    Seminario
-                </a>
-
-                <a href="#informacion">
-                    Información
-                </a>
-
+            <nav class="main-nav" aria-label="Navegación principal">
+                <a href="#inicio">Inicio</a>
+                <a href="#seminario">Seminario</a>
+                <a href="#equipo-formador">Equipo Formador</a>
+                <a href="#informacion">Información</a>
+                <a href="#portal">Portal Escolar</a>
             </nav>
 
         </div>
-
     </header>
 
 
     <!-- ========================================
-         HERO / INICIO
+         CONTENIDO PRINCIPAL
          ======================================== -->
 
     <main id="inicio">
 
+        <!-- ========================================
+             INICIO / HERO
+             ======================================== -->
 
         <section class="hero">
-
             <div class="container hero-layout">
 
-
-                <!-- TEXTO -->
-
                 <div class="hero-text">
-
-                    <p class="section-label">
-                        Seminario Diocesano
-                    </p>
+                    <p class="section-label">Seminario Diocesano San José</p>
 
                     <h1>
                         Formación sacerdotal
@@ -128,476 +76,317 @@
                     </h1>
 
                     <p class="hero-description">
-                        Bienvenido al sitio del Seminario Diocesano
-                        de la Diócesis de Matamoros-Reynosa.
-                        Aquí podrás encontrar horarios,
-                        información y avisos importantes.
+                        Bienvenido al sitio del Seminario Diocesano de la
+                        Diócesis de Matamoros-Reynosa. Aquí podrás conocer
+                        nuestra historia, al equipo formador y la información
+                        de contacto del Seminario.
                     </p>
-
 
                     <div class="hero-buttons">
-
-                        <a
-                            href="#horarios"
-                            class="button button-primary"
-                        >
-                            Ver horarios
+                        <a href="#seminario" class="button button-primary">
+                            Conoce el Seminario
                         </a>
 
-                        <a
-                            href="#informacion"
-                            class="button button-secondary"
-                        >
+                        <a href="#informacion" class="button button-secondary">
                             Información
                         </a>
-
                     </div>
-
                 </div>
 
-
-                <!-- TARJETA DECORATIVA -->
-
-                <div class="hero-card">
-
-                    <div class="hero-cross">
-                        ✠
-                    </div>
-
-                    <h2>
-                        Seminario Diocesano
-                    </h2>
-
-                    <p>
-                        Diócesis de
-                        Matamoros-Reynosa
-                    </p>
-
-                    <div class="hero-line"></div>
-
-                    <p class="hero-card-small">
-                        Oración · Formación · Comunidad
-                    </p>
-
-                </div>
-
-
-            </div>
-
-        </section>
-
-
-
-        <!-- ========================================
-             HORARIOS
-             ======================================== -->
-
-        <section
-            class="page-section"
-            id="horarios"
-        >
-
-            <div class="container">
-
-                <div class="section-heading">
-
-                    <p class="section-label">
-                        Vida espiritual
-                    </p>
-
-                    <h2>
-                        Horarios
-                    </h2>
-
-                    <p>
-                        Horarios de celebraciones y actividades
-                        en el Seminario.
-                    </p>
-
-                </div>
-
-
-                <div class="schedule-grid">
-
-
-                    <!-- MISA -->
-
-                    <article class="schedule-card">
-
-                        <div class="schedule-icon">
-                            ✠
-                        </div>
-
-                        <h3>
-                            Santa Misa
-                        </h3>
-
-                        <div class="schedule-info">
-
-                            <strong>
-                                Lunes a Viernes
-                            </strong>
-
-                            <span>
-                                Horario por confirmar
-                            </span>
-
-                        </div>
-
-
-                        <div class="schedule-info">
-
-                            <strong>
-                                Domingo
-                            </strong>
-
-                            <span>
-                                Horario por confirmar
-                            </span>
-
-                        </div>
-
-                    </article>
-
-
-
-                    <!-- CONFESIONES -->
-
-                    <article class="schedule-card">
-
-                        <div class="schedule-icon">
-                            ✠
-                        </div>
-
-                        <h3>
-                            Confesiones
-                        </h3>
-
-                        <div class="schedule-info">
-
-                            <strong>
-                                Días
-                            </strong>
-
-                            <span>
-                                Por confirmar
-                            </span>
-
-                        </div>
-
-
-                        <div class="schedule-info">
-
-                            <strong>
-                                Horario
-                            </strong>
-
-                            <span>
-                                Por confirmar
-                            </span>
-
-                        </div>
-
-                    </article>
-
-
-
-                    <!-- ADORACIÓN -->
-
-                    <article class="schedule-card">
-
-                        <div class="schedule-icon">
-                            ✠
-                        </div>
-
-                        <h3>
-                            Adoración Eucarística
-                        </h3>
-
-                        <div class="schedule-info">
-
-                            <strong>
-                                Día
-                            </strong>
-
-                            <span>
-                                Por confirmar
-                            </span>
-
-                        </div>
-
-
-                        <div class="schedule-info">
-
-                            <strong>
-                                Horario
-                            </strong>
-
-                            <span>
-                                Por confirmar
-                            </span>
-
-                        </div>
-
-                    </article>
-
+                <div class="hero-image">
+
+                    <img
+                        src="images/fray.png"
+                        alt="Imagen del Seminario Diocesano"
+                    >
 
                 </div>
 
             </div>
-
         </section>
-
 
 
         <!-- ========================================
              SOBRE EL SEMINARIO
              ======================================== -->
 
-        <section
-            class="about-section"
-            id="seminario"
-        >
-
+        <section class="about-section" id="seminario">
             <div class="container about-layout">
 
-
-                <div class="about-decoration">
-
-                    <div class="large-cross">
-                        ✠
-                    </div>
-
-                </div>
-
-
-                <div class="about-text">
-
-                    <p class="section-label">
-                        Nuestro Seminario
-                    </p>
-
-                    <h2>
-                        Sobre el Seminario
-                    </h2>
-
-                    <p>
-                        El Seminario es la casa de formación
-                        de quienes se preparan para el
-                        ministerio sacerdotal.
-                    </p>
-
-                    <p>
-                        En esta página se publicará información
-                        sobre la vida del Seminario,
-                        actividades, horarios y otros
-                        recursos importantes.
-                    </p>
-
-
-                    <a
-                        href="#informacion"
-                        class="text-link"
-                    >
-                        Información de contacto →
-                    </a>
-
-                </div>
-
-
+            <div class="about-image">
+                <img
+                    src="images/seminario_altura.jpg"
+                    alt="Vista aérea del Seminario Diocesano San José"
+                >
             </div>
 
-        </section>
+                <div class="about-text">
+                    <p class="section-label">Nuestro Seminario</p>
 
+                    <h2>Sobre el Seminario</h2>
+
+                    <div class="seminary-history" tabindex="0">
+
+                        <p>
+                            El Seminario de Matamoros fue fundado el
+                            <strong>8 de septiembre de 1959</strong> por el primer
+                            Obispo de Matamoros,
+                            <strong>Mons. Estanislao Alcaráz y Figueroa</strong>.
+                            Su primer Rector fue el entonces
+                            <strong>Pbro. Sabás Magaña García</strong>. Las primeras
+                            instalaciones se encontraban en la calle 7 y Matamoros,
+                            y el primer alumno en inscribirse fue Fabián Sánchez Ruiz.
+                        </p>
+
+                        <p>
+                            El <strong>19 de marzo de 1961</strong>, el Seminario se
+                            trasladó a un nuevo edificio ubicado en la calle Sexta y
+                            Francisco González Villarreal. La bendición de las
+                            instalaciones estuvo a cargo del Cardenal José Garibi Rivera.
+                        </p>
+
+                        <p>
+                            En 1968, Mons. Alcaráz fue trasladado a la Diócesis de
+                            San Luis Potosí. El 6 de enero de 1969,
+                            <strong>Mons. Sabás Magaña García</strong>, quien hasta
+                            entonces había sido Rector del Seminario, fue consagrado
+                            como segundo Obispo de Matamoros. El
+                            <strong>Pbro. Roberto Ramírez Hernández</strong> asumió
+                            entonces la Rectoría.
+                        </p>
+
+                        <p>
+                            En 1973, el Seminario Mayor cerró temporalmente sus puertas
+                            y los seminaristas continuaron su formación en distintos
+                            seminarios de México y del extranjero, entre ellos Montezuma,
+                            Tula, Aguascalientes y Monterrey. Algunos también realizaron
+                            estudios en la Universidad Pontificia de México y en el
+                            Colegio Mexicano en Roma.
+                        </p>
+
+                        <p>
+                            En 1987, después de 18 años de servicio como Rector,
+                            Mons. Roberto Ramírez Hernández dejó el cargo y fue sucedido
+                            por el <strong>Pbro. Pedro Contreras Hernández</strong>.
+                            Años más tarde, bajo el episcopado de
+                            <strong>Mons. Francisco Javier Chavolla Ramos</strong>,
+                            tercer Obispo de Matamoros, comenzó el proyecto para construir
+                            nuevas instalaciones fuera de la ciudad.
+                        </p>
+
+                        <p>
+                            El <strong>8 de septiembre de 1995</strong> fueron bendecidas
+                            las nuevas instalaciones del Seminario Menor. En 1998, el
+                            Pbro. Pedro Contreras dejó la Rectoría y fue sucedido por el
+                            <strong>Pbro. Margarito Salazar Cárdenas</strong>. Un año
+                            después, el Seminario recibió la visita del Nuncio Apostólico
+                            en México, Mons. Justo Mullor García.
+                        </p>
+
+                        <p>
+                            El <strong>8 de septiembre de 2001</strong> fue bendecido el
+                            actual edificio del Instituto de Teología, dedicado a
+                            Mons. Estanislao Alcaráz y Figueroa. En 2005 tomó posesión de
+                            la Diócesis <strong>Mons. Faustino Armendáriz Jiménez</strong>,
+                            y en agosto de 2007 el
+                            <strong>Pbro. Santiago Enríquez Rangel</strong> asumió la
+                            Rectoría del Seminario.
+                        </p>
+
+                        <p>
+                            Entre 2008 y 2009 se celebró el
+                            <strong>Cincuentenario del Seminario</strong>. El 8 de
+                            septiembre de 2008 tuvo lugar la primera ordenación sacerdotal
+                            celebrada en las instalaciones del Instituto de Teología, en la
+                            que Bernabé Quezada recibió el orden sacerdotal. El 8 de
+                            septiembre de 2009 se celebró una Misa solemne de acción de
+                            gracias por los primeros 50 años de vida del Seminario.
+                        </p>
+
+                        <p>
+                            En 2011 tomó posesión como quinto Obispo de Matamoros
+                            <strong>Mons. Ruy Rendón Leal</strong>. Durante su episcopado,
+                            el 27 de marzo de 2013, se anunció la reapertura del
+                            <strong>Instituto de Filosofía</strong> y la construcción de
+                            instalaciones destinadas a esta etapa de formación.
+                        </p>
+
+                        <p>
+                            El <strong>12 de noviembre de 2016</strong> llegó a la
+                            Diócesis <strong>Mons. Eugenio Andrés Lira Rugarcía</strong>
+                            como sexto Obispo de Matamoros. Desde el inicio de su ministerio
+                            episcopal señaló la formación sacerdotal y la promoción de las
+                            vocaciones entre sus prioridades, reuniéndose con la comunidad
+                            del Seminario apenas dos días después de su llegada.
+                        </p>
+
+                        <p>
+                            A lo largo de su historia, el Seminario ha acompañado la vida
+                            de la Diócesis formando generaciones de seminaristas y futuros
+                            sacerdotes al servicio de la Iglesia.
+                        </p>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
 
 
         <!-- ========================================
-             AVISOS
+             EQUIPO FORMADOR
              ======================================== -->
 
-        <section class="page-section announcements-section">
-
+        <section class="formation-section" id="equipo-formador">
             <div class="container">
 
                 <div class="section-heading">
+                    <p class="section-label"></p>
 
-                    <p class="section-label">
-                        Seminario
+                    <h2>Equipo Formador</h2>
+
+                    <p>
+                        Sacerdotes responsables de acompañar la formación humana,
+                        espiritual, académica y pastoral de los seminaristas.
                     </p>
-
-                    <h2>
-                        Avisos
-                    </h2>
-
                 </div>
 
+                <div class="formation-grid">
 
-                <div class="announcement-card">
+                    <article class="formation-card">
+                        <h3>Obispo</h3>
+                        <p>S.E. Mons. Eugenio Andrés Lira Rugarcía </p>
+                    </article>
 
-                    <div>
+                    <article class="formation-card">
+                        <h3>Rector</h3>
+                        <p>Pbro. Jorge Molina Fiscal</p>
+                    </article>
 
-                        <p class="announcement-date">
-                            Avisos del Seminario
-                        </p>
+                    <article class="formation-card">
+                        <h3>Formador del Instituto de Teología</h3>
+                        <p>Pbro. Carlos Sánchez Castillo</p>
+                    </article>
 
-                        <h3>
-                            Próximamente
-                        </h3>
+                    <article class="formation-card">
+                        <h3>Formador del Instituto de Filosofía</h3>
+                        <p>Pbro. Lic. Lisandro Torres Zamarripa</p>
+                    </article>
 
-                        <p>
-                            Aquí podrán publicarse cambios
-                            de horarios, celebraciones,
-                            actividades y otros anuncios.
-                        </p>
+                    <article class="formation-card">
+                        <h3>Formador del Curso Introductorio</h3>
+                        <p>Pbro. Arturo García Rodríguez</p>
+                    </article>
 
-                    </div>
+                    <article class="formation-card">
+                        <h3>Coordinador del Departamento de Psicología</h3>
+                        <p>Pbro. Lic. Santiago Franco Melchor </p>
+                    </article>
+
+                    <article class="formation-card">
+                        <h3>Director Espiritual</h3>
+                        <p>Pbro. José Ángel Vergara Esquivel</p>
+                    </article>
+
+                    <article class="formation-card">
+                        <h3>Director Espiritual</h3>
+                        <p>Pbro. Martín Nicolás Hinojosa Torres</p>
+                    </article>
+
+                    <article class="formation-card">
+                        <h3>Ecónomo</h3>
+                        <p>Pbro. Lic. Lisandro Torres Zamarripa</p>
+                    </article>
 
                 </div>
-
             </div>
-
         </section>
-
 
 
         <!-- ========================================
              INFORMACIÓN Y CONTACTO
              ======================================== -->
 
-        <section
-            class="contact-section"
-            id="informacion"
-        >
-
+        <section class="contact-section" id="informacion">
             <div class="container">
 
                 <div class="section-heading">
+                    <p class="section-label"></p>
 
-                    <p class="section-label">
-                        Contacto
-                    </p>
-
-                    <h2>
-                        Información
-                    </h2>
+                    <h2>Contacto</h2>
 
                     <p>
-                        Información general del Seminario.
+                        Información general del Seminario Diocesano San José.
                     </p>
-
                 </div>
-
 
                 <div class="contact-grid">
 
-
-                    <!-- DIRECCIÓN -->
-
                     <article class="contact-card">
-
-                        <h3>
-                            Dirección
-                        </h3>
+                        <h3>Dirección</h3>
 
                         <p>
-                            Dirección por confirmar
+                            <a
+                                href="https://maps.app.goo.gl/kJH8QpundGcSisB57"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="contact-link"
+                            >
+                                Carretera a Ciudad Victoria Km 13.5<br>
+                                Matamoros, Tamaulipas, México<br>
+                                C.P. 87560
+                            </a>
                         </p>
-
-                        <p>
-                            Matamoros, Tamaulipas
-                        </p>
-
                     </article>
 
-
-
-                    <!-- TELÉFONO -->
-
                     <article class="contact-card">
-
-                        <h3>
-                            Teléfono
-                        </h3>
-
-                        <p>
-                            Número por confirmar
-                        </p>
-
+                        <h3>Teléfono</h3>
+                        <p>(868) 812-0623</p>
                     </article>
 
-
-
-                    <!-- CORREO -->
-
                     <article class="contact-card">
-
-                        <h3>
-                            Correo electrónico
-                        </h3>
+                        <h3>Correo electrónico</h3>
 
                         <p>
-                            Correo por confirmar
+                            <a
+                                href="mailto:seminariomatamoros@gmail.com"
+                                class="contact-link"
+                            >
+                                seminariomatamoros@gmail.com
+                            </a>
                         </p>
-
                     </article>
-
 
                 </div>
-
             </div>
-
         </section>
-
 
 
         <!-- ========================================
              PORTAL ESCOLAR
              ======================================== -->
 
-        <section
-            class="portal-section"
-            id="portal"
-        >
-
+        <section class="portal-section" id="portal">
             <div class="container portal-content">
 
                 <div>
+                    <p class="portal-label">Control Escolar</p>
 
-                    <p class="portal-label">
-                        Control Escolar
-                    </p>
-
-                    <h2>
-                        Portal del Seminario
-                    </h2>
+                    <h2>Portal del Seminario</h2>
 
                     <p>
-                        Acceso para alumnos, profesores
-                        y personal de Control Escolar.
+                        Acceso para alumnos, profesores y personal de Control Escolar.
                     </p>
-
                 </div>
 
-
-                <!--
-                    MÁS ADELANTE CAMBIAREMOS ESTE ENLACE
-                    POR EL PORTAL REAL
-                -->
-
-                <a
-                    href="#"
-                    class="button portal-button"
-                >
+                <a href="#" class="button portal-button">
                     Próximamente
                 </a>
 
             </div>
-
         </section>
 
-
     </main>
-
 
 
     <!-- ========================================
@@ -605,39 +394,20 @@
          ======================================== -->
 
     <footer class="site-footer">
-
         <div class="container footer-content">
 
             <div>
-
-                <strong>
-                    Seminario Diocesano
-                </strong>
-
-                <p>
-                    Diócesis de Matamoros-Reynosa
-                </p>
-
+                <strong>Seminario Diocesano</strong>
+                <p>Diócesis de Matamoros-Reynosa</p>
             </div>
 
-
             <div class="footer-right">
-
-                <p>
-                    © 2026
-                </p>
-
-                <p>
-                    Todos los derechos reservados
-                </p>
-
+                <p>© 2026</p>
+                <p>Todos los derechos reservados</p>
             </div>
 
         </div>
-
     </footer>
 
-
 </body>
-
 </html>
