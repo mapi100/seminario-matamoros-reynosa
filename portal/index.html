@@ -103,11 +103,11 @@
                     Portal Escolar
                 </p>
 
-                <h1>
+                <h1 id="portalTitle">
                     Iniciar sesión
                 </h1>
 
-                <p class="login-subtitle">
+                <p id="portalSubtitle" class="login-subtitle">
                     Ingresa tus credenciales para acceder.
                 </p>
 
@@ -115,9 +115,17 @@
 
 
 
+            <div
+                id="loginMessage"
+                class="login-message"
+                role="status"
+                aria-live="polite"
+            ></div>
+
             <form
                 id="loginForm"
                 class="login-form"
+                method="post"
             >
 
                 <div class="form-group">
@@ -169,25 +177,39 @@
                 </div>
 
 
-                <div
-                    id="loginMessage"
-                    class="login-message"
-                    aria-live="polite"
-                ></div>
-
-
                 <button
                     type="submit"
                     class="login-button"
+                    disabled
                 >
                     Iniciar sesión
                 </button>
 
             </form>
 
+            <section
+                id="sessionPanel"
+                class="session-panel"
+                aria-label="Perfil autorizado"
+                hidden
+            >
+                <p><strong id="profileName"></strong></p>
+                <p id="profileRole"></p>
+                <p>Las funciones escolares se habilitarán en una próxima etapa.</p>
+            </section>
+
+            <button
+                type="button"
+                id="logoutButton"
+                class="login-button logout-button"
+                hidden
+            >
+                Cerrar sesión
+            </button>
 
 
-            <div class="login-help">
+
+            <div id="loginHelp" class="login-help">
 
                 <button
                     type="button"
@@ -250,7 +272,14 @@
 
 
 
-    <script src="portal.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"
+        integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK"
+        crossorigin="anonymous"
+        defer
+    ></script>
+    <script src="supabase-config.js" defer></script>
+    <script src="portal.js" defer></script>
 
 </body>
 

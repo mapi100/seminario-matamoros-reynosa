@@ -31,6 +31,10 @@
     box-sizing: border-box;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 html {
     min-height: 100%;
 }
@@ -422,6 +426,26 @@ a {
     transform: translateY(0);
 }
 
+.login-button:disabled,
+.password-toggle:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.login-button:disabled:hover {
+    transform: none;
+}
+
+.session-panel {
+    overflow-wrap: anywhere;
+    color: var(--blue-dark);
+    line-height: 1.5;
+}
+
+.logout-button {
+    margin-top: 18px;
+}
+
 
 /* ========================================
    MENSAJES
@@ -429,6 +453,8 @@ a {
 
 .login-message {
     display: none;
+
+    margin-bottom: 18px;
 
     padding: 9px 11px;
 
