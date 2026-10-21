@@ -7,7 +7,7 @@ secretas, `service_role` y las contraseñas nunca pertenecen a estos archivos.
 
 El SDK de Supabase se carga desde jsDelivr con versión fija y verificación SRI.
 Después se cargan `supabase-config.js`, `auth.js` y el controlador de la página.
-El panel carga también `subjects.js` antes de su controlador.
+El panel carga también `subjects.js` y `teaching.js` antes de su controlador.
 Si faltan la configuración o el SDK, el formulario permanece deshabilitado.
 
 ## Acceso y panel inicial
@@ -24,9 +24,10 @@ página. Un error de conexión muestra una opción para reintentar.
 
 Una sola página presenta el inicio correspondiente a `student`, `professor` o
 `control_escolar`. El rol procede de `profiles`, no de la URL ni de los metadatos
-editables del usuario. Los alumnos pueden consultar sus materias; todos los
-roles pueden consultar el perfil y cerrar sesión. El título del panel no otorga
-permisos administrativos.
+editables del usuario. Los alumnos pueden consultar sus materias y notas
+publicadas; los profesores, sus materias asignadas y sus listas de alumnos.
+Todos los roles pueden consultar el perfil y cerrar sesión. El título del panel
+no otorga permisos administrativos.
 
 El HTML estático es público. Las comprobaciones de JavaScript controlan la
 navegación y la presentación; la protección de los datos sigue dependiendo de
@@ -37,8 +38,9 @@ autorización en sus propias tablas y operaciones.
 
 `subjects.js` consulta `enrollments` con las relaciones `subjects` y
 `academic_periods`. Las tres tablas aplican RLS: solo un alumno activo puede leer
-sus propias inscripciones y los catálogos relacionados. Los profesores y Control
-Escolar todavía no tienen una vista académica ni permisos sobre estas tablas.
+sus propias inscripciones y los catálogos relacionados. Los profesores utilizan
+la sección de materias asignadas descrita más abajo; Control Escolar todavía
+no tiene una vista académica.
 
 Cada tarjeta muestra código, nombre de la materia, periodo y fechas. Se consultan
 20 inscripciones por página y una fila adicional para decidir si aparece **Ver
@@ -81,6 +83,37 @@ La migración y los datos de ejemplo se aplican manualmente siguiendo
 modifica las notas en Supabase. Un administrador de SQL Editor puede ver los
 borradores; la comprobación desde la sesión de alumno o con el smoke RLS es la
 que verifica su ocultación.
+
+## Materias y alumnos del profesor
+
+`teaching.js` consulta las asignaciones de `teaching_assignments` con sus materias
+y periodos. RLS solo devuelve asignaciones del profesor autenticado activo. Las
+políticas de los catálogos permiten leer únicamente los asociados con esas
+asignaciones; los permisos de perfiles, inscripciones y notas siguen cerrados.
+
+**Ver alumnos** llama a `get_teaching_roster`, una función PostgreSQL de lectura.
+En cada llamada comprueba `auth.uid()`, el perfil activo con rol `professor` y la
+asignación concreta de materia y periodo. Devuelve únicamente el ID de inscripción
+y el nombre del alumno activo. El frontend presenta solo el nombre: no consulta
+correos, datos personales privados ni notas. La autorización ocurre en PostgreSQL,
+también al cambiar manualmente el ID solicitado.
+
+El listado se consulta al abrir una materia y se pagina de 20 en 20. Cambiar de
+materia, cerrar la lista, ocultar la pestaña o cerrar sesión borra los nombres y
+cancela la solicitud pendiente. Una respuesta atrasada no puede volver a
+mostrarlos. Ante cualquier error del listado se retiran todos sus nombres,
+incluidas páginas anteriores. **Actualizar materias** vuelve a verificar el acceso;
+después se selecciona de nuevo la materia.
+
+Las materias asignadas y los alumnos tienen paginación independiente. Un listado
+vacío se distingue de un fallo de consulta. El profesor todavía no registra ni
+modifica notas o inscripciones desde el portal. Si varios profesores están
+asignados a la misma materia y periodo, comparten la lista de alumnos; esta etapa
+no añade grupos separados.
+
+Para crear una cuenta de profesor de prueba y asignarle las materias DEMO, sigue
+[Instalar el panel de profesor](../docs/profesores.md). La cuenta de alumno
+existente conserva su rol y sus datos.
 
 ## Requisitos del proyecto Supabase
 
@@ -148,6 +181,7 @@ python3 -m pip install playwright
 python3 -m playwright install chromium
 python3 tests/portal_subjects.py
 python3 tests/portal_grades.py
+python3 tests/portal_professor.py
 ```
 
 Si Chromium ya está instalado, se puede omitir la instalación del navegador.
@@ -160,3 +194,7 @@ Estas herramientas son para desarrollo; el sitio publicado sigue siendo estátic
 Comprueba valores publicados, cero y cien, ausencia de publicación, errores,
 reintentos, paginación y respuestas tardías. La API simulada comprueba el frontend;
 las pruebas de PostgreSQL y la integración real se documentan en `supabase/README.md`.
+
+`tests/portal_professor.py` comprueba materias asignadas, listas de alumnos,
+paginación, errores, reintentos, datos como texto, móvil y cancelación al cambiar
+de materia o salir. Comparte el servidor y la API simulada con las otras pruebas.

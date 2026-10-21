@@ -39,6 +39,7 @@
     function clearProfile() {
         content.hidden = true;
         window.PortalSubjects?.clear();
+        window.PortalTeaching?.clear();
         name.textContent = "";
         role.textContent = "";
         state.textContent = "";
@@ -119,6 +120,15 @@
                         document.getElementById("subjectsSection").hidden = false;
                         document.getElementById("subjectsStatus").textContent =
                             "No fue posible cargar tus materias. Recarga la página para reintentar.";
+                    }
+                } else if (result.profile.role === "professor") {
+                    subtitle.textContent = "Consulta tus materias asignadas y sus alumnos.";
+                    if (window.PortalTeaching) {
+                        window.PortalTeaching.show(verifyAccess);
+                    } else {
+                        document.getElementById("teachingSection").hidden = false;
+                        document.getElementById("teachingStatus").textContent =
+                            "No fue posible cargar tus materias asignadas. Recarga la página para reintentar.";
                     }
                 }
             } else {

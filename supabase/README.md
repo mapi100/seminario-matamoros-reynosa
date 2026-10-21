@@ -94,13 +94,16 @@ perfil `control_escolar`; por ahora las altas se hacen desde administración.
 
 Una inscripción solo es visible si pertenece al usuario autenticado y su
 perfil sigue activo con rol `student`. Los catálogos solo muestran materias y
-periodos relacionados con sus inscripciones visibles. Un profesor, Control
-Escolar, un perfil inactivo o una cuenta sin perfil no pueden leer estos datos,
-aunque administración les haya asignado una inscripción por error. El rol de
-perfil no sustituye el rol PostgreSQL `authenticated`.
+periodos relacionados con sus inscripciones visibles. La migración académica
+inicial no permite leer estos datos a profesores, Control Escolar, perfiles
+inactivos o cuentas sin perfil, aunque tengan una inscripción asignada por error.
+La ampliación de profesor descrita más abajo añade lectura de catálogos asignados
+y un listado limitado mediante función; mantiene cerrada la lectura directa de
+inscripciones. El rol de perfil no sustituye el rol PostgreSQL `authenticated`.
 
-Esta etapa no incluye grupos, profesores asignados, calificaciones ni edición
-de inscripciones. Cada ampliación necesitará sus propias reglas de autorización.
+La migración académica inicial no incluye grupos, profesores asignados ni notas.
+Las ampliaciones de calificaciones y profesor se describen más abajo; cada una
+añade sus propias reglas. La edición de inscripciones sigue pendiente.
 
 ### Pruebas reproducibles de SQL y aislamiento
 
@@ -201,3 +204,94 @@ solo el acceso a calificaciones. No usa un DSN ni credenciales del proyecto.
 una nota publicada; no crea una segunda cuenta real ni sustituye la prueba de
 integración con Supabase Auth y PostgREST. El runner local prueba PostgreSQL/RLS,
 no esos servicios. Los archivos no usan pgTAP ni historial automático de CLI.
+
+## Profesor: materias asignadas y listado de alumnos
+
+Esta actualización añade `teaching_assignments`: vincula un profesor, una materia
+y un periodo. Un mismo profesor no puede tener la misma combinación duplicada;
+dos profesores pueden compartirla. Por ahora no se crean grupos separados: el
+listado incluye a todos los alumnos activos inscritos en esa materia y periodo.
+La captura de notas y las tareas quedan para una etapa posterior.
+
+En el proyecto actual las tres migraciones anteriores ya están aplicadas.
+No las repitas. Desde **SQL Editor → New query**, como administrador:
+
+1. Ejecuta completo `migrations/20261021030000_create_teaching_assignments.sql`
+   **una sola vez**. Si ocurre un error, ejecuta `rollback;` y revisa el mensaje.
+2. Crea una cuenta de prueba **nueva y distinta** de la cuenta del alumno en
+   **Authentication → Users → Add user → Create new user**. Usa un correo que
+   controles y una contraseña de prueba que mantengas privada. Para esta cuenta
+   de pruebas puedes marcar la confirmación automática del correo si esa opción
+   aparece en el formulario; no habilites el registro público. Copia el UID nuevo.
+3. En otra consulta nueva pega `seeds/demo_professor_profile.sql`, sustituye
+   `PROFESSOR_UID_AQUI` por ese UID y ejecuta todo el contenido. Crea el perfil
+   **Profesor de prueba**. Si la cuenta ya pertenece a un alumno o está inactiva,
+   el script la rechaza sin convertir ni reactivar el perfil.
+4. Copia `seeds/demo_teaching.sql` en otra consulta nueva. Sustituye
+   `STUDENT_UID_AQUI` por el UID de tu alumno actual y `PROFESSOR_UID_AQUI` por el
+   UID nuevo del profesor. Asigna las dos materias DEMO existentes. No crea
+   inscripciones, usuarios ni cambia roles; se puede repetir sin duplicados.
+5. Ejecuta `tests/professor_rls.sql` en otra consulta, sustituyendo solamente
+   `PROFESSOR_UID_AQUI` por el UID del profesor. Debe mostrar
+   **`Profesor: RLS y permisos OK`**.
+6. Publica el frontend actualizado, cierra la sesión del alumno y entra con la
+   cuenta del profesor. Debe ver sus materias asignadas y, al abrir cada lista,
+   los nombres de sus alumnos activos. Usa otra sesión para comprobar que el
+   alumno conserva su acceso a materias y calificaciones propias.
+
+Conserva los marcadores genéricos en los archivos de GitHub; sustituye los UID
+solo en SQL Editor. No compartas ni guardes contraseñas en código. Subir estos
+archivos a GitHub no ejecuta el SQL ni crea cuentas en Supabase.
+
+### Permisos y función del listado
+
+`teaching_assignments` tiene RLS y solo SELECT para `authenticated`. Una fila es
+visible únicamente al profesor asignado, con perfil activo y rol `professor`.
+Las políticas nuevas de `subjects` y `academic_periods` permiten leer solamente
+los catálogos de sus asignaciones visibles, sin ciclos entre políticas.
+
+No se amplían los permisos de lectura de `profiles`, `enrollments` ni
+`enrollment_grades`: el profesor sigue sin poder consultar directamente perfiles
+de alumnos, sus inscripciones ni sus notas. El frontend llama a
+`get_teaching_roster(p_assignment_id, p_offset, p_limit)`, una función de consulta
+que devuelve **solo `enrollment_id` y `student_name`**. No devuelve correo,
+dirección, teléfono, contactos, UID del perfil ni calificaciones.
+
+La función comprueba en cada llamada que la asignación pertenece al profesor y
+que su perfil permanece activo con el rol correcto. Un ID ajeno, inexistente o
+una cuenta no autorizada recibe el mismo error de permiso. El listado filtra
+alumnos activos con rol `student`, por materia y periodo, y ordena por nombre e
+ID de inscripción. Acepta desplazamientos de 0 a 100000 y límites de 1 a 100;
+rechaza valores nulos o fuera de rango. El frontend solicita páginas pequeñas.
+
+Es una función `STABLE SECURITY DEFINER`, propiedad del administrador de
+confianza que aplica la migración, con `search_path` vacío y tablas nombradas
+con su esquema. La autorización explícita es necesaria porque la función lee
+las filas usando ese propietario. Se revoca la ejecución predeterminada de
+`PUBLIC` y de `anon`; solo `authenticated` puede llamarla y sus comprobaciones
+internas deciden quién está autorizado. No realiza escrituras ni contiene SQL
+dinámico. Ningún perfil del navegador recibe permisos de edición.
+
+### Pruebas locales del profesor
+
+Con los mismos requisitos de Docker, Python 3 e imagen PostgreSQL:
+
+```bash
+python3 supabase/tests/run_professor_local.py
+```
+
+El runner crea exclusivamente su propio contenedor temporal sin red ni puertos,
+aplica las cuatro migraciones y lo elimina al terminar. Incluye dos profesores,
+al menos tres alumnos, materias compartidas y exclusivas, periodos diferentes,
+co-docencia, perfiles inactivos y otros roles. Comprueba la privacidad de perfiles
+y notas, autorizaciones de la función, paginación, permisos de ejecución,
+escritura denegada, seeds repetibles y que el smoke detecte políticas o permisos
+incorrectos. También vuelve a ejecutar los smokes anteriores de perfiles,
+materias y notas para dos alumnos después de aplicar las políticas nuevas.
+
+El smoke de SQL Editor es una comprobación de solo lectura para un profesor con
+asignaciones. Comprueba las reglas expuestas y que la función rechace una
+identidad sin perfil; no crea una segunda cuenta real ni demuestra por sí solo
+el aislamiento completo del listado. El runner usa fixtures mínimos de Auth y
+prueba SQL/PostgreSQL; la prueba manual con cuentas reales comprueba la
+integración con Supabase Auth y PostgREST.

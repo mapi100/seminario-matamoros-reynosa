@@ -1,0 +1,119 @@
+.teaching-section {
+    grid-column: 1 / -1;
+}
+
+.teaching-status {
+    margin: 20px 0;
+    color: var(--text-light);
+}
+
+.teaching-status.error {
+    color: var(--red-dark);
+}
+
+.teaching-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.teaching-card {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid #dce4ee;
+    border-radius: 8px;
+}
+
+.teaching-code {
+    font-size: 13px;
+    color: var(--red-dark);
+    font-weight: 700;
+}
+
+.teaching-name {
+    margin: 6px 0 14px;
+    color: var(--blue-dark);
+    font-size: 20px;
+}
+
+.teaching-period {
+    color: var(--text-light);
+    margin: 0 0 18px;
+}
+
+.teaching-actions,
+.roster-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.teaching-actions {
+    margin-top: 20px;
+}
+
+.teaching-section button {
+    background: var(--white);
+    cursor: pointer;
+}
+
+.teaching-section button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.teaching-open[aria-expanded="true"] {
+    background: var(--blue-dark);
+    color: var(--white);
+}
+
+.teaching-roster {
+    border-top: 2px solid var(--gold);
+    padding-top: 24px;
+    margin-top: 28px;
+    scroll-margin-top: 20px;
+}
+
+.roster-heading {
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.roster-heading > div {
+    flex: 1;
+    min-width: 160px;
+}
+
+.roster-heading h3 {
+    color: var(--blue-dark);
+    font-size: 22px;
+    margin: 0 0 8px;
+}
+
+.roster-heading p {
+    margin: 0;
+    color: var(--text-light);
+}
+
+.roster-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    border-top: 1px solid #dce4ee;
+}
+
+.roster-student {
+    padding: 12px 0;
+    border-bottom: 1px solid #dce4ee;
+    color: var(--blue-dark);
+}
+
+@media (max-width: 800px) {
+    .teaching-list {
+        grid-template-columns: 1fr;
+    }
+}

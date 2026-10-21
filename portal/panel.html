@@ -7,6 +7,7 @@
     <title>Mi portal | Seminario Diocesano San José</title>
     <link rel="stylesheet" href="portal.css">
     <link rel="stylesheet" href="panel.css">
+    <link rel="stylesheet" href="teaching.css">
 </head>
 <body class="dashboard-page">
     <header class="portal-header">
@@ -43,6 +44,7 @@
                 <p>Aquí puedes consultar tu perfil y administrar tu sesión.</p>
                 <a class="profile-link" href="#mi-perfil">Ver mi perfil</a>
                 <a id="subjectsLink" class="profile-link" href="#mis-materias" hidden>Ver mis materias</a>
+                <a id="teachingLink" class="profile-link" href="#materias-asignadas" hidden>Ver materias asignadas</a>
             </section>
 
             <section id="mi-perfil" class="dashboard-card" aria-labelledby="profileTitle">
@@ -69,6 +71,36 @@
                     <button id="subjectsRetry" class="back-link" type="button" hidden>Reintentar</button>
                     <button id="subjectsMore" class="back-link" type="button" hidden>Ver más</button>
                 </div>
+            </section>
+
+            <section id="teachingSection" class="dashboard-card teaching-section"
+                     aria-labelledby="teachingTitle" hidden>
+                <div id="materias-asignadas">
+                    <h2 id="teachingTitle">Mis materias asignadas</h2>
+                    <p>Consulta tus materias por periodo y abre la lista de alumnos inscritos.</p>
+                </div>
+                <p id="teachingStatus" class="teaching-status" role="status" aria-live="polite"></p>
+                <ul id="teachingList" class="teaching-list"></ul>
+                <div class="teaching-actions">
+                    <button id="teachingRetry" class="back-link" type="button" hidden>Reintentar</button>
+                    <button id="teachingMore" class="back-link" type="button" hidden>Ver más materias</button>
+                </div>
+
+                <section id="rosterSection" class="teaching-roster" aria-labelledby="rosterTitle" hidden>
+                    <div class="roster-heading">
+                        <div>
+                            <h3 id="rosterTitle"></h3>
+                            <p id="rosterPeriod"></p>
+                        </div>
+                        <button id="rosterClose" class="back-link" type="button">Cerrar lista</button>
+                    </div>
+                    <p id="rosterStatus" class="teaching-status" role="status" aria-live="polite"></p>
+                    <ul id="rosterList" class="roster-list"></ul>
+                    <div class="teaching-actions">
+                        <button id="rosterRetry" class="back-link" type="button" hidden>Actualizar materias</button>
+                        <button id="rosterMore" class="back-link" type="button" hidden>Ver más alumnos</button>
+                    </div>
+                </section>
             </section>
         </div>
 
@@ -99,6 +131,7 @@
     <script src="supabase-config.js" defer></script>
     <script src="auth.js" defer></script>
     <script src="subjects.js" defer></script>
+    <script src="teaching.js" defer></script>
     <script src="panel.js" defer></script>
 </body>
 </html>

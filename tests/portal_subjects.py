@@ -65,8 +65,9 @@ def subject(i, *, name=None):
     return {'id':f'22222222-2222-4222-8222-{i:012d}', 'subjects':{'code':f'MAT-{i:03d}','name':name or f'Materia de ejemplo {i}'},'academic_periods':{'name':'Periodo de prueba 2026','starts_on':'2026-08-01','ends_on':'2026-12-18'}}
 checks = 0
 
-async def fixture(browser, *, mobile=False, session=True, profile=None, rows=None, enrollment_status=200, enrollment_gate=None, start='panel.html', user_status=200, initial_hidden=False, grades=None, grade_status=200, grade_gate=None, grade_unfiltered=False):
+async def fixture(browser, *, mobile=False, session=True, profile=None, rows=None, enrollment_status=200, enrollment_gate=None, start='panel.html', user_status=200, initial_hidden=False, grades=None, grade_status=200, grade_gate=None, grade_unfiltered=False, teaching=None, teaching_status=200, teaching_gate=None, rosters=None, roster_status=200, roster_gate=None):
     state={'profile':copy.deepcopy(DEFAULT_PROFILE) if profile is None else profile,'user_status':user_status,'rows':copy.deepcopy(rows) if rows is not None else [subject(1),subject(2)],'enrollment_status':enrollment_status,'enrollment_gate':enrollment_gate,'enrollment_started':asyncio.Event(),'enrollment_requests':[],'requests':[],'errors':[],'route_errors':[], 'grades':copy.deepcopy(grades) if grades is not None else [], 'grade_status':grade_status, 'grade_gate':grade_gate, 'grade_started':asyncio.Event(), 'grade_requests':[], 'grade_unfiltered':grade_unfiltered}
+    state.update({'teaching':copy.deepcopy(teaching) if teaching is not None else [], 'teaching_status':teaching_status, 'teaching_gate':teaching_gate, 'teaching_started':asyncio.Event(), 'teaching_requests':[], 'rosters':copy.deepcopy(rosters) if rosters is not None else {}, 'roster_status':roster_status, 'roster_gate':roster_gate, 'roster_started':asyncio.Event(), 'roster_requests':[]})
     context=await browser.new_context(viewport={'width':390,'height':844} if mobile else {'width':1440,'height':900})
     if initial_hidden:
         await context.add_init_script('Object.defineProperty(document,"visibilityState",{configurable:true,get:()=>"hidden"})')
@@ -120,6 +121,33 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
                 gate=state['grade_gate']
                 if gate: await gate.wait()
                 data=rows if status==200 else {'code':'42501' if status==403 else '42P01','message':'Fixture grades API error'}
+            elif path=='/rest/v1/teaching_assignments':
+                assert request.method=='GET',request.method
+                assert query.get('select')==['id,subjects(code,name),academic_periods(name,starts_on,ends_on)'],query
+                state['teaching_requests'].append({'query':query,'headers':request.headers})
+                state['teaching_started'].set()
+                status=state['teaching_status']
+                rows=copy.deepcopy(state['teaching'])
+                gate=state['teaching_gate']
+                if gate: await gate.wait()
+                offset=int(query.get('offset',['0'])[0]);limit=int(query.get('limit',[str(len(rows))])[0])
+                data=rows[offset:offset+limit] if status==200 else {'code':'42501' if status==403 else '42P01','message':'Fixture teaching API error'}
+            elif path=='/rest/v1/rpc/get_teaching_roster':
+                assert request.method=='POST',request.method
+                args=request.post_data_json
+                assert set(args)=={'p_assignment_id','p_offset','p_limit'},args
+                assert isinstance(args['p_offset'],int) and args['p_offset']>=0,args
+                assert args['p_limit']==21,args
+                state['roster_requests'].append(args)
+                state['roster_started'].set()
+                status=state['roster_status']
+                rows=copy.deepcopy(state['rosters'].get(args['p_assignment_id'],[]))
+                gate=state['roster_gate']
+                if gate: await gate.wait()
+                if status==200:
+                    data=rows[args['p_offset']:args['p_offset']+args['p_limit']] if isinstance(rows,list) else rows
+                else:
+                    data={'code':'42501' if status==403 else 'PGRST202','message':'Fixture roster API error'}
             elif path=='/auth/v1/logout':
                 status=204; data=None
             else: raise AssertionError('Unexpected API request '+request.url)
