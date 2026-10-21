@@ -7,6 +7,7 @@ secretas, `service_role` y las contraseñas nunca pertenecen a estos archivos.
 
 El SDK de Supabase se carga desde jsDelivr con versión fija y verificación SRI.
 Después se cargan `supabase-config.js`, `auth.js` y el controlador de la página.
+El panel carga también `subjects.js` antes de su controlador.
 Si faltan la configuración o el SDK, el formulario permanece deshabilitado.
 
 ## Acceso y panel inicial
@@ -23,13 +24,38 @@ página. Un error de conexión muestra una opción para reintentar.
 
 Una sola página presenta el inicio correspondiente a `student`, `professor` o
 `control_escolar`. El rol procede de `profiles`, no de la URL ni de los metadatos
-editables del usuario. Por ahora se puede consultar el perfil y cerrar sesión;
-el título del panel no otorga permisos administrativos.
+editables del usuario. Los alumnos pueden consultar sus materias; todos los
+roles pueden consultar el perfil y cerrar sesión. El título del panel no otorga
+permisos administrativos.
 
 El HTML estático es público. Las comprobaciones de JavaScript controlan la
 navegación y la presentación; la protección de los datos sigue dependiendo de
 Supabase Auth y PostgreSQL/RLS. Las funciones académicas futuras necesitarán
 autorización en sus propias tablas y operaciones.
+
+## Mis materias
+
+`subjects.js` consulta `enrollments` con las relaciones `subjects` y
+`academic_periods`. Las tres tablas aplican RLS: solo un alumno activo puede leer
+sus propias inscripciones y los catálogos relacionados. Los profesores y Control
+Escolar todavía no tienen una vista académica ni permisos sobre estas tablas.
+
+Cada tarjeta muestra código, nombre de la materia, periodo y fechas. Se consultan
+20 inscripciones por página y una fila adicional para decidir si aparece **Ver
+más**; la fila adicional se presenta al solicitar la página siguiente. El orden
+por fecha de inscripción e ID evita empates indeterminados. Todas las consultas
+son de lectura y los nombres se presentan como texto.
+
+La sección distingue carga, lista vacía y error. **Reintentar** vuelve a comprobar
+la identidad y el perfil antes de consultar de nuevo. Un error al cargar más
+conserva las tarjetas ya mostradas; reintentar comienza desde la primera página.
+Al cerrar sesión, ocultar la pestaña o abandonar el panel, se borran las tarjetas,
+se cancela la solicitud pendiente y se descartan respuestas anteriores.
+
+Primero aplica la nueva migración y carga los datos DEMO desde administración
+según [las instrucciones SQL](../supabase/README.md). Guardar el frontend en GitHub
+no crea tablas ni inscripciones. Si la consulta falla, se muestra un error; una
+respuesta correcta sin inscripciones muestra la lista vacía.
 
 ## Requisitos del proyecto Supabase
 
@@ -59,6 +85,10 @@ actividad y los permisos del usuario.
 6. Desactiva temporalmente **solo la cuenta de prueba** poniendo `active = false`
    desde administración. Al intentar entrar, no debe aparecer el perfil y se
    debe cerrar la sesión. Restaura `active = true` al terminar.
+7. Con las tablas nuevas y los datos DEMO, el alumno debe ver Filosofía e Historia
+   en **Mis materias**. Recarga y vuelve a la pestaña: se vuelven a consultar.
+8. Cierra sesión: las materias desaparecen junto con el perfil. Una segunda cuenta
+   de alumno debe ver únicamente las inscripciones que administración le asigne.
 
 El SQL Editor normalmente utiliza un rol privilegiado: ver filas allí no prueba
 RLS. Comprueba el aislamiento entre usuarios con sesiones autenticadas diferentes
@@ -70,7 +100,29 @@ de la sesión local. El SDK puede eliminar esa sesión del navegador aunque fall
 la revocación remota. Durante el cierre se oculta el perfil; si un error impide
 cerrar la sesión local, se ofrece reintentar. El cierre afecta a este dispositivo.
 
-Esta etapa contiene el inicio por rol y el perfil, sin gestión académica. La
-recuperación de contraseña por correo todavía no está implementada; el botón
+Esta etapa permite consultar las materias inscritas; las altas se realizan desde
+administración en SQL Editor. La recuperación de contraseña por correo todavía
+no está implementada; el botón
 indica contactar a Control Escolar. La detección de sesiones en enlaces está
 desactivada hasta implementar ese flujo.
+
+## Pruebas locales de navegador
+
+`tests/portal_subjects.py` comprueba las materias, el estado vacío, los errores y
+reintentos, paginación, roles, móvil y respuestas tardías tras cerrar sesión u
+ocultar la pestaña. Usa el SDK real con API simulada: no se conecta al proyecto
+Supabase ni verifica sus políticas reales.
+
+Con Python 3 y Playwright en un entorno virtual, desde la raíz del repositorio:
+
+```bash
+python3 -m pip install playwright
+python3 -m playwright install chromium
+python3 tests/portal_subjects.py
+```
+
+Si Chromium ya está instalado, se puede omitir la instalación del navegador.
+`CHROMIUM_PATH` permite indicar su ruta. El test descarga el SDK por HTTPS y
+verifica su SHA384 contra el SRI de `panel.html`, utiliza un servidor temporal
+y lo detiene al terminar. `PORTAL_TEST_ARTIFACTS` permite conservar capturas.
+Estas herramientas son para desarrollo; el sitio publicado sigue siendo estático.

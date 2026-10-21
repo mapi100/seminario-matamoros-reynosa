@@ -106,8 +106,84 @@
     justify-content: flex-start;
 }
 
+.dashboard-welcome .profile-link + .profile-link {
+    margin-left: 20px;
+}
+
+.subjects-section {
+    grid-column: 1 / -1;
+}
+
+.subjects-status {
+    color: var(--text-light);
+    margin: 20px 0;
+}
+
+.subjects-status.error {
+    color: var(--red-dark);
+}
+
+.subject-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.subject-item {
+    min-width: 0;
+    border: 1px solid #dce4ee;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.subject-code {
+    color: var(--red-dark);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.subject-name {
+    margin: 6px 0 14px;
+    color: var(--blue-dark);
+    font-size: 20px;
+}
+
+.subject-period,
+.subject-dates {
+    margin: 0;
+    color: var(--text-light);
+}
+
+.subject-dates {
+    font-size: 14px;
+}
+
+.subjects-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.subjects-actions button {
+    background: var(--white);
+    cursor: pointer;
+}
+
+.subjects-actions button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
 @media (max-width: 800px) {
     .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .subject-list {
         grid-template-columns: 1fr;
     }
 }

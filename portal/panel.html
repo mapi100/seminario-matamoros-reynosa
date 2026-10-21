@@ -42,6 +42,7 @@
                 <h2 id="welcomeTitle">Bienvenido al Portal Escolar</h2>
                 <p>Aquí puedes consultar tu perfil y administrar tu sesión.</p>
                 <a class="profile-link" href="#mi-perfil">Ver mi perfil</a>
+                <a id="subjectsLink" class="profile-link" href="#mis-materias" hidden>Ver mis materias</a>
             </section>
 
             <section id="mi-perfil" class="dashboard-card" aria-labelledby="profileTitle">
@@ -54,6 +55,20 @@
                     <dt>Estado</dt>
                     <dd id="profileState"></dd>
                 </dl>
+            </section>
+
+            <section id="subjectsSection" class="dashboard-card subjects-section"
+                     aria-labelledby="subjectsTitle" hidden>
+                <div id="mis-materias">
+                    <h2 id="subjectsTitle">Mis materias</h2>
+                    <p>Consulta las materias y los periodos de tus inscripciones.</p>
+                </div>
+                <p id="subjectsStatus" class="subjects-status" role="status" aria-live="polite"></p>
+                <ul id="subjectsList" class="subject-list"></ul>
+                <div class="subjects-actions">
+                    <button id="subjectsRetry" class="back-link" type="button" hidden>Reintentar</button>
+                    <button id="subjectsMore" class="back-link" type="button" hidden>Ver más</button>
+                </div>
             </section>
         </div>
 
@@ -83,6 +98,7 @@
         crossorigin="anonymous" defer></script>
     <script src="supabase-config.js" defer></script>
     <script src="auth.js" defer></script>
+    <script src="subjects.js" defer></script>
     <script src="panel.js" defer></script>
 </body>
 </html>

@@ -38,6 +38,7 @@
 
     function clearProfile() {
         content.hidden = true;
+        window.PortalSubjects?.clear();
         name.textContent = "";
         role.textContent = "";
         state.textContent = "";
@@ -82,6 +83,10 @@
     async function verifyAccess() {
         const operation = ++version;
         clearProfile();
+        if (document.visibilityState === "hidden") {
+            setBusy(false);
+            return;
+        }
         recovery.hidden = true;
         setBusy(true);
         showMessage("Verificando tu acceso…");
@@ -106,6 +111,16 @@
                 document.title = headings[result.profile.role] + " | Seminario Diocesano San José";
                 content.hidden = false;
                 showMessage("");
+                if (result.profile.role === "student") {
+                    subtitle.textContent = "Consulta tu perfil y tus materias.";
+                    if (window.PortalSubjects) {
+                        window.PortalSubjects.show(verifyAccess);
+                    } else {
+                        document.getElementById("subjectsSection").hidden = false;
+                        document.getElementById("subjectsStatus").textContent =
+                            "No fue posible cargar tus materias. Recarga la página para reintentar.";
+                    }
+                }
             } else {
                 showUnavailable("No fue posible verificar tu acceso. Comprueba tu conexión e inténtalo nuevamente.");
             }
@@ -149,7 +164,10 @@
                 version += 1;
                 clearProfile();
                 goToLogin(logoutReason);
-            } else if (["SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event) && !busy) {
+            } else if (
+                ["SIGNED_IN", "TOKEN_REFRESHED", "USER_UPDATED"].includes(event) &&
+                !busy && document.visibilityState !== "hidden"
+            ) {
                 const operation = ++version;
                 clearProfile();
                 setBusy(true);
