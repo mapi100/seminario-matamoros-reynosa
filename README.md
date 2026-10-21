@@ -1,5 +1,5 @@
 # seminario-matamoros-reynosa
-Sitio web oficial del Seminario Diocesano de la Diócesis de Matamoros-Reynosa.
+Página Web Oficial del Seminario Diocesano de Matamoros-Reynosa.
 
 Documentación del proyecto:
 
