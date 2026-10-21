@@ -3,6 +3,7 @@ Sitio web oficial del Seminario Diocesano de la Diócesis de Matamoros-Reynosa.
 
 Documentación del proyecto:
 
+- [Configurar seminariomr.org con Porkbun, Cloudflare, HTTPS e indexación](docs/dominio-seminariomr.md)
 - [Portal y comprobaciones del acceso](portal/README.md)
 - [Esquema SQL y comprobación de RLS](supabase/README.md)
 - [Instalar y probar Mis materias](docs/mis-materias.md)
