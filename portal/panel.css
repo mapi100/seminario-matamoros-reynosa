@@ -1,0 +1,124 @@
+.dashboard-page {
+    background: linear-gradient(160deg, #edf4fb, var(--cream) 60%);
+}
+
+.dashboard-actions,
+.dashboard-recovery {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.dashboard-actions .back-link {
+    white-space: nowrap;
+}
+
+.dashboard-logout {
+    background: var(--red-dark);
+    border-color: var(--red-dark);
+    color: var(--white);
+    cursor: pointer;
+}
+
+.dashboard-logout:disabled,
+.dashboard-recovery button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.dashboard-main {
+    flex: 1;
+    width: min(1100px, 90%);
+    margin: 0 auto;
+    padding: 44px 0 60px;
+}
+
+.dashboard-heading {
+    margin-bottom: 30px;
+}
+
+.dashboard-heading h1 {
+    margin: 8px 0 12px;
+    font-size: clamp(28px, 4vw, 42px);
+    color: var(--blue);
+    overflow-wrap: anywhere;
+}
+
+.dashboard-heading > p:last-child {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 24px;
+}
+
+.dashboard-card {
+    min-width: 0;
+    padding: 28px;
+    border-radius: 12px;
+    border-top: 4px solid var(--gold);
+    background: var(--white);
+    box-shadow: 0 6px 24px rgba(6, 38, 92, 0.08);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.dashboard-card h2 {
+    margin: 0 0 16px;
+    font-size: 23px;
+    color: var(--blue-dark);
+}
+
+.profile-link {
+    display: inline-block;
+    padding: 10px 0;
+    color: var(--red-dark);
+    font-weight: 700;
+    text-underline-offset: 4px;
+}
+
+.profile-details {
+    margin: 0;
+}
+
+.profile-details dt {
+    color: var(--text-light);
+    font-size: 13px;
+}
+
+.profile-details dd {
+    margin: 0 0 18px;
+    color: var(--blue-dark);
+    font-weight: 700;
+}
+
+.profile-details dd:last-child {
+    margin-bottom: 0;
+}
+
+.dashboard-recovery {
+    justify-content: flex-start;
+}
+
+@media (max-width: 800px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .dashboard-main {
+        width: 92%;
+        padding-top: 28px;
+    }
+
+    .dashboard-card {
+        padding: 22px;
+    }
+}

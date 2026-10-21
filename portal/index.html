@@ -122,6 +122,8 @@
                 aria-live="polite"
             ></div>
 
+            <noscript><p>Habilita JavaScript para iniciar sesión en el portal.</p></noscript>
+
             <form
                 id="loginForm"
                 class="login-form"
@@ -186,17 +188,6 @@
                 </button>
 
             </form>
-
-            <section
-                id="sessionPanel"
-                class="session-panel"
-                aria-label="Perfil autorizado"
-                hidden
-            >
-                <p><strong id="profileName"></strong></p>
-                <p id="profileRole"></p>
-                <p>Las funciones escolares se habilitarán en una próxima etapa.</p>
-            </section>
 
             <button
                 type="button"
@@ -279,6 +270,7 @@
         defer
     ></script>
     <script src="supabase-config.js" defer></script>
+    <script src="auth.js" defer></script>
     <script src="portal.js" defer></script>
 
 </body>

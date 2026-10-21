@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Mi portal | Seminario Diocesano San José</title>
+    <link rel="stylesheet" href="portal.css">
+    <link rel="stylesheet" href="panel.css">
+</head>
+<body class="dashboard-page">
+    <header class="portal-header">
+        <div class="header-container">
+            <a href="../index.html" class="brand" aria-label="Volver al sitio principal">
+                <img src="../images/escudo-seminario-matamoros.png"
+                     alt="Escudo del Seminario Diocesano San José" class="brand-logo">
+                <div class="brand-text">
+                    <span class="brand-small">Seminario Diocesano San José</span>
+                    <span class="brand-name">Matamoros-Reynosa</span>
+                </div>
+            </a>
+            <div class="dashboard-actions">
+                <a href="../index.html" class="back-link">Sitio principal</a>
+                <button id="logoutButton" class="back-link dashboard-logout"
+                        type="button" disabled hidden>Cerrar sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <main id="panelMain" class="dashboard-main" aria-busy="true">
+        <div class="dashboard-heading">
+            <p class="login-label">Portal Escolar</p>
+            <h1 id="panelTitle">Mi portal</h1>
+            <p id="panelSubtitle">Verificando tu acceso…</p>
+        </div>
+
+        <div id="panelMessage" class="login-message visible info"
+             role="status" aria-live="polite">Verificando tu acceso…</div>
+
+        <div id="panelContent" class="dashboard-grid" hidden>
+            <section class="dashboard-card dashboard-welcome" aria-labelledby="welcomeTitle">
+                <h2 id="welcomeTitle">Bienvenido al Portal Escolar</h2>
+                <p>Aquí puedes consultar tu perfil y administrar tu sesión.</p>
+                <a class="profile-link" href="#mi-perfil">Ver mi perfil</a>
+            </section>
+
+            <section id="mi-perfil" class="dashboard-card" aria-labelledby="profileTitle">
+                <h2 id="profileTitle">Mi perfil</h2>
+                <dl class="profile-details">
+                    <dt>Nombre</dt>
+                    <dd id="profileName"></dd>
+                    <dt>Rol</dt>
+                    <dd id="profileRole"></dd>
+                    <dt>Estado</dt>
+                    <dd id="profileState"></dd>
+                </dl>
+            </section>
+        </div>
+
+        <div id="panelRecovery" class="dashboard-recovery" hidden>
+            <button id="retryButton" class="back-link" type="button">Reintentar</button>
+            <a href="index.html" class="back-link">Ir al acceso</a>
+        </div>
+        <noscript><p>Habilita JavaScript para verificar tu sesión y utilizar el portal.</p></noscript>
+    </main>
+
+    <footer class="portal-footer">
+        <div class="footer-container">
+            <div>
+                <strong>Seminario Diocesano San José</strong>
+                <p>Diócesis de Matamoros-Reynosa</p>
+            </div>
+            <div class="footer-right">
+                <p>© <span id="currentYear"></span></p>
+                <p>Todos los derechos reservados</p>
+            </div>
+        </div>
+    </footer>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"
+        integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK"
+        crossorigin="anonymous" defer></script>
+    <script src="supabase-config.js" defer></script>
+    <script src="auth.js" defer></script>
+    <script src="panel.js" defer></script>
+</body>
+</html>
