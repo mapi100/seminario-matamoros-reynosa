@@ -1,0 +1,3 @@
+# Archivos generados al ejecutar las pruebas Python.
+__pycache__/
+*.py[cod]

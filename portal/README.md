@@ -57,6 +57,31 @@ según [las instrucciones SQL](../supabase/README.md). Guardar el frontend en Gi
 no crea tablas ni inscripciones. Si la consulta falla, se muestra un error; una
 respuesta correcta sin inscripciones muestra la lista vacía.
 
+## Calificaciones publicadas
+
+Cada tarjeta de materia muestra su calificación publicada en escala de **0 a
+100**, con hasta dos decimales. Un cero es una nota válida. Si la nota no existe
+o sigue en borrador, ambos casos muestran **Sin calificación publicada**. Esta
+etapa no calcula promedios, aprobación, reprobación ni calificaciones finales.
+
+`subjects.js` consulta `enrollment_grades` por separado, únicamente para los IDs
+de las inscripciones mostradas en la página actual. RLS exige nota publicada,
+inscripción propia y perfil activo con rol `student`. El navegador no tiene
+permisos para registrar, editar ni publicar notas, tampoco con un perfil de
+Control Escolar. Por ahora esas operaciones se realizan desde SQL Editor.
+
+Si falla la consulta de notas, las materias permanecen visibles y cada tarjeta
+afectada muestra **No fue posible consultar la calificación**. **Reintentar**
+comprueba de nuevo el acceso y recarga desde la primera página. Las notas se
+limpian y sus solicitudes se cancelan junto con las materias al salir u ocultar
+la pestaña. Las respuestas fuera de rango o con IDs inesperados se rechazan.
+
+La migración y los datos de ejemplo se aplican manualmente siguiendo
+[Instalar calificaciones](../docs/calificaciones.md). Publicar en GitHub no
+modifica las notas en Supabase. Un administrador de SQL Editor puede ver los
+borradores; la comprobación desde la sesión de alumno o con el smoke RLS es la
+que verifica su ocultación.
+
 ## Requisitos del proyecto Supabase
 
 - Registro público y acceso anónimo desactivados; acceso por email habilitado.
@@ -89,6 +114,9 @@ actividad y los permisos del usuario.
    en **Mis materias**. Recarga y vuelve a la pestaña: se vuelven a consultar.
 8. Cierra sesión: las materias desaparecen junto con el perfil. Una segunda cuenta
    de alumno debe ver únicamente las inscripciones que administración le asigne.
+9. Tras aplicar la migración y el seed de notas, Filosofía debe mostrar
+   **Calificación publicada: 85.5 / 100** e Historia **Sin calificación publicada**.
+   El valor del borrador de Historia no debe aparecer en la sesión de alumno.
 
 El SQL Editor normalmente utiliza un rol privilegiado: ver filas allí no prueba
 RLS. Comprueba el aislamiento entre usuarios con sesiones autenticadas diferentes
@@ -119,6 +147,7 @@ Con Python 3 y Playwright en un entorno virtual, desde la raíz del repositorio:
 python3 -m pip install playwright
 python3 -m playwright install chromium
 python3 tests/portal_subjects.py
+python3 tests/portal_grades.py
 ```
 
 Si Chromium ya está instalado, se puede omitir la instalación del navegador.
@@ -126,3 +155,8 @@ Si Chromium ya está instalado, se puede omitir la instalación del navegador.
 verifica su SHA384 contra el SRI de `panel.html`, utiliza un servidor temporal
 y lo detiene al terminar. `PORTAL_TEST_ARTIFACTS` permite conservar capturas.
 Estas herramientas son para desarrollo; el sitio publicado sigue siendo estático.
+
+`tests/portal_grades.py` comparte el servidor y los fixtures del test de materias.
+Comprueba valores publicados, cero y cien, ausencia de publicación, errores,
+reintentos, paginación y respuestas tardías. La API simulada comprueba el frontend;
+las pruebas de PostgreSQL y la integración real se documentan en `supabase/README.md`.

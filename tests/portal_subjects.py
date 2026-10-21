@@ -65,8 +65,8 @@ def subject(i, *, name=None):
     return {'id':f'22222222-2222-4222-8222-{i:012d}', 'subjects':{'code':f'MAT-{i:03d}','name':name or f'Materia de ejemplo {i}'},'academic_periods':{'name':'Periodo de prueba 2026','starts_on':'2026-08-01','ends_on':'2026-12-18'}}
 checks = 0
 
-async def fixture(browser, *, mobile=False, session=True, profile=None, rows=None, enrollment_status=200, enrollment_gate=None, start='panel.html', user_status=200, initial_hidden=False):
-    state={'profile':copy.deepcopy(DEFAULT_PROFILE) if profile is None else profile,'user_status':user_status,'rows':copy.deepcopy(rows) if rows is not None else [subject(1),subject(2)],'enrollment_status':enrollment_status,'enrollment_gate':enrollment_gate,'enrollment_started':asyncio.Event(),'enrollment_requests':[],'requests':[],'errors':[],'route_errors':[]}
+async def fixture(browser, *, mobile=False, session=True, profile=None, rows=None, enrollment_status=200, enrollment_gate=None, start='panel.html', user_status=200, initial_hidden=False, grades=None, grade_status=200, grade_gate=None, grade_unfiltered=False):
+    state={'profile':copy.deepcopy(DEFAULT_PROFILE) if profile is None else profile,'user_status':user_status,'rows':copy.deepcopy(rows) if rows is not None else [subject(1),subject(2)],'enrollment_status':enrollment_status,'enrollment_gate':enrollment_gate,'enrollment_started':asyncio.Event(),'enrollment_requests':[],'requests':[],'errors':[],'route_errors':[], 'grades':copy.deepcopy(grades) if grades is not None else [], 'grade_status':grade_status, 'grade_gate':grade_gate, 'grade_started':asyncio.Event(), 'grade_requests':[], 'grade_unfiltered':grade_unfiltered}
     context=await browser.new_context(viewport={'width':390,'height':844} if mobile else {'width':1440,'height':900})
     if initial_hidden:
         await context.add_init_script('Object.defineProperty(document,"visibilityState",{configurable:true,get:()=>"hidden"})')
@@ -104,6 +104,22 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
                     start,end=request.headers['range'].split('-');offset=int(start);limit=int(end)-offset+1
                 data=rows[offset:offset+limit] if status==200 else {'code':'42501' if status==403 else '42P01','message':'Fixture API error'}
                 headers['Content-Range']=f'{offset}-{max(offset,len(data)+offset-1)}/{len(rows)}' if status==200 else '*/*'
+            elif path=='/rest/v1/enrollment_grades':
+                assert request.method=='GET',request.method
+                assert query.get('select')==['enrollment_id,score'],query
+                filters=query.get('enrollment_id',[])
+                assert len(filters)==1 and filters[0].startswith('in.(') and filters[0].endswith(')'),query
+                ids=filters[0][4:-1].split(',')
+                assert ids and all(ids) and len(ids)==len(set(ids)),ids
+                state['grade_requests'].append({'query':query,'ids':ids})
+                state['grade_started'].set()
+                status=state['grade_status']
+                rows=copy.deepcopy(state['grades'])
+                if not state['grade_unfiltered']:
+                    rows=[row for row in rows if row.get('enrollment_id') in ids]
+                gate=state['grade_gate']
+                if gate: await gate.wait()
+                data=rows if status==200 else {'code':'42501' if status==403 else '42P01','message':'Fixture grades API error'}
             elif path=='/auth/v1/logout':
                 status=204; data=None
             else: raise AssertionError('Unexpected API request '+request.url)
@@ -134,6 +150,7 @@ async def finished(context,state,label):
     checks+=1
     print('PASS '+label,flush=True)
     if state['enrollment_gate']: state['enrollment_gate'].set()
+    if state['grade_gate']: state['grade_gate'].set()
     await context.close()
 
 async def main():

@@ -161,6 +161,19 @@
     font-size: 14px;
 }
 
+.subject-grade {
+    border-top: 1px solid #dce4ee;
+    padding-top: 12px;
+    margin: 16px 0 0;
+    color: var(--blue-dark);
+    font-weight: 700;
+}
+
+.subject-grade.error {
+    color: var(--red-dark);
+    font-weight: 400;
+}
+
 .subjects-actions {
     display: flex;
     flex-wrap: wrap;

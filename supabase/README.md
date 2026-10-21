@@ -129,3 +129,75 @@ smoke detecte fallos introducidos intencionalmente en políticas/permisos.
 PostgreSQL y RLS, no el servidor real de Supabase Auth ni PostgREST. La prueba
 manual del portal con cuentas diferentes sigue siendo necesaria para comprobar
 la integración real. Ninguno de los archivos de prueba es pgTAP.
+
+## Aplicar calificaciones publicadas de 0 a 100
+
+Esta actualización añade `enrollment_grades`: una nota por inscripción, de
+**0 a 100**, con hasta dos decimales. No calcula promedios ni determina si el
+alumno aprobó. `published` vale `false` de forma predeterminada; los alumnos solo
+pueden consultar notas publicadas de sus propias inscripciones mientras su
+perfil siga activo.
+
+En el proyecto actual, perfiles, materias, periodos e inscripciones **ya están
+creados**. No repitas esas migraciones. En **SQL Editor → New query**, como
+administrador:
+
+1. Ejecuta completo `migrations/20261021020000_create_enrollment_grades.sql`
+   **una sola vez**. Ante un error, ejecuta `rollback;` y revisa el mensaje.
+2. Copia `seeds/demo_grades.sql` en otra consulta. Sustituye `PEGA_AQUI_EL_UID`
+   por el UID de tu alumno de prueba activo y ejecuta todo el contenido.
+   Requiere las dos inscripciones DEMO ya cargadas en el paso anterior.
+3. Ejecuta `tests/grades_rls.sql` en otra consulta, con el mismo UID. Debe mostrar
+   **`Calificaciones: RLS y permisos OK`**.
+4. Publica el frontend actualizado. Filosofía debe mostrar **85.50 / 100**;
+   Historia debe mostrar **Sin calificación publicada**. Historia tiene una nota
+   ficticia sin publicar; esa nota y su existencia no se devuelven al alumno.
+
+El seed usa únicamente datos ficticios: Filosofía 85.50 publicada e Historia
+72.00 sin publicar. Se puede repetir sin duplicar filas. Si una nota DEMO o su
+publicación ya fueron modificadas, aborta toda la transacción sin sobrescribir
+los cambios. No crea cuentas, perfiles ni inscripciones. Conserva los marcadores
+genéricos en GitHub e introduce el UID solo en SQL Editor.
+
+### Permisos y conservación de notas
+
+La tabla tiene RLS y SELECT para `authenticated`, sin permisos de escritura del
+navegador para ningún rol de perfil. La política comprueba expresamente que la
+nota esté publicada, la inscripción pertenezca a `auth.uid()` y el perfil sea
+un alumno activo; no depende solo de ocultar botones ni de un filtro del cliente.
+Los borradores y las notas ajenas tampoco se pueden consultar directamente por
+su ID. Profesores y Control Escolar todavía no tienen un flujo de captura: por
+ahora las notas se administran desde SQL Editor.
+
+La clave foránea usa `ON DELETE RESTRICT`. Mientras una inscripción tenga nota,
+PostgreSQL impide eliminarla y también impide borrados en cascada de su perfil o
+cuenta. Es una protección contra eliminación accidental de datos académicos;
+una baja académica no debe resolverse borrando su historial. La estrategia de
+copias de seguridad y conservación oficial se definirá antes de usar notas reales.
+
+La consulta de notas es independiente de la de materias. Si faltara la tabla o
+fallara la consulta, el frontend conserva las materias y muestra un error de
+calificaciones; no presenta un fallo como ausencia de nota. Una nota ausente y
+una nota no publicada muestran el mismo texto genérico al alumno.
+
+### Pruebas locales de calificaciones
+
+Con Docker, Python 3 e imagen `postgres:17-bookworm`, desde la raíz:
+
+```bash
+python3 supabase/tests/run_grades_local.py
+```
+
+El runner crea y elimina su propio contenedor sin red ni puertos publicados,
+aplica las tres migraciones y usa fixtures mínimos de Auth. Comprueba dos alumnos
+con la misma materia y periodo, notas publicadas y borradores, ausencia de nota,
+0 y 100, inactividad y otros roles, consultas directas y filtros, escritura
+denegada, valores inválidos, seed repetible y conflictos, protección frente a
+borrados y detección de permisos/políticas deliberadamente incorrectos. También
+comprueba que ampliar una política de inscripciones o perfiles no amplíe por sí
+solo el acceso a calificaciones. No usa un DSN ni credenciales del proyecto.
+
+`grades_rls.sql` es una comprobación manual de solo lectura que requiere al menos
+una nota publicada; no crea una segunda cuenta real ni sustituye la prueba de
+integración con Supabase Auth y PostgREST. El runner local prueba PostgreSQL/RLS,
+no esos servicios. Los archivos no usan pgTAP ni historial automático de CLI.
