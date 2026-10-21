@@ -1,0 +1,137 @@
+.control-section {
+    grid-column: 1 / -1;
+}
+
+.control-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+    margin-top: 26px;
+}
+
+.control-catalog {
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid #dce4ee;
+    border-radius: 8px;
+}
+
+.control-catalog h3 {
+    margin: 0 0 20px;
+    color: var(--blue-dark);
+    font-size: 22px;
+}
+
+.control-catalog label {
+    display: block;
+    margin: 16px 0 8px;
+    color: var(--blue-dark);
+    font-weight: 700;
+}
+
+.control-catalog input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #8b9eb6;
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--blue-dark);
+    font: inherit;
+}
+
+.control-catalog input:focus {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+}
+
+.control-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.control-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.control-section button {
+    cursor: pointer;
+    background: var(--white);
+}
+
+.control-section .control-create {
+    margin-top: 20px;
+    color: var(--white);
+    background: var(--red-dark);
+    border-color: var(--red-dark);
+}
+
+.control-section button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.control-message,
+.control-list-status {
+    margin: 18px 0;
+    color: var(--text-light);
+}
+
+.control-message.error,
+.control-list-status.error {
+    color: var(--red-dark);
+}
+
+.control-message.success {
+    color: #17633b;
+}
+
+.catalog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.catalog-list li {
+    padding: 16px 0;
+    border-top: 1px solid #dce4ee;
+}
+
+.catalog-list h4 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: var(--blue-dark);
+}
+
+.catalog-list p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.catalog-list .subject-code {
+    display: block;
+    margin-bottom: 6px;
+}
+
+@media (max-width: 1000px) {
+    .control-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .control-catalog {
+        padding: 18px;
+    }
+
+    .control-dates {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}

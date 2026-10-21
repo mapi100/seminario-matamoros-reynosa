@@ -389,3 +389,97 @@ permisos y lectura autorizada; no guarda ni publica notas. Las pruebas locales
 usan fixtures mínimos de Auth y PostgreSQL. La prueba manual con cuentas reales
 es la que comprueba Supabase Auth y PostgREST integrados. Ninguna prueba conecta
 al proyecto real ni requiere credenciales del proyecto.
+
+## Control Escolar: crear periodos y materias
+
+Esta ampliación permite a una cuenta activa con rol `control_escolar` consultar
+todos los periodos y materias y crear registros nuevos desde el portal. No
+añade edición, eliminación, gestión de cuentas, asignaciones ni inscripciones.
+Los accesos de alumno y profesor conservan sus reglas anteriores.
+
+En el proyecto actual las cinco migraciones previas ya están aplicadas.
+Desde **SQL Editor → New query**, como administrador de confianza:
+
+1. Ejecuta completo `migrations/20261021050000_control_catalogs.sql` **una vez**.
+   Si ocurre un error, ejecuta `rollback;` y revisa el mensaje antes de continuar.
+   No repitas las migraciones anteriores.
+2. En **Authentication → Users → Add user**, crea y confirma una cuenta de prueba
+   distinta de alumno y profesor. Mantén la contraseña privada. Copia el UID.
+3. Pega `seeds/demo_control_profile.sql` en otra consulta nueva. Sustituye
+   `CONTROL_UID_AQUI` por ese UID y ejecuta todo el archivo. Crea el perfil
+   **Control Escolar de prueba**; rechaza una cuenta con otro rol o inactiva, sin
+   convertir ni reactivar perfiles existentes.
+4. Pega `tests/control_catalogs_rls.sql` en otra consulta nueva, sustituye el mismo
+   marcador y ejecuta todo. Debe mostrar **`Control Escolar: RLS y permisos OK`**.
+   Es una comprobación de solo lectura: no crea periodos ni materias.
+5. Publica los archivos del portal e inicia sesión con la cuenta nueva. Comprueba
+   las listas y crea un periodo y una materia de prueba desde los formularios.
+
+Conserva los marcadores en GitHub y sustitúyelos solo en SQL Editor. Subir archivos
+a GitHub no ejecuta el SQL ni crea la cuenta de Supabase Auth.
+
+### Funciones de creación y permisos
+
+Los RPC `create_subject(p_code, p_name)` y
+`create_academic_period(p_name, p_starts_on, p_ends_on)` autorizan mediante
+`auth.uid()` y el perfil activo de Control Escolar. Mantienen un bloqueo `FOR
+SHARE` del perfil durante la transacción, para que un cambio de rol o actividad
+no se interponga entre la autorización y el guardado. Son funciones
+`VOLATILE SECURITY DEFINER`, con propietario administrativo confiable,
+`search_path` vacío y objetos nombrados con su esquema. La ejecución predeterminada
+de `PUBLIC` y `anon` está revocada; sus comprobaciones internas deciden qué usuario
+autenticado puede crear. El helper de autorización no es ejecutable desde el
+navegador.
+
+No se conceden permisos directos INSERT, UPDATE o DELETE sobre los catálogos.
+Solo se añade SELECT de catálogos al perfil activo de Control Escolar. No se
+amplía el acceso a perfiles ajenos, notas, inscripciones ni asignaciones docentes.
+
+Los códigos se recortan y convierten a mayúsculas, con longitud de 1 a 40
+caracteres; los nombres de materia aceptan 1 a 160 caracteres y los de periodo
+1 a 120. Se recortan espacios exteriores y se rechazan caracteres de control.
+Las cadenas compuestas únicamente por espacios Unicode, como NBSP o EM SPACE,
+también se rechazan para coincidir con la validación del navegador.
+No se impone un formato institucional de código todavía. Las fechas son
+obligatorias, finitas y de los años 0001 a 9999; la final no puede preceder a la
+inicial. Estos límites mantienen el formato ISO de fecha del portal.
+
+Los índices únicos normalizados rechazan códigos y nombres de periodo repetidos
+por cambios de mayúsculas o espacios exteriores. Un duplicado devuelve un
+conflicto `PT409` sin sobrescribir el registro. La migración no cambia ni borra
+datos existentes; si ya hay duplicados normalizados, falla y revierte por
+completo para revisarlos antes de aplicarla.
+
+Cada creación mediante estos RPC registra actor, acción, ID y datos creados en
+`catalog_events`, dentro de la misma transacción. La auditoría tiene RLS y no
+permite lectura o escritura directa desde el navegador. Un fallo de auditoría
+revierte también la creación. Los cambios manuales de un administrador SQL no
+pasan automáticamente por este registro.
+
+Ante un fallo de conexión después de crear, el cliente no debe reenviar la
+operación automáticamente: puede haberse completado. Debe actualizar la lista y
+revisarla antes de intentar otra creación. La unicidad normalizada impide
+duplicar el mismo código o nombre incluso con solicitudes concurrentes.
+
+### Pruebas locales de Control Escolar
+
+Con Docker, Python 3 e imagen `postgres:17-bookworm`, desde la raíz:
+
+```bash
+python3 supabase/tests/run_control_catalogs_local.py
+```
+
+El runner aplica las seis migraciones en su propio contenedor temporal sin red
+ni puertos publicados, y lo elimina al terminar. Incluye dos cuentas de Control
+Escolar, alumnos, profesor, inactivos y cuenta sin perfil. Comprueba permisos,
+normalización, validaciones, duplicados concurrentes, auditoría atómica,
+bloqueo de cambios de rol, creación segura del perfil y regresiones de las pruebas
+anteriores de alumno y profesor. También comprueba que duplicados históricos
+aborten la migración sin eliminar datos ni dejar objetos parciales.
+
+El smoke manual comprueba configuración, permisos y aislamiento de lectura;
+no ejecuta los RPC de creación porque la transacción es de solo lectura. Las
+escrituras y concurrencia se prueban en el contenedor local. Auth es un fixture
+mínimo: la prueba con la cuenta real en el portal comprueba Supabase Auth y
+PostgREST integrados. Ninguna de estas pruebas requiere credenciales del
+proyecto ni escribe en Supabase real.

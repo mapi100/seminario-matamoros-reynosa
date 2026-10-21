@@ -65,7 +65,7 @@ def subject(i, *, name=None):
     return {'id':f'22222222-2222-4222-8222-{i:012d}', 'subjects':{'code':f'MAT-{i:03d}','name':name or f'Materia de ejemplo {i}'},'academic_periods':{'name':'Periodo de prueba 2026','starts_on':'2026-08-01','ends_on':'2026-12-18'}}
 checks = 0
 
-async def fixture(browser, *, mobile=False, session=True, profile=None, rows=None, enrollment_status=200, enrollment_gate=None, start='panel.html', user_status=200, initial_hidden=False, grades=None, grade_status=200, grade_gate=None, grade_unfiltered=False, teaching=None, teaching_status=200, teaching_gate=None, rosters=None, roster_status=200, roster_gate=None, capture=None):
+async def fixture(browser, *, mobile=False, session=True, profile=None, rows=None, enrollment_status=200, enrollment_gate=None, start='panel.html', user_status=200, initial_hidden=False, grades=None, grade_status=200, grade_gate=None, grade_unfiltered=False, teaching=None, teaching_status=200, teaching_gate=None, rosters=None, roster_status=200, roster_gate=None, capture=None, catalog=None):
     state={'profile':copy.deepcopy(DEFAULT_PROFILE) if profile is None else profile,'user_status':user_status,'rows':copy.deepcopy(rows) if rows is not None else [subject(1),subject(2)],'enrollment_status':enrollment_status,'enrollment_gate':enrollment_gate,'enrollment_started':asyncio.Event(),'enrollment_requests':[],'requests':[],'errors':[],'route_errors':[], 'grades':copy.deepcopy(grades) if grades is not None else [], 'grade_status':grade_status, 'grade_gate':grade_gate, 'grade_started':asyncio.Event(), 'grade_requests':[], 'grade_unfiltered':grade_unfiltered}
     state.update({'teaching':copy.deepcopy(teaching) if teaching is not None else [], 'teaching_status':teaching_status, 'teaching_gate':teaching_gate, 'teaching_started':asyncio.Event(), 'teaching_requests':[], 'rosters':copy.deepcopy(rosters) if rosters is not None else {}, 'roster_status':roster_status, 'roster_gate':roster_gate, 'roster_started':asyncio.Event(), 'roster_requests':[]})
     capture = capture or {}
@@ -81,6 +81,21 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
     state['capture_save_override'] = capture.get('save_override')
     state['capture_publish_override'] = capture.get('publish_override')
     state['capture_commit_then_abort'] = capture.get('commit_then_abort', False)
+    catalog = catalog or {}
+    state['catalog_calls'] = []
+    state['catalog_audit'] = []
+    for kind in ['subjects', 'periods']:
+        state['catalog_' + kind] = copy.deepcopy(catalog.get(kind, []))
+        state['catalog_' + kind + '_status'] = catalog.get(kind + '_status', 200)
+        state['catalog_' + kind + '_gate'] = catalog.get(kind + '_gate')
+        state['catalog_' + kind + '_started'] = asyncio.Event()
+        state['catalog_' + kind + '_requests'] = []
+        state['catalog_' + kind + '_create_status'] = catalog.get(kind + '_create_status', 200)
+        state['catalog_' + kind + '_create_gate'] = catalog.get(kind + '_create_gate')
+        state['catalog_' + kind + '_create_started'] = asyncio.Event()
+        state['catalog_' + kind + '_create_requests'] = []
+        state['catalog_' + kind + '_create_override'] = catalog.get(kind + '_create_override')
+        state['catalog_' + kind + '_commit_then_abort'] = catalog.get(kind + '_commit_then_abort', False)
     context=await browser.new_context(viewport={'width':390,'height':844} if mobile else {'width':1440,'height':900})
     if initial_hidden:
         await context.add_init_script('Object.defineProperty(document,"visibilityState",{configurable:true,get:()=>"hidden"})')
@@ -104,6 +119,71 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
             elif path=='/rest/v1/profiles':
                 assert query=={'select':['full_name,role,active'],'id':['eq.'+UID]},query
                 status=200; data=[state['profile']] if state['profile'] else []
+            elif path in ['/rest/v1/subjects', '/rest/v1/academic_periods']:
+                assert request.method == 'GET', request.method
+                kind = 'subjects' if path.endswith('/subjects') else 'periods'
+                expected_select = 'id,code,name,created_at' if kind == 'subjects' else 'id,name,starts_on,ends_on,created_at'
+                expected_order = 'code.asc,id.asc' if kind == 'subjects' else 'starts_on.desc,id.asc'
+                assert query.get('select') == [expected_select], query
+                assert query.get('order') == [expected_order], query
+                assert query.get('limit') == ['21'], query
+                state['catalog_' + kind + '_requests'].append(copy.deepcopy(query))
+                state['catalog_calls'].append(('read_' + kind, copy.deepcopy(query)))
+                state['catalog_' + kind + '_started'].set()
+                status = state['catalog_' + kind + '_status']
+                rows = copy.deepcopy(state['catalog_' + kind])
+                if isinstance(rows, list):
+                    rows.sort(key=lambda row: row.get('id', ''))
+                    rows.sort(key=lambda row: row.get('code', '') if kind == 'subjects' else row.get('starts_on', ''), reverse=kind == 'periods')
+                gate = state['catalog_' + kind + '_gate']
+                if gate:
+                    await gate.wait()
+                offset = int(query.get('offset', ['0'])[0])
+                data = rows[offset:offset + 21] if isinstance(rows, list) else rows
+                if status != 200:
+                    data = {'code': '42501' if status == 403 else '42P01', 'message': 'Fixture catalog list error'}
+            elif path in ['/rest/v1/rpc/create_subject', '/rest/v1/rpc/create_academic_period']:
+                assert request.method == 'POST', request.method
+                kind = 'subjects' if path.endswith('/create_subject') else 'periods'
+                args = request.post_data_json
+                expected = {'p_code', 'p_name'} if kind == 'subjects' else {'p_name', 'p_starts_on', 'p_ends_on'}
+                assert set(args) == expected, args
+                assert all(isinstance(value, str) for value in args.values()), args
+                state['catalog_' + kind + '_create_requests'].append(copy.deepcopy(args))
+                state['catalog_calls'].append(('create_' + kind, copy.deepcopy(args)))
+                state['catalog_' + kind + '_create_started'].set()
+                status = state['catalog_' + kind + '_create_status']
+                profile = state['profile']
+                if not profile or profile.get('role') != 'control_escolar' or profile.get('active') is not True:
+                    status = 403
+                rows = state['catalog_' + kind]
+                canonical = args.get('p_code', '').strip().upper() if kind == 'subjects' else args['p_name'].strip()
+                if status == 200:
+                    duplicate = any((row.get('code', '').strip().casefold() if kind == 'subjects' else row.get('name', '').strip().casefold()) == canonical.casefold() for row in rows)
+                    if duplicate:
+                        status = 409
+                if status == 200:
+                    number = len(rows) + 100
+                    record = {'id': f'55555555-5555-4555-8555-{number:012d}',
+                              'name': args['p_name'].strip(), 'created_at': '2026-10-21T12:00:00+00:00'}
+                    if kind == 'subjects':
+                        record['code'] = canonical
+                    else:
+                        record['starts_on'] = args['p_starts_on']
+                        record['ends_on'] = args['p_ends_on']
+                    rows.append(copy.deepcopy(record))
+                    state['catalog_audit'].append((kind, copy.deepcopy(record)))
+                    data = [record]
+                    override = state['catalog_' + kind + '_create_override']
+                    if override is not None:
+                        data = copy.deepcopy(override)
+                else:
+                    data = {'code': 'PT409' if status == 409 else '42501' if status == 403 else 'XX000', 'message': 'Ya existe un registro con ese código o nombre' if status == 409 else 'Fixture catalog create error'}
+                gate = state['catalog_' + kind + '_create_gate']
+                if gate:
+                    await gate.wait()
+                if state['catalog_' + kind + '_commit_then_abort'] and status == 200:
+                    return await route.abort()
             elif path=='/rest/v1/enrollments':
                 assert request.method=='GET',request.method
                 assert query.get('select')==['id,subjects(code,name),academic_periods(name,starts_on,ends_on)'],query

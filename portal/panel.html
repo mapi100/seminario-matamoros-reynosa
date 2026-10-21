@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="panel.css">
     <link rel="stylesheet" href="teaching.css">
     <link rel="stylesheet" href="grade-editor.css">
+    <link rel="stylesheet" href="control.css?v=20261021-control-1">
 </head>
 <body class="dashboard-page">
     <header class="portal-header">
@@ -46,6 +47,7 @@
                 <a class="profile-link" href="#mi-perfil">Ver mi perfil</a>
                 <a id="subjectsLink" class="profile-link" href="#mis-materias" hidden>Ver mis materias</a>
                 <a id="teachingLink" class="profile-link" href="#materias-asignadas" hidden>Ver materias asignadas</a>
+                <a id="controlLink" class="profile-link" href="#catalogos-academicos" hidden>Administrar catálogos</a>
             </section>
 
             <section id="mi-perfil" class="dashboard-card" aria-labelledby="profileTitle">
@@ -123,6 +125,64 @@
                     </section>
                 </section>
             </section>
+            <section id="controlSection" class="dashboard-card control-section"
+                     aria-labelledby="controlTitle" hidden>
+                <div id="catalogos-academicos">
+                    <h2 id="controlTitle">Catálogos académicos</h2>
+                    <p>Crea periodos y materias para organizar la información escolar.</p>
+                </div>
+
+                <div class="control-grid">
+                    <section class="control-catalog" aria-labelledby="periodTitle">
+                        <h3 id="periodTitle">Periodos académicos</h3>
+                        <form id="periodForm" method="post" aria-busy="false">
+                            <label for="periodName">Nombre del periodo</label>
+                            <input id="periodName" name="name" maxlength="120" required disabled
+                                   placeholder="Ejemplo: Enero–Junio 2027" autocomplete="off">
+                            <div class="control-dates">
+                                <div>
+                                    <label for="periodStart">Fecha de inicio</label>
+                                    <input id="periodStart" name="starts_on" type="date" required disabled
+                                           min="0001-01-01" max="9999-12-31">
+                                </div>
+                                <div>
+                                    <label for="periodEnd">Fecha de fin</label>
+                                    <input id="periodEnd" name="ends_on" type="date" required disabled
+                                           min="0001-01-01" max="9999-12-31">
+                                </div>
+                            </div>
+                            <button id="periodCreate" class="back-link control-create" type="submit" disabled>Crear periodo</button>
+                        </form>
+                        <p id="periodMessage" class="control-message" role="status" aria-live="polite"></p>
+                        <p id="periodListStatus" class="control-list-status" role="status" aria-live="polite"></p>
+                        <ul id="periodList" class="catalog-list"></ul>
+                        <div class="control-actions">
+                            <button id="periodRefresh" class="back-link" type="button" disabled>Actualizar lista</button>
+                            <button id="periodMore" class="back-link" type="button" hidden>Ver más periodos</button>
+                        </div>
+                    </section>
+
+                    <section class="control-catalog" aria-labelledby="subjectTitle">
+                        <h3 id="subjectTitle">Materias</h3>
+                        <form id="subjectForm" method="post" aria-busy="false">
+                            <label for="subjectCode">Código de la materia</label>
+                            <input id="subjectCode" name="code" maxlength="40" required disabled
+                                   placeholder="Ejemplo: FIL-101" autocomplete="off">
+                            <label for="subjectName">Nombre de la materia</label>
+                            <input id="subjectName" name="name" maxlength="160" required disabled
+                                   placeholder="Ejemplo: Introducción a la Filosofía" autocomplete="off">
+                            <button id="subjectCreate" class="back-link control-create" type="submit" disabled>Crear materia</button>
+                        </form>
+                        <p id="subjectMessage" class="control-message" role="status" aria-live="polite"></p>
+                        <p id="subjectListStatus" class="control-list-status" role="status" aria-live="polite"></p>
+                        <ul id="subjectList" class="catalog-list"></ul>
+                        <div class="control-actions">
+                            <button id="subjectRefresh" class="back-link" type="button" disabled>Actualizar lista</button>
+                            <button id="subjectMore" class="back-link" type="button" hidden>Ver más materias</button>
+                        </div>
+                    </section>
+                </div>
+            </section>
         </div>
 
         <div id="panelRecovery" class="dashboard-recovery" hidden>
@@ -154,6 +214,7 @@
     <script src="subjects.js" defer></script>
     <script src="grade-editor.js" defer></script>
     <script src="teaching.js" defer></script>
-    <script src="panel.js" defer></script>
+    <script src="control.js?v=20261021-control-1" defer></script>
+    <script src="panel.js?v=20261021-control-1" defer></script>
 </body>
 </html>

@@ -7,8 +7,9 @@ secretas, `service_role` y las contraseñas nunca pertenecen a estos archivos.
 
 El SDK de Supabase se carga desde jsDelivr con versión fija y verificación SRI.
 Después se cargan `supabase-config.js`, `auth.js` y el controlador de la página.
-El panel carga también `subjects.js`, `grade-editor.js` y `teaching.js` antes de
-su controlador.
+El panel carga también `subjects.js`, `grade-editor.js`, `teaching.js` y
+`control.js` antes de su controlador. Los archivos de Control Escolar y el
+controlador del panel incluyen una versión en la URL para actualizar la caché.
 Si faltan la configuración o el SDK, el formulario permanece deshabilitado.
 
 ## Acceso y panel inicial
@@ -28,6 +29,7 @@ Una sola página presenta el inicio correspondiente a `student`, `professor` o
 editables del usuario. Los alumnos pueden consultar sus materias y notas
 publicadas; los profesores, sus materias asignadas y sus listas de alumnos, con
 captura y publicación de notas.
+Control Escolar puede consultar y crear periodos y materias.
 Todos los roles pueden consultar el perfil y cerrar sesión. El título del panel
 no otorga permisos administrativos.
 
@@ -41,8 +43,8 @@ autorización en sus propias tablas y operaciones.
 `subjects.js` consulta `enrollments` con las relaciones `subjects` y
 `academic_periods`. Las tres tablas aplican RLS: solo un alumno activo puede leer
 sus propias inscripciones y los catálogos relacionados. Los profesores utilizan
-la sección de materias asignadas descrita más abajo; Control Escolar todavía
-no tiene una vista académica.
+la sección de materias asignadas descrita más abajo. Control Escolar utiliza
+sus catálogos, sin acceso a inscripciones o notas desde este módulo.
 
 Cada tarjeta muestra código, nombre de la materia, periodo y fechas. Se consultan
 20 inscripciones por página y una fila adicional para decidir si aparece **Ver
@@ -148,6 +150,38 @@ Esta etapa no calcula promedios ni permite retirar una publicación.
 Sigue [Instalar y usar la captura](../docs/capturar-calificaciones.md). La cuenta
 de profesor y sus asignaciones actuales se reutilizan; no se necesitan seeds.
 
+## Control Escolar: periodos y materias
+
+`control.js` muestra dos formularios y listas independientes. Un perfil activo
+con rol `control_escolar` puede consultar todos los periodos y materias y crear
+registros mediante `create_academic_period` y `create_subject`. PostgreSQL
+comprueba el rol, bloquea el perfil durante la operación y registra la creación
+en auditoría privada. Las tablas no reciben permisos directos de escritura.
+
+El código se guarda en mayúsculas y se recortan espacios de los extremos. El
+código de materia admite hasta 40 caracteres; el nombre de materia, 160; el
+nombre de periodo, 120. Las fechas deben ser válidas y el fin igual o posterior
+al inicio. Los índices únicos impiden duplicar códigos o nombres de periodos
+por diferencias de mayúsculas y espacios de los extremos.
+
+La carga inicial debe terminar correctamente antes de habilitar cada formulario.
+Las listas se paginan de 20 en 20. Una creación confirmada limpia solo su
+formulario y actualiza su lista; conserva la confirmación incluso si falla esa
+lectura posterior. Un duplicado deja el formulario disponible para corregirlo.
+Tras un error de escritura incierto, se exige **Actualizar lista** y revisar
+el resultado antes de volver a crear; no hay reintentos automáticos.
+
+Al salir, ocultar la pestaña o cambiar el rol, se limpian formularios y listas y
+se descartan respuestas pendientes. Una escritura ya enviada puede completarse;
+al regresar se consultan otra vez los catálogos. Los errores de permiso fuerzan
+una nueva verificación de acceso. Los otros roles conservan su acceso anterior.
+
+Crear una materia la incorpora al catálogo; asignarle profesores e inscribir
+alumnos se realizará en una etapa posterior. Este módulo no edita ni elimina
+registros ni administra cuentas. Sigue
+[Instalar Control Escolar](../docs/control-escolar.md) con una cuenta de prueba
+nueva, distinta del alumno y del profesor.
+
 ## Requisitos del proyecto Supabase
 
 - Registro público y acceso anónimo desactivados; acceso por email habilitado.
@@ -216,6 +250,7 @@ python3 tests/portal_subjects.py
 python3 tests/portal_grades.py
 python3 tests/portal_professor.py
 python3 tests/portal_grade_capture.py
+python3 tests/portal_control_catalogs.py
 ```
 
 Si Chromium ya está instalado, se puede omitir la instalación del navegador.
@@ -237,3 +272,7 @@ de materia o salir. Comparte el servidor y la API simulada con las otras pruebas
 publicar, conflicto, red incierta sin reintento automático, validaciones y
 cancelación de respuestas. La API sigue siendo simulada; el runner de PostgreSQL
 comprueba la autorización y la atomicidad de la captura por separado.
+
+`tests/portal_control_catalogs.py` comprueba altas de ambos catálogos, validación,
+duplicados, confirmaciones, errores inciertos, paginación, roles y limpieza de
+respuestas tardías. Comparte los fixtures de API simulada con las otras pruebas.

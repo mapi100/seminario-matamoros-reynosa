@@ -40,6 +40,7 @@
         content.hidden = true;
         window.PortalSubjects?.clear();
         window.PortalTeaching?.clear();
+        window.PortalControl?.clear();
         name.textContent = "";
         role.textContent = "";
         state.textContent = "";
@@ -129,6 +130,15 @@
                         document.getElementById("teachingSection").hidden = false;
                         document.getElementById("teachingStatus").textContent =
                             "No fue posible cargar tus materias asignadas. Recarga la página para reintentar.";
+                    }
+                } else if (result.profile.role === "control_escolar") {
+                    subtitle.textContent = "Administra los periodos y las materias del Seminario.";
+                    if (window.PortalControl) {
+                        window.PortalControl.show(verifyAccess);
+                    } else {
+                        document.getElementById("controlSection").hidden = false;
+                        document.getElementById("periodListStatus").textContent =
+                            "No fue posible cargar los catálogos. Recarga la página para reintentar.";
                     }
                 }
             } else {
