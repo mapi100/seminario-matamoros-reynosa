@@ -113,6 +113,16 @@
             dates.textContent = dateFormat.format(new Date(record.starts_on)) + " – " + dateFormat.format(new Date(record.ends_on));
             item.append(dates);
         }
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "back-link catalog-edit";
+        edit.textContent = kind === "subject" ? "Editar materia" : "Editar periodo";
+        edit.addEventListener("click", function () {
+            if (!active) return;
+            const state = catalogs.find(catalog => catalog.kind === kind);
+            window.PortalManagement?.editCatalog(kind, record, function () { if (active) void load(state); });
+        });
+        item.append(edit);
         return item;
     }
 

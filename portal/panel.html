@@ -10,10 +10,13 @@
     <link rel="stylesheet" href="teaching.css">
     <link rel="stylesheet" href="grade-editor.css">
     <link rel="stylesheet" href="control.css?v=20261021-control-1">
+    <link rel="stylesheet" href="workspace.css?v=20261021-campus-1">
 </head>
-<body class="dashboard-page">
+<body class="dashboard-page" data-view="inicio">
+    <a class="skip-link" href="#panelMain">Saltar al contenido</a>
     <header class="portal-header">
         <div class="header-container">
+            <button id="menuToggle" class="menu-toggle" type="button" aria-controls="workspaceNav" aria-expanded="false" aria-label="Abrir menú">☰</button>
             <a href="../index.html" class="brand" aria-label="Volver al sitio principal">
                 <img src="../images/escudo-seminario-matamoros.png"
                      alt="Escudo del Seminario Diocesano San José" class="brand-logo">
@@ -30,8 +33,27 @@
         </div>
     </header>
 
-    <main id="panelMain" class="dashboard-main" aria-busy="true">
+
+    <aside id="workspaceNav" class="workspace-nav" aria-label="Menú del portal" hidden>
+        <p class="nav-label">MI CAMPUS</p>
+        <nav aria-label="Secciones del portal">
+            <a href="#inicio" data-route="inicio"><span aria-hidden="true">⌂</span>Inicio</a>
+            <a href="#mis-materias" data-route="mis-materias" data-roles="student"><span aria-hidden="true">▤</span>Mis materias</a>
+            <a href="#materias-asignadas" data-route="materias-asignadas" data-roles="professor"><span aria-hidden="true">▤</span>Mis clases</a>
+            <a href="#personas" data-route="personas" data-roles="control_escolar"><span aria-hidden="true">♙</span>Personas</a>
+            <a href="#clases" data-route="clases" data-roles="control_escolar"><span aria-hidden="true">▤</span>Clases</a>
+            <a href="#inscripciones" data-route="inscripciones" data-roles="control_escolar"><span aria-hidden="true">✓</span>Inscripciones</a>
+            <a href="#profesores" data-route="profesores" data-roles="control_escolar"><span aria-hidden="true">♙</span>Asignar profesores</a>
+            <a href="#catalogos-academicos" data-route="catalogos-academicos" data-roles="control_escolar"><span aria-hidden="true">▦</span>Materias y periodos</a>
+            <a href="#actividad" data-route="actividad" data-roles="control_escolar"><span aria-hidden="true">◷</span>Actividad</a>
+            <a href="#mi-perfil" data-route="mi-perfil"><span aria-hidden="true">○</span>Mi perfil</a>
+        </nav>
+        <div class="nav-note"><strong>Seminario Diocesano San José</strong><p>Formación y comunidad</p></div>
+    </aside>
+
+    <main tabindex="-1" id="panelMain" class="dashboard-main" aria-busy="true">
         <div class="dashboard-heading">
+            <p id="workspaceBreadcrumb" class="workspace-breadcrumb">Mi campus / Inicio</p>
             <p class="login-label">Portal Escolar</p>
             <h1 id="panelTitle">Mi portal</h1>
             <p id="panelSubtitle">Verificando tu acceso…</p>
@@ -41,16 +63,17 @@
              role="status" aria-live="polite">Verificando tu acceso…</div>
 
         <div id="panelContent" class="dashboard-grid" hidden>
-            <section class="dashboard-card dashboard-welcome" aria-labelledby="welcomeTitle">
+            <section data-screen="inicio" class="dashboard-card dashboard-welcome" aria-labelledby="welcomeTitle">
+                <p class="welcome-eyebrow">TU ESPACIO DE FORMACIÓN</p>
                 <h2 id="welcomeTitle">Bienvenido al Portal Escolar</h2>
-                <p>Aquí puedes consultar tu perfil y administrar tu sesión.</p>
+                <p id="workspaceWelcome">Todo lo que necesitas para tu vida académica, en un mismo lugar.</p>
                 <a class="profile-link" href="#mi-perfil">Ver mi perfil</a>
                 <a id="subjectsLink" class="profile-link" href="#mis-materias" hidden>Ver mis materias</a>
                 <a id="teachingLink" class="profile-link" href="#materias-asignadas" hidden>Ver materias asignadas</a>
                 <a id="controlLink" class="profile-link" href="#catalogos-academicos" hidden>Administrar catálogos</a>
             </section>
 
-            <section id="mi-perfil" class="dashboard-card" aria-labelledby="profileTitle">
+            <section data-screen="mi-perfil" id="mi-perfil" class="dashboard-card" aria-labelledby="profileTitle">
                 <h2 id="profileTitle">Mi perfil</h2>
                 <dl class="profile-details">
                     <dt>Nombre</dt>
@@ -62,13 +85,19 @@
                 </dl>
             </section>
 
-            <section id="subjectsSection" class="dashboard-card subjects-section"
+            <section data-screen="inicio mis-materias" id="subjectsSection" class="dashboard-card subjects-section"
                      aria-labelledby="subjectsTitle" hidden>
                 <div id="mis-materias">
                     <h2 id="subjectsTitle">Mis materias</h2>
                     <p>Consulta tus materias, periodos y calificaciones publicadas en escala de 0 a 100.</p>
                 </div>
                 <p id="subjectsStatus" class="subjects-status" role="status" aria-live="polite"></p>
+
+                <div class="course-tools" id="studentTools">
+                    <label>Buscar materia<input id="studentSearch" type="search" placeholder="Escribe el nombre o código" autocomplete="off"></label>
+                    <label>Periodo<select id="studentPeriod"><option value="">Todos los periodos</option></select></label>
+                    <p id="studentFilterStatus" role="status" aria-live="polite"></p>
+                </div>
                 <ul id="subjectsList" class="subject-list"></ul>
                 <div class="subjects-actions">
                     <button id="subjectsRetry" class="back-link" type="button" hidden>Reintentar</button>
@@ -76,13 +105,19 @@
                 </div>
             </section>
 
-            <section id="teachingSection" class="dashboard-card teaching-section"
+            <section data-screen="inicio materias-asignadas" id="teachingSection" class="dashboard-card teaching-section"
                      aria-labelledby="teachingTitle" hidden>
                 <div id="materias-asignadas">
                     <h2 id="teachingTitle">Mis materias asignadas</h2>
                     <p>Consulta tus materias por periodo y abre la lista de alumnos inscritos.</p>
                 </div>
                 <p id="teachingStatus" class="teaching-status" role="status" aria-live="polite"></p>
+
+                <div class="course-tools" id="teacherTools">
+                    <label>Buscar materia<input id="teacherSearch" type="search" placeholder="Escribe el nombre o código" autocomplete="off"></label>
+                    <label>Periodo<select id="teacherPeriod"><option value="">Todos los periodos</option></select></label>
+                    <p id="teacherFilterStatus" role="status" aria-live="polite"></p>
+                </div>
                 <ul id="teachingList" class="teaching-list"></ul>
                 <div class="teaching-actions">
                     <button id="teachingRetry" class="back-link" type="button" hidden>Reintentar</button>
@@ -125,7 +160,7 @@
                     </section>
                 </section>
             </section>
-            <section id="controlSection" class="dashboard-card control-section"
+            <section data-screen="catalogos-academicos" id="controlSection" class="dashboard-card control-section"
                      aria-labelledby="controlTitle" hidden>
                 <div id="catalogos-academicos">
                     <h2 id="controlTitle">Catálogos académicos</h2>
@@ -183,6 +218,20 @@
                     </section>
                 </div>
             </section>
+
+            <section id="controlHome" class="control-home" data-screen="inicio" aria-label="Acciones de Control Escolar" hidden>
+                <a href="#personas" class="task-card"><span class="task-mark">01</span><h2>Personas</h2><p>Alumnos, sacerdotes y personal. Invita o administra su acceso.</p><span class="task-link">Administrar personas →</span></a>
+                <a href="#catalogos-academicos" class="task-card"><span class="task-mark">02</span><h2>Materias y periodos</h2><p>Organiza el catálogo y las fechas del ciclo académico.</p><span class="task-link">Organizar catálogo →</span></a>
+                <a href="#clases" class="task-card"><span class="task-mark">03</span><h2>Clases</h2><p>Abre una materia para un periodo y asigna sus profesores.</p><span class="task-link">Administrar clases →</span></a>
+                <a href="#inscripciones" class="task-card"><span class="task-mark">04</span><h2>Inscripciones</h2><p>Inscribe alumnos y consulta las altas y bajas de cada clase.</p><span class="task-link">Administrar inscripciones →</span></a>
+            </section>
+            <section id="managementSection" class="dashboard-card management-section" data-screen="personas clases inscripciones profesores actividad" hidden>
+                <div class="management-heading"><div><h2 id="managementTitle"></h2><p id="managementDescription"></p></div><button id="managementCreate" type="button" class="back-link control-create">Nuevo</button></div>
+                <form id="managementSearchForm" class="management-search" role="search"><label for="managementSearch">Buscar en esta sección</label><input id="managementSearch" type="search" maxlength="160" placeholder="Nombre, materia o periodo" autocomplete="off"><button type="submit" class="back-link">Buscar</button><button id="managementRefresh" type="button" class="back-link">Actualizar</button></form>
+                <p id="managementMessage" class="control-message" role="status" aria-live="polite"></p>
+                <ul id="managementList" class="management-list"></ul>
+                <button id="managementMore" class="back-link" type="button" hidden>Mostrar más</button>
+            </section>
         </div>
 
         <div id="panelRecovery" class="dashboard-recovery" hidden>
@@ -192,6 +241,10 @@
         <noscript><p>Habilita JavaScript para verificar tu sesión y utilizar el portal.</p></noscript>
     </main>
 
+    <dialog id="managementDialog" class="management-dialog" aria-labelledby="managementDialogTitle">
+        <div class="dialog-heading"><h2 id="managementDialogTitle"></h2><button id="managementCancel" class="dialog-close" type="button" aria-label="Cerrar formulario">×</button></div>
+        <form id="managementForm" method="post"><div id="managementFields"></div><p id="managementFormMessage" class="control-message" role="status" aria-live="polite"></p><div class="dialog-actions"><button id="managementSave" class="back-link control-create" type="submit">Guardar</button><button id="managementCancelBottom" class="back-link" type="button">Cancelar</button></div></form>
+    </dialog>
     <footer class="portal-footer">
         <div class="footer-container">
             <div>
@@ -209,12 +262,14 @@
         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"
         integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK"
         crossorigin="anonymous" defer></script>
-    <script src="supabase-config.js" defer></script>
+    <script src="supabase-config.js?v=20261021-campus-1" defer></script>
     <script src="auth.js" defer></script>
     <script src="subjects.js" defer></script>
     <script src="grade-editor.js" defer></script>
     <script src="teaching.js" defer></script>
-    <script src="control.js?v=20261021-control-1" defer></script>
-    <script src="panel.js?v=20261021-control-1" defer></script>
+    <script src="management.js?v=20261021-campus-1" defer></script>
+    <script src="control.js?v=20261021-campus-1" defer></script>
+    <script src="workspace.js?v=20261021-campus-1" defer></script>
+    <script src="panel.js?v=20261021-campus-1" defer></script>
 </body>
 </html>

@@ -107,8 +107,23 @@
         }
     });
 
-    document.getElementById("forgotPassword").addEventListener("click", function () {
-        showMessage("Para recuperar tu acceso, contacta a Control Escolar.");
+    document.getElementById("forgotPassword").addEventListener("click", async function () {
+        if (busy || !client) return;
+        if (!emailInput.value.trim() || !emailInput.reportValidity()) {
+            showMessage("Escribe primero el correo de tu cuenta para recuperar el acceso.");
+            emailInput.focus();
+            return;
+        }
+        setBusy(true);
+        try {
+            const { error } = await client.auth.resetPasswordForEmail(emailInput.value.trim(), {
+                redirectTo: new URL("activar.html", window.location.href).href
+            });
+            if (error) throw error;
+            showMessage("Si tu cuenta está registrada, recibirás un enlace para crear una contraseña nueva. Revisa también el correo no deseado.");
+        } catch {
+            showMessage("No fue posible solicitar el enlace. Inténtalo más tarde o contacta a Control Escolar.", "error");
+        } finally { setBusy(false); }
     });
 
     loginForm.addEventListener("submit", async function (event) {

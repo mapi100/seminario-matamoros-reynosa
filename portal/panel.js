@@ -41,6 +41,8 @@
         window.PortalSubjects?.clear();
         window.PortalTeaching?.clear();
         window.PortalControl?.clear();
+        window.PortalManagement?.clear();
+        window.PortalWorkspace?.clear();
         name.textContent = "";
         role.textContent = "";
         state.textContent = "";
@@ -132,15 +134,17 @@
                             "No fue posible cargar tus materias asignadas. Recarga la página para reintentar.";
                     }
                 } else if (result.profile.role === "control_escolar") {
-                    subtitle.textContent = "Administra los periodos y las materias del Seminario.";
+                    subtitle.textContent = "Organiza las personas, clases e inscripciones del Seminario.";
                     if (window.PortalControl) {
                         window.PortalControl.show(verifyAccess);
+                        window.PortalManagement?.show(verifyAccess);
                     } else {
                         document.getElementById("controlSection").hidden = false;
                         document.getElementById("periodListStatus").textContent =
                             "No fue posible cargar los catálogos. Recarga la página para reintentar.";
                     }
                 }
+                window.PortalWorkspace?.show(result.profile);
             } else {
                 showUnavailable("No fue posible verificar tu acceso. Comprueba tu conexión e inténtalo nuevamente.");
             }

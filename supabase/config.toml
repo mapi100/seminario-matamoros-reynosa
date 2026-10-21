@@ -1,0 +1,6 @@
+project_id = "seminario-matamoros-reynosa"
+
+[functions.invite-person]
+# The function validates the access token with Auth.getUser's REST endpoint and
+# checks the current database role. Publishable keys are not JWT verification keys.
+verify_jwt = false

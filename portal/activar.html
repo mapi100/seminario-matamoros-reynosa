@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <title>Crear contraseña | Portal del Seminario</title>
+    <link rel="stylesheet" href="portal.css">
+    <link rel="stylesheet" href="access.css?v=20261021-campus-1">
+</head>
+<body class="access-page activation-page">
+    <header class="portal-header"><div class="header-container"><a href="../index.html" class="brand"><img class="brand-logo" src="../images/escudo-seminario-matamoros.png" alt="Escudo del Seminario"><span class="brand-name">Seminario Diocesano San José</span></a><a href="index.html" class="back-link">Volver al acceso</a></div></header>
+    <main class="login-main"><section class="login-card" aria-labelledby="activationTitle">
+        <p class="login-label">PORTAL ESCOLAR</p><h1 id="activationTitle">Crea tu contraseña</h1>
+        <p>Elige una contraseña personal para acceder a tus materias y servicios escolares.</p>
+        <p id="activationMessage" class="login-message visible info" role="status" aria-live="polite">Comprobando tu enlace…</p>
+        <form id="activationForm" method="post" hidden>
+            <label for="newPassword">Contraseña nueva</label><input id="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required aria-describedby="passwordAdvice">
+            <p id="passwordAdvice">Usa al menos 12 caracteres. Puedes combinar varias palabras que recuerdes.</p>
+            <label for="confirmPassword">Repite la contraseña</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+            <button id="activationSave" class="login-button" type="submit">Guardar contraseña</button>
+        </form>
+        <a id="activationContinue" class="back-link" href="panel.html" hidden>Entrar a mi portal</a>
+        <noscript>Habilita JavaScript para completar tu acceso.</noscript>
+    </section></main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous" defer></script>
+    <script src="supabase-config.js?v=20261021-campus-1" defer></script><script src="auth.js" defer></script><script src="activar.js?v=20261021-campus-1" defer></script>
+</body></html>

@@ -103,7 +103,7 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
     page.on('pageerror',lambda err:state['errors'].append(str(err)))
     await context.route('https://cdn.jsdelivr.net/**',lambda route:route.fulfill(status=200,body=SDK,headers={'Content-Type':'application/javascript','Access-Control-Allow-Origin':'*'}))
     config='window.PORTAL_SUPABASE_CONFIG = Object.freeze('+json.dumps({'url':API,'publishableKey':'sb_publishable_fixture_only'})+');'
-    await context.route('**/supabase-config.js',lambda route:route.fulfill(status=200,body=config,content_type='application/javascript'))
+    await context.route('**/supabase-config.js*',lambda route:route.fulfill(status=200,body=config,content_type='application/javascript'))
     async def api_route(route):
         request=route.request
         path=urlparse(request.url).path
@@ -303,6 +303,8 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
     if session:
         await page.goto(BASE+'/index.html')
         await page.evaluate('(session) => localStorage.setItem("seminario-mr-auth", JSON.stringify(session))',SESSION)
+    if start == 'panel.html' and state['profile'] and state['profile'].get('role') == 'control_escolar':
+        start += '#catalogos-academicos'
     await page.goto(BASE+'/portal/'+start,wait_until='domcontentloaded')
     return context,page,state
 
