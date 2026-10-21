@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="portal.css">
     <link rel="stylesheet" href="panel.css">
     <link rel="stylesheet" href="teaching.css">
+    <link rel="stylesheet" href="grade-editor.css">
 </head>
 <body class="dashboard-page">
     <header class="portal-header">
@@ -100,6 +101,26 @@
                         <button id="rosterRetry" class="back-link" type="button" hidden>Actualizar materias</button>
                         <button id="rosterMore" class="back-link" type="button" hidden>Ver más alumnos</button>
                     </div>
+
+                    <section id="gradeEditor" class="grade-editor" aria-labelledby="gradeEditorTitle" hidden>
+                        <h4 id="gradeEditorTitle"></h4>
+                        <p id="gradePublished"></p>
+                        <p id="gradeDraftState"></p>
+                        <form id="gradeForm" method="post" aria-busy="false">
+                            <label for="gradeScore">Calificación de 0 a 100</label>
+                            <input id="gradeScore" name="score" type="number" min="0" max="100"
+                                   step="0.01" required disabled aria-describedby="gradeHelp"
+                                   autocomplete="off" inputmode="decimal">
+                            <p id="gradeHelp">Hasta dos decimales. Guarda el borrador y después publícalo para que el alumno lo vea.</p>
+                            <div class="grade-actions">
+                                <button id="gradeSave" class="back-link" type="submit" disabled>Guardar borrador</button>
+                                <button id="gradePublish" class="back-link grade-publish" type="button" disabled>Publicar calificación</button>
+                                <button id="gradeCancel" class="back-link" type="button">Cerrar</button>
+                            </div>
+                        </form>
+                        <p id="gradeMessage" class="grade-message" role="status" aria-live="polite"></p>
+                        <button id="gradeReload" class="back-link" type="button" hidden>Volver a consultar</button>
+                    </section>
                 </section>
             </section>
         </div>
@@ -131,6 +152,7 @@
     <script src="supabase-config.js" defer></script>
     <script src="auth.js" defer></script>
     <script src="subjects.js" defer></script>
+    <script src="grade-editor.js" defer></script>
     <script src="teaching.js" defer></script>
     <script src="panel.js" defer></script>
 </body>

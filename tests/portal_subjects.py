@@ -65,9 +65,22 @@ def subject(i, *, name=None):
     return {'id':f'22222222-2222-4222-8222-{i:012d}', 'subjects':{'code':f'MAT-{i:03d}','name':name or f'Materia de ejemplo {i}'},'academic_periods':{'name':'Periodo de prueba 2026','starts_on':'2026-08-01','ends_on':'2026-12-18'}}
 checks = 0
 
-async def fixture(browser, *, mobile=False, session=True, profile=None, rows=None, enrollment_status=200, enrollment_gate=None, start='panel.html', user_status=200, initial_hidden=False, grades=None, grade_status=200, grade_gate=None, grade_unfiltered=False, teaching=None, teaching_status=200, teaching_gate=None, rosters=None, roster_status=200, roster_gate=None):
+async def fixture(browser, *, mobile=False, session=True, profile=None, rows=None, enrollment_status=200, enrollment_gate=None, start='panel.html', user_status=200, initial_hidden=False, grades=None, grade_status=200, grade_gate=None, grade_unfiltered=False, teaching=None, teaching_status=200, teaching_gate=None, rosters=None, roster_status=200, roster_gate=None, capture=None):
     state={'profile':copy.deepcopy(DEFAULT_PROFILE) if profile is None else profile,'user_status':user_status,'rows':copy.deepcopy(rows) if rows is not None else [subject(1),subject(2)],'enrollment_status':enrollment_status,'enrollment_gate':enrollment_gate,'enrollment_started':asyncio.Event(),'enrollment_requests':[],'requests':[],'errors':[],'route_errors':[], 'grades':copy.deepcopy(grades) if grades is not None else [], 'grade_status':grade_status, 'grade_gate':grade_gate, 'grade_started':asyncio.Event(), 'grade_requests':[], 'grade_unfiltered':grade_unfiltered}
     state.update({'teaching':copy.deepcopy(teaching) if teaching is not None else [], 'teaching_status':teaching_status, 'teaching_gate':teaching_gate, 'teaching_started':asyncio.Event(), 'teaching_requests':[], 'rosters':copy.deepcopy(rosters) if rosters is not None else {}, 'roster_status':roster_status, 'roster_gate':roster_gate, 'roster_started':asyncio.Event(), 'roster_requests':[]})
+    capture = capture or {}
+    state['capture_records'] = copy.deepcopy(capture.get('records', {}))
+    state['capture_calls'] = []
+    state['capture_audit'] = []
+    for action in ['get', 'save', 'publish']:
+        state['capture_' + action + '_status'] = capture.get(action + '_status', 200)
+        state['capture_' + action + '_gate'] = capture.get(action + '_gate')
+        state['capture_' + action + '_started'] = asyncio.Event()
+        state['capture_' + action + '_requests'] = []
+    state['capture_get_override'] = capture.get('get_override')
+    state['capture_save_override'] = capture.get('save_override')
+    state['capture_publish_override'] = capture.get('publish_override')
+    state['capture_commit_then_abort'] = capture.get('commit_then_abort', False)
     context=await browser.new_context(viewport={'width':390,'height':844} if mobile else {'width':1440,'height':900})
     if initial_hidden:
         await context.add_init_script('Object.defineProperty(document,"visibilityState",{configurable:true,get:()=>"hidden"})')
@@ -148,6 +161,53 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
                     data=rows[args['p_offset']:args['p_offset']+args['p_limit']] if isinstance(rows,list) else rows
                 else:
                     data={'code':'42501' if status==403 else 'PGRST202','message':'Fixture roster API error'}
+            elif path in ['/rest/v1/rpc/get_teaching_grade', '/rest/v1/rpc/save_teaching_grade', '/rest/v1/rpc/publish_teaching_grade']:
+                assert request.method == 'POST', request.method
+                action = path.rsplit('/', 1)[-1].split('_', 1)[0]
+                args = request.post_data_json
+                expected_args = {'p_assignment_id', 'p_enrollment_id'}
+                if action in ['save', 'publish']:
+                    expected_args.add('p_expected_revision')
+                if action == 'save':
+                    expected_args.add('p_score')
+                assert set(args) == expected_args, args
+                state['capture_calls'].append((action, copy.deepcopy(args)))
+                state['capture_' + action + '_requests'].append(copy.deepcopy(args))
+                state['capture_' + action + '_started'].set()
+                enrollment_id = args['p_enrollment_id']
+                current = state['capture_records'].setdefault(enrollment_id, {
+                    'enrollment_id': enrollment_id, 'published_score': None,
+                    'draft_score': None, 'revision': 0, 'has_unpublished_changes': False
+                })
+                status = state['capture_' + action + '_status']
+                if action in ['save', 'publish'] and status == 200:
+                    if args['p_expected_revision'] != current['revision']:
+                        status = 409
+                    elif action == 'save':
+                        assert isinstance(args['p_score'], (int, float)), args
+                        assert 0 <= args['p_score'] <= 100, args
+                        current['draft_score'] = args['p_score']
+                        current['revision'] += 1
+                        current['has_unpublished_changes'] = True
+                        state['capture_audit'].append(('save_draft', enrollment_id, args['p_score']))
+                    elif not current['has_unpublished_changes'] or current['revision'] < 1:
+                        status = 400
+                    else:
+                        current['published_score'] = current['draft_score']
+                        current['revision'] += 1
+                        current['has_unpublished_changes'] = False
+                        state['capture_audit'].append(('publish', enrollment_id, current['published_score']))
+                data = copy.deepcopy([current])
+                override = state['capture_' + action + '_override']
+                if override is not None:
+                    data = copy.deepcopy(override)
+                if status != 200:
+                    data = {'code': 'PT409' if status == 409 else '42501' if status == 403 else 'PGRST202' if status == 404 else 'XX000', 'message': 'Fixture grade capture error'}
+                gate = state['capture_' + action + '_gate']
+                if gate:
+                    await gate.wait()
+                if action in ['save', 'publish'] and state['capture_commit_then_abort']:
+                    return await route.abort()
             elif path=='/auth/v1/logout':
                 status=204; data=None
             else: raise AssertionError('Unexpected API request '+request.url)

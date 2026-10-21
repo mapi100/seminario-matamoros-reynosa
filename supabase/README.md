@@ -169,8 +169,9 @@ navegador para ningún rol de perfil. La política comprueba expresamente que la
 nota esté publicada, la inscripción pertenezca a `auth.uid()` y el perfil sea
 un alumno activo; no depende solo de ocultar botones ni de un filtro del cliente.
 Los borradores y las notas ajenas tampoco se pueden consultar directamente por
-su ID. Profesores y Control Escolar todavía no tienen un flujo de captura: por
-ahora las notas se administran desde SQL Editor.
+su ID. Esta migración inicial no añade captura desde el portal; la ampliación
+de captura del profesor se aplica con la quinta migración, descrita más abajo.
+Control Escolar todavía no tiene un flujo de captura en el portal.
 
 La clave foránea usa `ON DELETE RESTRICT`. Mientras una inscripción tenga nota,
 PostgreSQL impide eliminarla y también impide borrados en cascada de su perfil o
@@ -211,7 +212,8 @@ Esta actualización añade `teaching_assignments`: vincula un profesor, una mate
 y un periodo. Un mismo profesor no puede tener la misma combinación duplicada;
 dos profesores pueden compartirla. Por ahora no se crean grupos separados: el
 listado incluye a todos los alumnos activos inscritos en esa materia y periodo.
-La captura de notas y las tareas quedan para una etapa posterior.
+La captura se instala con la ampliación descrita más abajo. Las tareas siguen
+pendientes.
 
 En el proyecto actual las tres migraciones anteriores ya están aplicadas.
 No las repitas. Desde **SQL Editor → New query**, como administrador:
@@ -295,3 +297,95 @@ identidad sin perfil; no crea una segunda cuenta real ni demuestra por sí solo
 el aislamiento completo del listado. El runner usa fixtures mínimos de Auth y
 prueba SQL/PostgreSQL; la prueba manual con cuentas reales comprueba la
 integración con Supabase Auth y PostgREST.
+
+## Capturar y publicar calificaciones desde el profesor
+
+Esta ampliación añade el editor de notas de **0 a 100**, con hasta dos decimales,
+para alumnos activos inscritos en materias y periodos asignados al profesor.
+Se aplica sobre las cuatro migraciones anteriores, que ya están instaladas en
+el proyecto actual. No las repitas y no necesitas crear otras cuentas o datos DEMO.
+
+Desde **SQL Editor → New query**, como administrador de confianza:
+
+1. Ejecuta completo `migrations/20261021040000_enable_grade_capture.sql` una sola
+   vez. Si falla, ejecuta `rollback;` y revisa el mensaje antes de continuar.
+2. En otra consulta, pega `tests/grade_capture_rls.sql`. Sustituye
+   `PROFESSOR_UID_AQUI` por el UID del profesor existente, conservando las comillas.
+   El archivo versionado conserva su marcador. Debe mostrar
+   **`Captura: RLS y permisos OK`**. Esta comprobación es de solo lectura.
+3. Publica el frontend actualizado y entra como profesor. Abre **Ver alumnos**,
+   pulsa **Calificar** junto al alumno, introduce una nota y elige **Guardar
+   borrador**. La publicación requiere la acción separada **Publicar**.
+4. Comprueba desde otra sesión de alumno: guardar un borrador mantiene la nota
+   publicada anterior, si existe. Solo publicar cambia la nota que ve el alumno.
+
+Una nota previa sin publicar, como el DEMO de Historia, se utiliza como valor
+inicial del editor. Primero debe guardarse como borrador en el portal antes de
+habilitar su publicación. Una nota de cero es válida. No se calculan promedios,
+aprobación ni notas oficiales finales.
+
+### Borradores, autorización y revisión de cambios
+
+`enrollment_grade_drafts` conserva el borrador separado de `enrollment_grades`,
+que sigue siendo la fuente de notas publicadas para el alumno. El navegador no
+recibe permisos directos sobre borradores, auditoría ni escritura de notas.
+Las políticas anteriores de perfiles, inscripciones y notas no se amplían.
+
+El acceso se realiza mediante tres funciones con propietario administrativo de
+confianza, `SECURITY DEFINER`, `search_path` vacío y tablas nombradas por esquema:
+
+- `get_teaching_grade`: comprueba asignación, profesor activo y alumno activo;
+  devuelve la nota publicada, el borrador, su revisión y si está pendiente de
+  publicación. No realiza escrituras.
+- `save_teaching_grade`: vuelve a autorizar, valida escala y decimales y guarda
+  el borrador sin modificar la nota publicada.
+- `publish_teaching_grade`: vuelve a autorizar y publica únicamente un borrador
+  previamente guardado, en la revisión esperada.
+
+Se revoca la ejecución de `PUBLIC` y `anon`, y solo `authenticated` puede llamar
+a estas funciones; las comprobaciones internas deciden si ese usuario puede
+operar sobre la inscripción concreta. El helper de bloqueo es privado y no se
+puede ejecutar directamente desde el navegador.
+
+Cada escritura bloquea la inscripción y mantiene bloqueos compartidos sobre la
+asignación y los perfiles autorizados hasta terminar la transacción. Así dos
+profesores que comparten una materia no sobrescriben silenciosamente el trabajo
+del otro. El cliente debe enviar `p_expected_revision`: una revisión distinta
+produce **`PT409`**, que PostgREST presenta como HTTP 409. Hay que volver a cargar
+la nota antes de intentar otra modificación. Guardar y publicar incrementan la
+revisión, y publicar consume el borrador pendiente.
+
+`enrollment_grade_events` registra cada guardado o publicación completados: actor,
+inscripción, identificador de asignación, acción, valores anteriores y nuevo,
+revisión y fecha. Se escribe en la misma transacción; si falla la auditoría,
+también se revierte el cambio de nota. El identificador de asignación es una
+instantánea sin clave foránea: el historial no impide revocar la asignación.
+El navegador no puede leer, insertar, modificar ni borrar este historial.
+
+La revisión y el historial cubren operaciones realizadas por estas funciones;
+las escrituras manuales de un administrador en SQL Editor no pasan por ellas.
+Para las pruebas de captura usa el portal en lugar de cambiar las notas a mano.
+No repitas los seeds de notas después de editarlas: rechazan los valores DEMO
+modificados para evitar sobrescribirlos.
+
+### Pruebas locales de captura
+
+Con Docker, Python 3 e imagen `postgres:17-bookworm`, desde la raíz:
+
+```bash
+python3 supabase/tests/run_grade_capture_local.py
+```
+
+El runner usa exclusivamente su propio contenedor temporal sin red ni puertos,
+aplica las cinco migraciones y lo elimina al terminar. Incluye dos profesores
+que comparten materia, alumnos ajenos y de otros periodos, perfiles inactivos y
+otros roles. Comprueba autorización en lectura y escritura, rango y decimales,
+cero y cien, borradores invisibles al alumno, publicación, auditoría atómica,
+revisiones y escrituras concurrentes, bloqueos frente a revocación y conservación
+de los smokes anteriores después de la migración nueva.
+
+`grade_capture_rls.sql` es una comprobación manual de solo lectura de configuración,
+permisos y lectura autorizada; no guarda ni publica notas. Las pruebas locales
+usan fixtures mínimos de Auth y PostgreSQL. La prueba manual con cuentas reales
+es la que comprueba Supabase Auth y PostgREST integrados. Ninguna prueba conecta
+al proyecto real ni requiere credenciales del proyecto.

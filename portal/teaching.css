@@ -106,9 +106,19 @@
     border-top: 1px solid #dce4ee;
 }
 
-.roster-student {
+.roster-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     padding: 12px 0;
     border-bottom: 1px solid #dce4ee;
+}
+
+.roster-student {
+    flex: 1;
+    min-width: 140px;
     color: var(--blue-dark);
 }
 

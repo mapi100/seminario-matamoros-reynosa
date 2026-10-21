@@ -1,8 +1,10 @@
 # Instalar y probar el panel de profesor
 
 El profesor puede consultar las materias que tiene asignadas por periodo y
-abrir sus listas de alumnos activos. Esta etapa muestra nombres; todavía no
-permite capturar notas, modificar inscripciones ni publicar tareas.
+abrir sus listas de alumnos activos. Esta guía instala la consulta inicial.
+Si ya completaste esta etapa, continúa con
+[Capturar calificaciones](capturar-calificaciones.md), sin repetir estas
+migraciones ni crear otra cuenta. Las inscripciones y tareas aún no se editan.
 
 ## 1. Extraer la actualización
 
@@ -96,5 +98,5 @@ deben seguir funcionando y la lista de profesor debe permanecer oculta.
 Si se mantiene una versión anterior, recarga con **Ctrl + Shift + R**.
 
 Por ahora una lista se define por **materia y periodo**. Dos profesores asignados
-a esa misma combinación comparten el listado. Los grupos separados y la captura
-de notas se añadirán en etapas posteriores con sus propias reglas de acceso.
+a esa misma combinación comparten el listado. Los grupos separados siguen
+pendientes. La captura se instala mediante la actualización indicada al inicio.

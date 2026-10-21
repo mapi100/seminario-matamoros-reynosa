@@ -7,7 +7,8 @@ secretas, `service_role` y las contraseñas nunca pertenecen a estos archivos.
 
 El SDK de Supabase se carga desde jsDelivr con versión fija y verificación SRI.
 Después se cargan `supabase-config.js`, `auth.js` y el controlador de la página.
-El panel carga también `subjects.js` y `teaching.js` antes de su controlador.
+El panel carga también `subjects.js`, `grade-editor.js` y `teaching.js` antes de
+su controlador.
 Si faltan la configuración o el SDK, el formulario permanece deshabilitado.
 
 ## Acceso y panel inicial
@@ -25,7 +26,8 @@ página. Un error de conexión muestra una opción para reintentar.
 Una sola página presenta el inicio correspondiente a `student`, `professor` o
 `control_escolar`. El rol procede de `profiles`, no de la URL ni de los metadatos
 editables del usuario. Los alumnos pueden consultar sus materias y notas
-publicadas; los profesores, sus materias asignadas y sus listas de alumnos.
+publicadas; los profesores, sus materias asignadas y sus listas de alumnos, con
+captura y publicación de notas.
 Todos los roles pueden consultar el perfil y cerrar sesión. El título del panel
 no otorga permisos administrativos.
 
@@ -69,8 +71,9 @@ etapa no calcula promedios, aprobación, reprobación ni calificaciones finales.
 `subjects.js` consulta `enrollment_grades` por separado, únicamente para los IDs
 de las inscripciones mostradas en la página actual. RLS exige nota publicada,
 inscripción propia y perfil activo con rol `student`. El navegador no tiene
-permisos para registrar, editar ni publicar notas, tampoco con un perfil de
-Control Escolar. Por ahora esas operaciones se realizan desde SQL Editor.
+permisos directos para registrar, editar ni publicar notas. El profesor asignado
+utiliza las funciones de captura descritas más abajo; Control Escolar todavía
+no tiene un flujo de captura en el portal.
 
 Si falla la consulta de notas, las materias permanecen visibles y cada tarjeta
 afectada muestra **No fue posible consultar la calificación**. **Reintentar**
@@ -106,14 +109,44 @@ incluidas páginas anteriores. **Actualizar materias** vuelve a verificar el acc
 después se selecciona de nuevo la materia.
 
 Las materias asignadas y los alumnos tienen paginación independiente. Un listado
-vacío se distingue de un fallo de consulta. El profesor todavía no registra ni
-modifica notas o inscripciones desde el portal. Si varios profesores están
-asignados a la misma materia y periodo, comparten la lista de alumnos; esta etapa
-no añade grupos separados.
+vacío se distingue de un fallo de consulta. La captura de notas se abre desde
+**Calificar**, como se explica a continuación; la edición de inscripciones sigue
+cerrada. Si varios profesores están asignados a la misma materia y periodo,
+comparten la lista de alumnos y la captura de sus notas. No hay grupos separados.
 
 Para crear una cuenta de profesor de prueba y asignarle las materias DEMO, sigue
 [Instalar el panel de profesor](../docs/profesores.md). La cuenta de alumno
 existente conserva su rol y sus datos.
+
+## Capturar y publicar una calificación
+
+En **Mis materias asignadas → Ver alumnos**, cada nombre tiene un botón
+**Calificar**. `grade-editor.js` consulta la nota publicada y el borrador del
+alumno seleccionado. **Guardar borrador** conserva lo que ya ve el alumno;
+**Publicar calificación** publica únicamente la versión guardada. Si se modifica
+el campo después de guardar, hay que volver a guardar antes de poder publicar.
+
+Los tres RPC `get_teaching_grade`, `save_teaching_grade` y
+`publish_teaching_grade` verifican profesor activo, asignación y alumno activo
+de la materia y periodo. No se conceden permisos directos de escritura sobre
+tablas. Los borradores se guardan separados y las operaciones realizadas por
+estos RPC registran autor, revisión, fecha y valores anteriores/nuevos en una
+tabla de auditoría privada.
+
+Una revisión obsoleta devuelve un conflicto y exige volver a consultar. Un fallo
+de red tras guardar o publicar también exige una lectura nueva: no permite
+deducir si la operación terminó. Las escrituras desactivan el reintento del SDK.
+Cerrar el editor o cambiar de pestaña limpia la pantalla y descarta respuestas,
+pero una operación ya enviada puede completarse en PostgreSQL. Al regresar, se
+consulta el estado del servidor antes de seguir editando.
+
+La escala es de 0 a 100, hasta dos decimales. El botón Publicar se habilita solo
+para un borrador guardado pendiente cuya nota coincida con el campo. La nota DEMO
+antigua sin publicar se puede precargar, pero debe guardarse antes de publicarla.
+Esta etapa no calcula promedios ni permite retirar una publicación.
+
+Sigue [Instalar y usar la captura](../docs/capturar-calificaciones.md). La cuenta
+de profesor y sus asignaciones actuales se reutilizan; no se necesitan seeds.
 
 ## Requisitos del proyecto Supabase
 
@@ -182,6 +215,7 @@ python3 -m playwright install chromium
 python3 tests/portal_subjects.py
 python3 tests/portal_grades.py
 python3 tests/portal_professor.py
+python3 tests/portal_grade_capture.py
 ```
 
 Si Chromium ya está instalado, se puede omitir la instalación del navegador.
@@ -198,3 +232,8 @@ las pruebas de PostgreSQL y la integración real se documentan en `supabase/READ
 `tests/portal_professor.py` comprueba materias asignadas, listas de alumnos,
 paginación, errores, reintentos, datos como texto, móvil y cancelación al cambiar
 de materia o salir. Comparte el servidor y la API simulada con las otras pruebas.
+
+`tests/portal_grade_capture.py` comprueba apertura sin escrituras, guardar,
+publicar, conflicto, red incierta sin reintento automático, validaciones y
+cancelación de respuestas. La API sigue siendo simulada; el runner de PostgreSQL
+comprueba la autorización y la atomicidad de la captura por separado.

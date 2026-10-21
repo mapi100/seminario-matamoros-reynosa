@@ -31,6 +31,7 @@
 
     function clearRoster() {
         rosterVersion += 1;
+        window.PortalGradeEditor?.clear();
         rosterController?.abort();
         rosterController = undefined;
         rosterLoading = false;
@@ -193,8 +194,32 @@
                 ) throw new Error("Alumno inválido");
                 pageIds.add(student.enrollment_id);
                 const item = document.createElement("li");
-                item.className = "roster-student";
-                item.textContent = student.student_name;
+                item.className = "roster-row";
+                const name = document.createElement("span");
+                name.className = "roster-student";
+                name.textContent = student.student_name;
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "back-link grade-open";
+                button.textContent = "Calificar";
+                button.setAttribute("aria-label", "Calificar a " + student.student_name);
+                button.setAttribute("aria-controls", "gradeEditor");
+                const selectedCourse = activeCourse;
+                button.addEventListener("click", function () {
+                    if (section.hidden || roster.hidden || activeCourse !== selectedCourse) return;
+                    if (window.PortalGradeEditor) {
+                        window.PortalGradeEditor.open({
+                            assignmentId: selectedCourse.id,
+                            enrollmentId: student.enrollment_id,
+                            studentName: student.student_name,
+                            courseName: selectedCourse.subjects.name,
+                            recheckAccess
+                        });
+                    } else {
+                        rosterStatus.textContent = "La captura de calificaciones no está disponible. Recarga la página para reintentar.";
+                    }
+                });
+                item.append(name, button);
                 return item;
             });
             rosterList.append(...items);
@@ -206,6 +231,7 @@
                 : "No hay alumnos activos inscritos en esta materia y periodo.";
         } catch {
             if (operation !== rosterVersion || sessionVersion !== version || roster.hidden) return;
+            window.PortalGradeEditor?.clear();
             rosterList.replaceChildren();
             shownStudents.clear();
             rosterOffset = 0;
