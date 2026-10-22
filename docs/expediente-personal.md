@@ -9,7 +9,7 @@ Se puede guardar por partes; no es necesario conocer todos los datos para empeza
 
 | Sección | Datos |
 | --- | --- |
-| Identificación | Nombre completo, CURP, nacimiento, edad calculada, país, estado y municipio de nacimiento, nacionalidad y sexo registrado en acta opcional |
+| Identificación | Nombre completo, CURP, nacimiento, edad calculada, país, estado y municipio de nacimiento y nacionalidad |
 | Contacto | Teléfono personal, teléfono alternativo y correo de contacto adicional; el correo de acceso se muestra como referencia |
 | Domicilio | Calle, números exterior e interior, colonia, código postal, municipio, estado y país |
 | Familia y emergencias | Persona de contacto, relación y teléfono; nombres y teléfonos de madre y padre opcionales |

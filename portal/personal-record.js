@@ -7,7 +7,7 @@
         {title:"Identificación",help:"Usa el nombre que aparece en tus documentos. La CURP y el nacimiento se comparten con tu kardex; no se validan ante RENAPO desde el portal.",fields:[
             ["full_name","Nombre completo",160,"text","name"], ["curp","CURP",18,"text","off"], ["birth_date","Fecha de nacimiento",10,"date","bday"],
             ["birth_country","País de nacimiento",100], ["birth_state","Estado de nacimiento",100], ["birth_city","Municipio / ciudad de nacimiento",100],
-            ["nationality","Nacionalidad",100], ["registered_sex","Sexo registrado en acta (opcional)",30,"select"]]},
+            ["nationality","Nacionalidad",100]]},
         {title:"Contacto",help:"El correo de acceso identifica tu cuenta y se muestra como referencia. Un correo de contacto adicional no cambia tu cuenta ni tu contraseña.",fields:[
             ["phone","Teléfono personal con lada",40,"tel","tel"], ["alternate_phone","Teléfono alternativo (opcional)",40,"tel"], ["contact_email","Correo de contacto adicional (opcional)",320,"email"]]},
         {title:"Domicilio",help:"Registra el domicilio donde pueden localizar a tu familia o a ti fuera del Seminario.",fields:[
@@ -99,9 +99,7 @@
     function addField(container,definition) {
         const [key,label,max,type="text",autocomplete="off"]=definition;
         const group=create("label",label,"personal-field"),id="personal-"+key;group.htmlFor=id;
-        const input=create(type==="select"?"select":"input");input.id=id;input.name=key;input.autocomplete=autocomplete;
-        if(type==="select")input.append(new Option("Sin registrar",""),new Option("Hombre","H"),new Option("Mujer","M"),new Option("No especificado en el documento","NE"));
-        else {input.type=type;input.maxLength=max;}
+        const input=create("input");input.id=id;input.name=key;input.autocomplete=autocomplete;input.type=type;input.maxLength=max;
         if(key==="full_name")input.required=true;
         if(key==="birth_date"){input.max=record.identity.age_as_of;input.min=String(Number(record.identity.age_as_of.slice(0,4))-120)+record.identity.age_as_of.slice(4);}
         if(key==="curp"){input.pattern="[A-Z][AEIOUX][A-Z]{2}[0-9]{6}[HM][A-Z]{5}[A-Z0-9][0-9]";input.spellcheck=false;input.autocapitalize="characters";input.addEventListener("input",()=>{input.value=input.value.toUpperCase();});}
