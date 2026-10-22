@@ -102,6 +102,7 @@
         pendingWrites.clear(); openTopics.clear();
         closeModal(true);
         window.PortalLearningFiles?.clear();
+        window.PortalContentFiles?.clear();
         for (const id of ["learningAnnouncements", "learningWork", "learningCalendar", "learningRoot"]) {
             const target = $(id); if (target) target.replaceChildren();
         }
@@ -250,6 +251,7 @@
     }
     function courseHeading() {
         $("learningRoot").dataset.learningTab = tab;
+        window.PortalCourseColors?.apply($("learningRoot"), course.course.code);
         $("learningCourseTitle").textContent = course.course.name;
         $("learningCourseCode").textContent = course.course.code;
         $("learningCoursePeriod").textContent = course.course.period_name;
@@ -325,6 +327,10 @@
                 const body = node("div", undefined, "learning-topic-body");
                 if (topic.body) body.append(paragraph(topic.body));
                 const resource = external("Abrir recurso ↗", topic.url); if (resource) body.append(resource);
+                if (Array.isArray(topic.files) && topic.files.length) {
+                    const files = node("div"); body.append(files);
+                    window.PortalContentFiles?.render(files, {courseId,topicId:topic.id,items:topic.files,edit:false});
+                }
                 if (canManage()) body.append(button("Editar contenido", () => topicDialog(topic, module), "learning-button secondary"));
                 if (profile.role === "student") {
                     const complete = document.createElement("input"); complete.type = "checkbox"; complete.checked = Boolean(topic.completed); complete.id = "learning-complete-" + topic.id;
@@ -570,6 +576,7 @@
     function renderTab(selectedItem) {
         if (!active || !course || !$("learningContent")) return;
         window.PortalLearningFiles?.clear();
+        window.PortalContentFiles?.clear();
         const target = $("learningContent"); target.replaceChildren(); note(""); courseHeading();
         if (tab === "inicio") renderHome(target);
         else if (tab === "programa") renderSyllabus(target);
@@ -583,7 +590,8 @@
     }
     async function loadCourse(id, selectedTab, selectedItem) {
         const operation = ++courseVersion, current = generation;
-        courseId = id; course = undefined; gradebook = undefined; pageOffset = 0; openTopics.clear();
+        const changedCourse = courseId !== id;
+        courseId = id; course = undefined; gradebook = undefined; pageOffset = 0; if (changedCourse) openTopics.clear();
         skeleton();
         try {
             const data = await request("course", id, 0, 100);
@@ -603,7 +611,7 @@
         if (!active) return;
         const pieces = location.hash.slice(1).split("/");
         if (pieces[0] !== "curso") {
-            courseVersion++; routeKey = undefined; course = undefined; courseId = undefined; gradebook = undefined; closeModal(true); window.PortalLearningFiles?.clear();
+            courseVersion++; routeKey = undefined; course = undefined; courseId = undefined; gradebook = undefined; closeModal(true); window.PortalLearningFiles?.clear(); window.PortalContentFiles?.clear();
             if ($("learningRoot")) { $("learningRoot").hidden = true; $("learningRoot").replaceChildren(); }
             return;
         }
@@ -656,7 +664,7 @@
     function closeModal(force = false) {
         if (modalBusy && !force) return;
         modalToken++; modalBusy = false; modalUncertain = false;
-        if (modal) { window.PortalLearningFiles?.clear(modal); if (modal.open) modal.close(); modal.remove(); modal = undefined; }
+        if (modal) { window.PortalLearningFiles?.clear(modal); window.PortalContentFiles?.clear(modal); if (modal.open) modal.close(); modal.remove(); modal = undefined; }
         if (!force && returnFocus?.isConnected) returnFocus.focus(); returnFocus = undefined;
     }
     function openDialog(title, onSubmit, submitLabel = "Guardar") {
@@ -742,15 +750,41 @@
     }
     function topicDialog(row = {}, module) {
         if (!canManage()) return;
-        const dialog = openDialog(row.id ? "Editar contenido" : "Agregar contenido", (form, token) => {
-            const data = values(form); if (data.url && !safeURL(data.url)) { note("Introduce un enlace completo que comience con https:// o http://.", "error", $("learningDialogMessage")); return; }
-            return submitModal("topic_save", courseId, editData(row, { ...data, module_id: module.id }), token);
+        const targetCourse = courseId, current = generation;
+        let savedTopic;
+        const dialog = openDialog(row.id ? "Editar contenido" : "Agregar contenido", async (form, token) => {
+            if (!files) { note("No se pudo cargar la opción de archivos. Recarga el portal.", "error", dialog.message); return; }
+            if (!files.validate()) return;
+            const data = values(form);
+            if (data.url && !safeURL(data.url)) { note("Introduce un enlace completo que comience con https:// o http://.", "error", dialog.message); return; }
+            modalBusy = true; dialog.submit.disabled = true; form.setAttribute("aria-busy", "true");
+            note(savedTopic ? "Reintentando los archivos pendientes…" : "Guardando contenido…", "", dialog.message);
+            try {
+                if (!savedTopic) {
+                    savedTopic = await write("topic_save", targetCourse, editData(row, {...data,module_id:module.id}));
+                    if (!active || current !== generation || token !== modalToken) return;
+                    // Después de confirmar el tema, los reintentos solo suben archivos.
+                    for (const input of form.querySelectorAll("input[name],textarea[name]")) input.disabled = true;
+                }
+                await files.uploadTo(savedTopic.id);
+                if (!active || current !== generation || token !== modalToken) return;
+                openTopics.add(savedTopic.id); modalBusy = false; closeModal(); await refreshCourse();
+                if (active && current === generation) note("Contenido y archivos guardados.", "success");
+            } catch (error) {
+                if (!active || current !== generation || token !== modalToken || (error?.source !== "storage" && unauthorized(error))) return;
+                if (savedTopic) {
+                    dialog.submit.textContent = "Reintentar subida";
+                    note("El tema quedó guardado. No se completó la subida de todos los archivos. Pulsa Reintentar subida para continuar sin duplicar el tema. También puedes cerrar y revisar sus archivos más tarde.", "error", dialog.message);
+                } else { modalUncertain = !["22023","PT409","23505"].includes(error?.code); note(writeError(error), "error", dialog.message); }
+            } finally { if (token === modalToken && modal) { modalBusy = false; dialog.submit.disabled = modalUncertain; form.setAttribute("aria-busy", "false"); } }
         });
-        field(dialog.fields, "title", "Título del tema", { required: true, value: row.title });
-        field(dialog.fields, "body", "Contenido o indicaciones", { textarea: true, value: row.body });
-        field(dialog.fields, "url", "Enlace al recurso", { type: "url", value: row.url });
-        field(dialog.fields, "position", "Orden", { type: "number", required: true, value: row.position ?? module.topics.length + 1, max: 10000 });
-        field(dialog.fields, "published", "Publicar contenido", { type: "checkbox", value: row.published !== false }); dialog.open();
+        field(dialog.fields, "title", "Título del tema", {required:true,value:row.title});
+        field(dialog.fields, "body", "Contenido o indicaciones", {textarea:true,value:row.body});
+        field(dialog.fields, "url", "Enlace al recurso (opcional)", {type:"url",value:row.url});
+        const area = node("div"); dialog.fields.append(area);
+        const files = window.PortalContentFiles?.render(area, {courseId:targetCourse,topicId:row.id,items:row.files || [],edit:true});
+        field(dialog.fields, "position", "Orden", {type:"number",required:true,value:row.position ?? module.topics.length + 1,max:10000});
+        field(dialog.fields, "published", "Publicar contenido", {type:"checkbox",value:row.published !== false}); dialog.open();
     }
     function localDate(value) {
         if (!value || !Number.isFinite(Date.parse(value))) return "";
@@ -831,6 +865,9 @@
         dialog.open();
     }
 
+    window.addEventListener("portal-academic-deleted", () => {
+        if (active) { dashboardPromise = loadDashboard(); navigate(true); }
+    });
     window.addEventListener("portal-learning-files-changed", event => {
         if (active && courseId && event.detail?.courseId === courseId && !modal?.open) void refreshCourse();
         else if (active) dashboardPromise = loadDashboard();

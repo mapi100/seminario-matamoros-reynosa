@@ -1,0 +1,10 @@
+.content-files { min-width: 0; margin: 18px 0; padding: 16px; border: 1px solid #d8e1ea; border-radius: 6px; background: #f8fafc; }
+.content-files h4 { margin: 0 0 12px; color: #344d63; font-size: 15px; }
+.content-files label { display: grid; gap: 10px; font-size: 14px; font-weight: 600; }
+.content-files input[type=file] { display: block; width: 100%; max-width: 100%; font-size: 13px; padding: 10px; background: #fff; border: 1px solid #b7c5d4; border-radius: 5px; }
+.content-file-list { margin: 0; padding: 0; list-style: none; }
+.content-file-list li { padding: 12px 0; border-top: 1px solid #dbe3eb; overflow-wrap: anywhere; font-size: 14px; }
+.content-file-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.content-file-actions button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+.content-files > button { margin: 8px 8px 0 0; }
+.content-file-message { font-size: 13px; }

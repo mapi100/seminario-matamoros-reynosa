@@ -96,7 +96,7 @@ async def fixture(browser, role='student', *, mobile=False, route='inicio', data
     async def api_route(route):
         request = route.request
         path = urlparse(request.url).path
-        if not ('portal_learning_' in path or '/storage/v1/' in path):
+        if not ('portal_learning_' in path or 'portal_content_files' in path or '/storage/v1/' in path):
             return await route.fallback()
         if request.method == 'OPTIONS':
             return await route.fulfill(status=204, headers=headers)
@@ -114,6 +114,10 @@ async def fixture(browser, role='student', *, mobile=False, route='inicio', data
                     return await route.fulfill(status=200, headers=headers, body='[]')
                 raise AssertionError('Unexpected Storage request ' + request.method)
             args = request.post_data_json if request.method == 'POST' else {}
+            if path.endswith('/portal_content_files'):
+                assert args['p_action']=='list', args
+                topic=next(t for m in data['course']['modules'] for t in m['topics'] if t['id']==args['p_topic'])
+                return await route.fulfill(status=200,headers=headers,body=json.dumps({'items':topic.get('files',[]),'pending':[],'can_manage':state['profile']['role']!='student'}))
             if path.endswith('/portal_learning_read'):
                 resource = args['p_resource']
                 data['calls'].append(copy.deepcopy(args)); data['read_started'].set()

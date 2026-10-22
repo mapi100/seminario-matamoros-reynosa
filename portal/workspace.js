@@ -70,6 +70,7 @@
 
     function navigate(focus = false) {
         if (!profile) return;
+        window.PortalDeletion?.leave();
         const hash = location.hash.slice(1) || "inicio";
         let route = courseRoute.test(hash) ? "curso" : hash;
         if (route !== "curso") {
@@ -185,6 +186,7 @@
             const needle = search.value.trim().toLocaleLowerCase("es");
             let visible = 0;
             for (const card of cards) {
+                window.PortalCourseColors?.apply(card, card.querySelector(".subject-code,.teaching-code")?.textContent);
                 const text = ((card.querySelector("." + nameClass)?.textContent || card.textContent) + " " +
                     (card.querySelector(".subject-code,.teaching-code")?.textContent || "")).toLocaleLowerCase("es");
                 card.hidden = Boolean((needle && !text.includes(needle)) ||

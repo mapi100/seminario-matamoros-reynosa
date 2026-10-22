@@ -10,10 +10,11 @@
     <link rel="stylesheet" href="panel.css">
     <link rel="stylesheet" href="teaching.css">
     <link rel="stylesheet" href="grade-editor.css">
-    <link rel="stylesheet" href="control.css?v=20261021-control-1">
-    <link rel="stylesheet" href="workspace.css?v=20261021-aula-1">
+    <link rel="stylesheet" href="control.css?v=20261022-admin-1">
+    <link rel="stylesheet" href="workspace.css?v=20261022-content-1">
     <link rel="stylesheet" href="learning-files.css?v=20261021-aula-1">
-    <link rel="stylesheet" href="learning.css?v=20261021-aula-1">
+    <link rel="stylesheet" href="content-files.css?v=20261022-content-1">
+    <link rel="stylesheet" href="learning.css?v=20261022-content-1">
 </head>
 <body class="dashboard-page" data-view="inicio">
     <a class="skip-link" href="#panelMain">Saltar al contenido</a>
@@ -40,7 +41,7 @@
         <nav aria-label="Secciones del portal">
             <a href="#inicio" data-route="inicio">Inicio</a>
             <a href="#mis-materias" data-route="mis-materias" data-roles="student">Mis cursos</a>
-            <a href="#materias-asignadas" data-route="materias-asignadas" data-roles="professor">Mis cursos</a>
+            <a href="#materias-asignadas" data-route="materias-asignadas" data-roles="professor control_escolar">Mis cursos</a>
             <a href="#inicio" class="mobile-widget-link" data-widget-focus="learningAnnouncements">Anuncios del campus</a>
             <a href="#inicio" class="mobile-widget-link" data-widget-focus="learningWork">Trabajo pendiente</a>
             <a href="#personas" data-route="personas" data-roles="control_escolar">Personas</a>
@@ -65,6 +66,10 @@
              role="status" aria-live="polite">Verificando tu acceso…</div>
 
         <div id="panelContent" class="dashboard-grid" hidden>
+            <aside id="deletionNotice" class="dashboard-card deletion-notice" hidden aria-label="Estado de eliminación">
+                <p id="deletionNoticeText" role="status" aria-live="polite"></p>
+                <button id="deletionCleanupRetry" class="back-link" type="button" hidden>Reintentar limpieza de archivos</button>
+            </aside>
             <section id="workspaceHero" data-screen="inicio" class="dashboard-card dashboard-welcome" aria-labelledby="welcomeTitle">
                 <p class="welcome-eyebrow">CAMPUS DEL SEMINARIO</p>
                 <h2 id="welcomeTitle">Bienvenido al Portal Escolar</h2>
@@ -251,6 +256,19 @@
         <noscript><p>Habilita JavaScript para verificar tu sesión y utilizar el portal.</p></noscript>
     </main>
 
+    <dialog id="deletionDialog" class="management-dialog deletion-dialog" aria-labelledby="deletionTitle" aria-describedby="deletionDescription">
+        <div class="dialog-heading"><h2 id="deletionTitle">Eliminar definitivamente</h2><button id="deletionClose" class="dialog-close" type="button" aria-label="Cerrar eliminación">×</button></div>
+        <p id="deletionDescription"></p>
+        <p id="deletionTarget" class="deletion-target"></p>
+        <ul id="deletionCounts" class="deletion-counts"></ul>
+        <form id="deletionForm" aria-busy="false">
+            <label for="deletionConfirmation">Para confirmar, escribe ELIMINAR</label>
+            <input id="deletionConfirmation" name="confirmation" required autocomplete="off" spellcheck="false" maxlength="8" pattern="ELIMINAR">
+            <p id="deletionMessage" class="control-message" role="status" aria-live="polite"></p>
+            <div class="dialog-actions"><button id="deletionSave" class="login-button deletion-save" type="submit" disabled>Eliminar definitivamente</button><button id="deletionCancel" class="back-link" type="button">Cancelar</button></div>
+        </form>
+    </dialog>
+
     <dialog id="managementDialog" class="management-dialog" aria-labelledby="managementDialogTitle">
         <div class="dialog-heading"><h2 id="managementDialogTitle"></h2><button id="managementCancel" class="dialog-close" type="button" aria-label="Cerrar formulario">×</button></div>
         <form id="managementForm" method="post"><div id="managementFields"></div><p id="managementFormMessage" class="control-message" role="status" aria-live="polite"></p><div class="dialog-actions"><button id="managementSave" class="back-link control-create" type="submit">Guardar</button><button id="managementCancelBottom" class="back-link" type="button">Cancelar</button></div></form>
@@ -277,11 +295,14 @@
     <script src="subjects.js" defer></script>
     <script src="grade-editor.js" defer></script>
     <script src="teaching.js" defer></script>
-    <script src="management.js?v=20261021-campus-1" defer></script>
-    <script src="control.js?v=20261021-campus-1" defer></script>
+    <script src="course-colors.js?v=20261022-content-1" defer></script>
+    <script src="content-files.js?v=20261022-content-1" defer></script>
+    <script src="deletion.js?v=20261022-admin-1" defer></script>
+    <script src="management.js?v=20261022-admin-1" defer></script>
+    <script src="control.js?v=20261022-admin-1" defer></script>
     <script src="learning-files.js?v=20261021-aula-1" defer></script>
-    <script src="learning.js?v=20261021-aula-1" defer></script>
-    <script src="workspace.js?v=20261021-aula-1" defer></script>
-    <script src="panel.js?v=20261021-aula-1" defer></script>
+    <script src="learning.js?v=20261022-content-1" defer></script>
+    <script src="workspace.js?v=20261022-content-1" defer></script>
+    <script src="panel.js?v=20261022-admin-1" defer></script>
 </body>
 </html>

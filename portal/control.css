@@ -135,3 +135,15 @@
         gap: 0;
     }
 }
+
+/* Eliminación definitiva: alcance visible y confirmación explícita. */
+.deletion-notice { grid-column: 1 / -1; border-left: 4px solid #9d2429; }
+.deletion-notice p { margin: 0 0 12px; line-height: 1.6; }
+.deletion-dialog .deletion-target { font-weight: 700; overflow-wrap: anywhere; }
+.deletion-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; padding-left: 22px; font-size: 14px; }
+.deletion-dialog label { display: block; font-weight: 700; margin: 20px 0 8px; }
+.deletion-dialog input { width: 100%; min-height: 44px; padding: 10px; border: 1px solid #a8b8ca; border-radius: 6px; font: inherit; }
+.deletion-dialog .deletion-save { background: #a3252b; }
+.deletion-dialog .deletion-save:disabled { opacity: .5; cursor: not-allowed; }
+.dashboard-page .delete-link { color: #a3252b; margin-left: 10px; }
+@media(max-width:600px) { .deletion-counts { grid-template-columns: 1fr; } }

@@ -42,6 +42,7 @@
         window.PortalTeaching?.clear();
         window.PortalControl?.clear();
         window.PortalManagement?.clear();
+        window.PortalDeletion?.clear();
         window.PortalLearning?.clear();
         window.PortalLearningFiles?.clear();
         window.PortalWorkspace?.clear();
@@ -52,6 +53,10 @@
         subtitle.textContent = "Verificando tu acceso…";
         document.title = "Mi portal | Seminario Diocesano San José";
     }
+
+    window.addEventListener("portal-academic-deleted", function () {
+        window.PortalTeaching?.show(verifyAccess);
+    });
 
     function goToLogin(reason) {
         const target = new URL("index.html", window.location.href);
@@ -140,6 +145,8 @@
                     if (window.PortalControl) {
                         window.PortalControl.show(verifyAccess);
                         window.PortalManagement?.show(verifyAccess);
+                        window.PortalDeletion?.show(verifyAccess);
+                        window.PortalTeaching?.show(verifyAccess);
                     } else {
                         document.getElementById("controlSection").hidden = false;
                         document.getElementById("periodListStatus").textContent =

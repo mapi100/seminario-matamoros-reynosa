@@ -64,7 +64,7 @@ async def finished(context, state, label):
     assert not state['route_errors'], state['route_errors']
     for method, url in state['requests']:
         assert (method in ['GET', 'OPTIONS'] or '/auth/v1/' in url or
-                (method == 'POST' and url.endswith(('/rpc/create_subject', '/rpc/create_academic_period', '/rpc/portal_learning_read')))), (method, url)
+                (method == 'POST' and url.endswith(('/rpc/create_subject', '/rpc/create_academic_period', '/rpc/portal_learning_read', '/rpc/portal_admin_cleanup_files')))), (method, url)
     checks += 1
     print('PASS ' + label, flush=True)
     for kind in ['subjects', 'periods']:

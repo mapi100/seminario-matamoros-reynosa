@@ -288,6 +288,9 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
                     await gate.wait()
                 if action in ['save', 'publish'] and state['capture_commit_then_abort']:
                     return await route.abort()
+            elif path=='/rest/v1/rpc/portal_admin_cleanup_files':
+                # New deletion banner checks resumable cleanup without live Storage.
+                status=200; data={'paths':[], 'remaining':0}
             elif path=='/rest/v1/rpc/portal_learning_read':
                 # The new home widgets use a read-only RPC. Legacy scenarios
                 # keep an empty LMS fixture; dedicated tests cover its payloads.

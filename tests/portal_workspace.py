@@ -32,7 +32,7 @@ async def fixture(browser,**kwargs):
             if data['read_gate']:await data['read_gate'].wait()
             if data['read_status']!=200:return await route.fulfill(status=data['read_status'],headers=headers,body=json.dumps({'code':'42501' if data['read_status']==403 else 'XX000','message':'Fixture'}))
             kind=body['p_resource'];rows=data['people'] if kind in ('students','professors') else data['classes'] if kind=='active_classes' else data[kind]
-            if kind in ('students','professors'):rows=[r for r in rows if r['active'] and r['role']==('student' if kind=='students' else 'professor')]
+            if kind in ('students','professors'):rows=[r for r in rows if r['active'] and (r['role']=='student' if kind=='students' else r['role'] in ('professor','control_escolar'))]
             if kind=='active_classes':rows=[r for r in rows if r['active']]
             needle=body['p_search'].casefold()
             if needle:rows=[r for r in rows if needle in json.dumps(r,ensure_ascii=False).casefold()]

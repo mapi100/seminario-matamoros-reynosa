@@ -122,7 +122,16 @@
             const state = catalogs.find(catalog => catalog.kind === kind);
             window.PortalManagement?.editCatalog(kind, record, function () { if (active) void load(state); });
         });
-        item.append(edit);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "back-link catalog-edit delete-link";
+        remove.textContent = kind === "subject" ? "Eliminar materia" : "Eliminar periodo";
+        remove.addEventListener("click", function () {
+            if (!active) return;
+            const state = catalogs.find(catalog => catalog.kind === kind);
+            window.PortalDeletion?.open(kind, record.id, function () { if (active) void load(state); });
+        });
+        item.append(edit, remove);
         return item;
     }
 
