@@ -105,6 +105,10 @@ filas para corregir una inscripción o una asignación.
 
 ## 4. Preparar invitaciones y recuperación de contraseña
 
+Para utilizar Resend con los correos actuales de alumnos y sacerdotes, sigue
+[la configuración de correo del portal](correo-resend.md). Incluye el remitente,
+los campos SMTP y las plantillas de invitación y recuperación en español.
+
 **Estado inicial: invitaciones desactivadas.** En Personas se indica que el
 servicio está pendiente, mientras se permite administrar las cuentas existentes.
 El botón se habilita con `features.invitations` en `portal/supabase-config.js`;

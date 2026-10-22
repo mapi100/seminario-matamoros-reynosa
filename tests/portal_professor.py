@@ -55,7 +55,7 @@ async def finished(context, state, label, *, allow_student=False):
         assert not state['grade_requests'], state['grade_requests']
     for method, url in state['requests']:
         assert (method in ['GET', 'OPTIONS'] or '/auth/v1/' in url
-                or (method == 'POST' and url.endswith('/rpc/get_teaching_roster'))), (method, url)
+                or (method == 'POST' and url.endswith(('/rpc/get_teaching_roster', '/rpc/portal_learning_read')))), (method, url)
     checks += 1
     print('PASS ' + label, flush=True)
     for key in ['teaching_gate', 'roster_gate']:

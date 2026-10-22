@@ -288,6 +288,14 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
                     await gate.wait()
                 if action in ['save', 'publish'] and state['capture_commit_then_abort']:
                     return await route.abort()
+            elif path=='/rest/v1/rpc/portal_learning_read':
+                # The new home widgets use a read-only RPC. Legacy scenarios
+                # keep an empty LMS fixture; dedicated tests cover its payloads.
+                assert request.method == 'POST', request.method
+                assert request.post_data_json['p_resource'] == 'dashboard'
+                status=200
+                data={'courses':[], 'announcements':[], 'work':[], 'events':[],
+                      'institutional_announcements':[], 'has_more_courses':False}
             elif path=='/auth/v1/logout':
                 status=204; data=None
             else: raise AssertionError('Unexpected API request '+request.url)
@@ -316,7 +324,9 @@ async def finished(context,state,label):
     global checks
     assert not state['errors'],state['errors']
     assert not state['route_errors'],state['route_errors']
-    assert all(method in ['GET','OPTIONS'] or '/auth/v1/' in url for method,url in state['requests']),state['requests']
+    assert all(method in ['GET','OPTIONS'] or '/auth/v1/' in url
+               or (method == 'POST' and url.endswith('/rpc/portal_learning_read'))
+               for method,url in state['requests']),state['requests']
     checks+=1
     print('PASS '+label,flush=True)
     if state['enrollment_gate']: state['enrollment_gate'].set()

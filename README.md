@@ -4,6 +4,8 @@ Página Web Oficial del Seminario Diocesano de Matamoros-Reynosa.
 Documentación del proyecto:
 
 - [Campus autónomo: navegación, clases, personas e invitaciones](docs/campus-autonomo.md)
+- [Aula virtual: anuncios, contenido, tareas, entregas y libro de calificaciones](docs/aula-virtual.md)
+- [Conectar Resend gratuito para invitaciones y recuperación de contraseña](docs/correo-resend.md)
 - [Configurar seminariomr.org con Porkbun, Cloudflare, HTTPS e indexación](docs/dominio-seminariomr.md)
 - [Portal y comprobaciones del acceso](portal/README.md)
 - [Esquema SQL y comprobación de RLS](supabase/README.md)
@@ -19,6 +21,10 @@ El profesor puede consultar sus materias asignadas, ver sus alumnos activos y
 guardar y publicar calificaciones mediante funciones autorizadas en PostgreSQL.
 Control Escolar puede administrar personas, materias, periodos, clases,
 profesores e inscripciones desde el portal, con bajas que conservan el historial.
+Cada curso tiene programa, unidades y temas, anuncios, calendario, tareas con
+fecha límite y entregas por texto, enlace o archivos privados. Los profesores
+guardan y publican notas por actividad en un libro tabular; cada alumno consulta
+únicamente sus propias notas publicadas. El inicio reúne cursos y pendientes.
 Las invitaciones están preparadas y requieren activar SMTP y la Edge Function
 según la guía del campus. Los buzones institucionales se contratan o tramitan
 por separado, según la elegibilidad del Seminario. Los datos se

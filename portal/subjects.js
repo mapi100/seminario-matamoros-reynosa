@@ -67,6 +67,17 @@
         grade.className = "subject-grade";
         grade.textContent = "Consultando calificación…";
         item.append(grade);
+        const enter = document.createElement("button");
+        enter.type = "button";
+        enter.className = "course-enter";
+        enter.textContent = "Entrar al curso";
+        enter.setAttribute("aria-label", "Entrar al curso " + subject.name + ", " + period.name);
+        enter.addEventListener("click", function () {
+            if (section.hidden) return;
+            if (window.PortalLearning) window.PortalLearning.openByCard({ code: subject.code, period: period.name });
+            else status.textContent = "El aula no está disponible. Recarga la página para reintentar.";
+        });
+        item.append(enter);
         return item;
     }
 

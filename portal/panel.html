@@ -10,45 +10,46 @@
     <link rel="stylesheet" href="teaching.css">
     <link rel="stylesheet" href="grade-editor.css">
     <link rel="stylesheet" href="control.css?v=20261021-control-1">
-    <link rel="stylesheet" href="workspace.css?v=20261021-campus-1">
+    <link rel="stylesheet" href="workspace.css?v=20261021-aula-1">
+    <link rel="stylesheet" href="learning-files.css?v=20261021-aula-1">
+    <link rel="stylesheet" href="learning.css?v=20261021-aula-1">
 </head>
 <body class="dashboard-page" data-view="inicio">
     <a class="skip-link" href="#panelMain">Saltar al contenido</a>
     <header class="portal-header">
         <div class="header-container">
-            <button id="menuToggle" class="menu-toggle" type="button" aria-controls="workspaceNav" aria-expanded="false" aria-label="Abrir menú">☰</button>
-            <a href="../index.html" class="brand" aria-label="Volver al sitio principal">
-                <img src="../images/escudo-seminario-matamoros.png"
-                     alt="Escudo del Seminario Diocesano San José" class="brand-logo">
-                <div class="brand-text">
-                    <span class="brand-small">Seminario Diocesano San José</span>
-                    <span class="brand-name">Matamoros-Reynosa</span>
-                </div>
+            <button id="menuToggle" class="menu-toggle" type="button" aria-controls="workspaceNav" aria-expanded="false" aria-label="Abrir menú"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <a href="#inicio" class="header-home icon-link" aria-label="Inicio del campus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M6 10v11h5v-7h2v7h5V10"/></svg></a>
+            <a href="../index.html" class="brand" aria-label="Sitio del Seminario Diocesano San José">
+                <img src="../images/escudo-seminario-matamoros.png" alt="Escudo del Seminario Diocesano San José" class="brand-logo">
+                <div class="brand-text"><span class="brand-small">Seminario Diocesano San José</span><span class="brand-name">Matamoros-Reynosa</span></div>
             </a>
+            <span id="workspaceCourseName" class="header-course-name" hidden></span>
             <div class="dashboard-actions">
-                <a href="../index.html" class="back-link">Sitio principal</a>
-                <button id="logoutButton" class="back-link dashboard-logout"
-                        type="button" disabled hidden>Cerrar sesión</button>
+                <a id="workspaceCoursesLink" href="#inicio" class="icon-link header-tool" aria-label="Mis cursos" title="Mis cursos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="10" y="3" width="5" height="5" rx="1"/><rect x="17" y="3" width="4" height="5" rx="1"/><rect x="3" y="10" width="5" height="5" rx="1"/><rect x="10" y="10" width="5" height="5" rx="1"/><rect x="17" y="10" width="4" height="5" rx="1"/><rect x="3" y="17" width="5" height="4" rx="1"/><rect x="10" y="17" width="5" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg></a>
+                <a href="#inicio" class="icon-link header-tool" data-widget-focus="learningAnnouncements" aria-label="Anuncios del campus" title="Anuncios"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v5h4l9 4V6l-9 4H4Zm4 5 1 6h3l-2-5M20 9v7"/></svg></a>
+                <a href="#inicio" class="icon-link header-tool" data-widget-focus="learningWork" aria-label="Tareas y fechas límite" title="Tareas pendientes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v17h16V4h-4M9 3h6v4H9zM8 12h8M8 16h5"/></svg></a>
+                <a href="#mi-perfil" class="header-account" aria-label="Mi perfil"><span id="workspaceAvatar" class="header-avatar" aria-hidden="true">SJ</span><span id="workspaceUserName">Mi perfil</span></a>
+                <button id="logoutButton" class="back-link dashboard-logout" type="button" disabled hidden>Cerrar sesión</button>
             </div>
         </div>
     </header>
 
-
     <aside id="workspaceNav" class="workspace-nav" aria-label="Menú del portal" hidden>
-        <p class="nav-label">MI CAMPUS</p>
         <nav aria-label="Secciones del portal">
-            <a href="#inicio" data-route="inicio"><span aria-hidden="true">⌂</span>Inicio</a>
-            <a href="#mis-materias" data-route="mis-materias" data-roles="student"><span aria-hidden="true">▤</span>Mis materias</a>
-            <a href="#materias-asignadas" data-route="materias-asignadas" data-roles="professor"><span aria-hidden="true">▤</span>Mis clases</a>
-            <a href="#personas" data-route="personas" data-roles="control_escolar"><span aria-hidden="true">♙</span>Personas</a>
-            <a href="#clases" data-route="clases" data-roles="control_escolar"><span aria-hidden="true">▤</span>Clases</a>
-            <a href="#inscripciones" data-route="inscripciones" data-roles="control_escolar"><span aria-hidden="true">✓</span>Inscripciones</a>
-            <a href="#profesores" data-route="profesores" data-roles="control_escolar"><span aria-hidden="true">♙</span>Asignar profesores</a>
-            <a href="#catalogos-academicos" data-route="catalogos-academicos" data-roles="control_escolar"><span aria-hidden="true">▦</span>Materias y periodos</a>
-            <a href="#actividad" data-route="actividad" data-roles="control_escolar"><span aria-hidden="true">◷</span>Actividad</a>
-            <a href="#mi-perfil" data-route="mi-perfil"><span aria-hidden="true">○</span>Mi perfil</a>
+            <a href="#inicio" data-route="inicio">Inicio</a>
+            <a href="#mis-materias" data-route="mis-materias" data-roles="student">Mis cursos</a>
+            <a href="#materias-asignadas" data-route="materias-asignadas" data-roles="professor">Mis cursos</a>
+            <a href="#inicio" class="mobile-widget-link" data-widget-focus="learningAnnouncements">Anuncios del campus</a>
+            <a href="#inicio" class="mobile-widget-link" data-widget-focus="learningWork">Trabajo pendiente</a>
+            <a href="#personas" data-route="personas" data-roles="control_escolar">Personas</a>
+            <a href="#clases" data-route="clases" data-roles="control_escolar">Clases</a>
+            <a href="#inscripciones" data-route="inscripciones" data-roles="control_escolar">Inscripciones</a>
+            <a href="#profesores" data-route="profesores" data-roles="control_escolar">Profesores</a>
+            <a href="#catalogos-academicos" data-route="catalogos-academicos" data-roles="control_escolar">Materias y periodos</a>
+            <a href="#actividad" data-route="actividad" data-roles="control_escolar">Actividad</a>
+            <a href="#mi-perfil" data-route="mi-perfil">Mi perfil</a>
         </nav>
-        <div class="nav-note"><strong>Seminario Diocesano San José</strong><p>Formación y comunidad</p></div>
     </aside>
 
     <main tabindex="-1" id="panelMain" class="dashboard-main" aria-busy="true">
@@ -63,10 +64,10 @@
              role="status" aria-live="polite">Verificando tu acceso…</div>
 
         <div id="panelContent" class="dashboard-grid" hidden>
-            <section data-screen="inicio" class="dashboard-card dashboard-welcome" aria-labelledby="welcomeTitle">
-                <p class="welcome-eyebrow">TU ESPACIO DE FORMACIÓN</p>
+            <section id="workspaceHero" data-screen="inicio" class="dashboard-card dashboard-welcome" aria-labelledby="welcomeTitle">
+                <p class="welcome-eyebrow">CAMPUS DEL SEMINARIO</p>
                 <h2 id="welcomeTitle">Bienvenido al Portal Escolar</h2>
-                <p id="workspaceWelcome">Todo lo que necesitas para tu vida académica, en un mismo lugar.</p>
+                <p id="workspaceWelcome">Tu formación, tus cursos y tu comunidad, en un mismo lugar.</p>
                 <a class="profile-link" href="#mi-perfil">Ver mi perfil</a>
                 <a id="subjectsLink" class="profile-link" href="#mis-materias" hidden>Ver mis materias</a>
                 <a id="teachingLink" class="profile-link" href="#materias-asignadas" hidden>Ver materias asignadas</a>
@@ -88,11 +89,12 @@
             <section data-screen="inicio mis-materias" id="subjectsSection" class="dashboard-card subjects-section"
                      aria-labelledby="subjectsTitle" hidden>
                 <div id="mis-materias">
-                    <h2 id="subjectsTitle">Mis materias</h2>
-                    <p>Consulta tus materias, periodos y calificaciones publicadas en escala de 0 a 100.</p>
+                    <h2 id="subjectsTitle">Mis cursos</h2>
+                    <p>Encuentra tus materiales, tareas y calificaciones en cada curso.</p>
                 </div>
                 <p id="subjectsStatus" class="subjects-status" role="status" aria-live="polite"></p>
 
+                <div id="studentPeriodTabs" class="period-tabs" role="group" aria-label="Filtrar cursos por periodo"></div>
                 <div class="course-tools" id="studentTools">
                     <label>Buscar materia<input id="studentSearch" type="search" placeholder="Escribe el nombre o código" autocomplete="off"></label>
                     <label>Periodo<select id="studentPeriod"><option value="">Todos los periodos</option></select></label>
@@ -108,11 +110,12 @@
             <section data-screen="inicio materias-asignadas" id="teachingSection" class="dashboard-card teaching-section"
                      aria-labelledby="teachingTitle" hidden>
                 <div id="materias-asignadas">
-                    <h2 id="teachingTitle">Mis materias asignadas</h2>
-                    <p>Consulta tus materias por periodo y abre la lista de alumnos inscritos.</p>
+                    <h2 id="teachingTitle">Mis cursos</h2>
+                    <p>Organiza los contenidos, las tareas y el seguimiento de tus alumnos.</p>
                 </div>
                 <p id="teachingStatus" class="teaching-status" role="status" aria-live="polite"></p>
 
+                <div id="teacherPeriodTabs" class="period-tabs" role="group" aria-label="Filtrar cursos por periodo"></div>
                 <div class="course-tools" id="teacherTools">
                     <label>Buscar materia<input id="teacherSearch" type="search" placeholder="Escribe el nombre o código" autocomplete="off"></label>
                     <label>Periodo<select id="teacherPeriod"><option value="">Todos los periodos</option></select></label>
@@ -232,6 +235,12 @@
                 <ul id="managementList" class="management-list"></ul>
                 <button id="managementMore" class="back-link" type="button" hidden>Mostrar más</button>
             </section>
+            <aside id="learningSidebar" class="learning-sidebar" data-screen="inicio" aria-label="Anuncios y actividades del campus">
+                <section id="learningAnnouncements" class="campus-widget" tabindex="-1" aria-label="Anuncios"></section>
+                <section id="learningWork" class="campus-widget" tabindex="-1" aria-label="Tareas y fechas límite"></section>
+                <section id="learningCalendar" class="campus-widget" tabindex="-1" aria-label="Calendario"></section>
+            </aside>
+            <section id="learningRoot" data-screen="curso" hidden></section>
         </div>
 
         <div id="panelRecovery" class="dashboard-recovery" hidden>
@@ -262,14 +271,16 @@
         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"
         integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK"
         crossorigin="anonymous" defer></script>
-    <script src="supabase-config.js?v=20261021-campus-1" defer></script>
+    <script src="supabase-config.js?v=20261021-aula-1" defer></script>
     <script src="auth.js" defer></script>
     <script src="subjects.js" defer></script>
     <script src="grade-editor.js" defer></script>
     <script src="teaching.js" defer></script>
     <script src="management.js?v=20261021-campus-1" defer></script>
     <script src="control.js?v=20261021-campus-1" defer></script>
-    <script src="workspace.js?v=20261021-campus-1" defer></script>
-    <script src="panel.js?v=20261021-campus-1" defer></script>
+    <script src="learning-files.js?v=20261021-aula-1" defer></script>
+    <script src="learning.js?v=20261021-aula-1" defer></script>
+    <script src="workspace.js?v=20261021-aula-1" defer></script>
+    <script src="panel.js?v=20261021-aula-1" defer></script>
 </body>
 </html>

@@ -57,7 +57,7 @@ async def finished(context, state, label, *, allow_student=False):
     assert not state['route_errors'], state['route_errors']
     if not allow_student:
         assert not state['enrollment_requests'] and not state['grade_requests']
-    allowed = ['get_teaching_roster', 'get_teaching_grade',
+    allowed = ['get_teaching_roster', 'get_teaching_grade', 'portal_learning_read',
                'save_teaching_grade', 'publish_teaching_grade']
     for method, url in state['requests']:
         assert (method in ['GET', 'OPTIONS'] or '/auth/v1/' in url

@@ -2,3 +2,4 @@
 .branches/
 .env*
 !.env.example
+tests/__pycache__/

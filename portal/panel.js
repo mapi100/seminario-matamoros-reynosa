@@ -42,6 +42,8 @@
         window.PortalTeaching?.clear();
         window.PortalControl?.clear();
         window.PortalManagement?.clear();
+        window.PortalLearning?.clear();
+        window.PortalLearningFiles?.clear();
         window.PortalWorkspace?.clear();
         name.textContent = "";
         role.textContent = "";
@@ -144,6 +146,7 @@
                             "No fue posible cargar los catálogos. Recarga la página para reintentar.";
                     }
                 }
+                window.PortalLearning?.show(result.profile, verifyAccess);
                 window.PortalWorkspace?.show(result.profile);
             } else {
                 showUnavailable("No fue posible verificar tu acceso. Comprueba tu conexión e inténtalo nuevamente.");
