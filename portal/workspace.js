@@ -10,7 +10,7 @@
         inicio: "Inicio", "mis-materias": "Mis cursos", "materias-asignadas": "Mis cursos",
         personas: "Personas", clases: "Clases", inscripciones: "Inscripciones",
         profesores: "Profesores", "catalogos-academicos": "Materias y periodos",
-        actividad: "Actividad", "mi-perfil": "Mi perfil", curso: "Curso"
+        kardex: "Kardex", actividad: "Actividad", "mi-perfil": "Mi perfil", curso: "Curso"
     };
     const adminRoutes = {
         personas: "people", clases: "classes", inscripciones: "enrollments",
@@ -94,6 +94,8 @@
         }
         if (Object.hasOwn(adminRoutes, route)) window.PortalManagement?.openResource(adminRoutes[route]);
         else window.PortalManagement?.leave();
+        if (route === "kardex") window.PortalKardex?.openRoute();
+        else window.PortalKardex?.leave();
         window.PortalLearning?.navigate();
         closeMenu();
         if (focus) {

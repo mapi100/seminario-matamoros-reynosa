@@ -15,3 +15,4 @@ Documentación del proyecto:
 - [Guardar y publicar calificaciones desde el portal](docs/capturar-calificaciones.md)
 - [Crear periodos y materias desde Control Escolar](docs/control-escolar.md)
 
+- [Generar y reimprimir kardex desde Control Escolar](docs/kardex.md)

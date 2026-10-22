@@ -43,6 +43,7 @@
         window.PortalControl?.clear();
         window.PortalManagement?.clear();
         window.PortalDeletion?.clear();
+        window.PortalKardex?.clear();
         window.PortalLearning?.clear();
         window.PortalLearningFiles?.clear();
         window.PortalWorkspace?.clear();
@@ -146,6 +147,7 @@
                         window.PortalControl.show(verifyAccess);
                         window.PortalManagement?.show(verifyAccess);
                         window.PortalDeletion?.show(verifyAccess);
+                        window.PortalKardex?.show(verifyAccess);
                         window.PortalTeaching?.show(verifyAccess);
                     } else {
                         document.getElementById("controlSection").hidden = false;

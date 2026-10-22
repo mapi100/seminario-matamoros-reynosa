@@ -1,0 +1,111 @@
+.kardex-section { grid-column: 1 / -1; }
+.kardex-heading,.kardex-student-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+.kardex-heading h2 { font-size: 24px; margin-bottom: 8px; }
+.kardex-heading p,.kardex-student-heading p,.kardex-help { font-size: 14px; color: #657182; line-height: 1.7; }
+.kardex-eyebrow { font-size: 11px !important; font-weight: 700; letter-spacing: .13em; color: #066a9f !important; margin: 0 0 9px; }
+.kardex-actions,.kardex-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+.kardex-steps { display: flex; flex-wrap: wrap; gap: 12px; list-style: none; padding: 0; margin: 24px 0; }
+.kardex-steps li { background: #edf5fa; color: #34546b; padding: 10px 16px; border-radius: 5px; font-size: 13px; }
+.kardex-search { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; max-width: 800px; }
+.kardex-search label { flex-basis: 100%; font-size: 14px; font-weight: 600; }
+.kardex-search input { flex: 1; min-width: 150px; }
+.kardex-section input,.kardex-section select,.kardex-dialog input,.kardex-dialog select { min-height: 42px; max-width: 100%; padding: 10px; border: 1px solid #b7c5d5; border-radius: 5px; background: white; color: #283c50; font: inherit; }
+.kardex-students { list-style: none; padding: 0; margin: 20px 0; }
+.kardex-students li { padding: 18px 0; border-top: 1px solid #dce3eb; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.kardex-students strong { font-size: 15px; color: #2c4055; }
+.kardex-students p { margin: 4px 0; font-size: 13px; color: #647181; overflow-wrap: anywhere; }
+.kardex-student-heading { border-bottom: 1px solid #dae2eb; padding: 18px 0; margin-bottom: 20px; }
+.kardex-student-heading h3 { margin: 0 0 4px; font-size: 22px; }
+.kardex-toolbar label,.kardex-issue-form label { display: grid; gap: 7px; font-size: 13px; font-weight: 600; }
+.kardex-toolbar select { min-width: 220px; }
+.kardex-issue-form { display: grid; grid-template-columns: minmax(180px,.8fr) minmax(200px,1.4fr) auto; gap: 15px; align-items: end; background: #f2f7fb; padding: 20px; margin: 25px 0 10px; border-radius: 6px; }
+.kardex-section .control-create,.kardex-dialog .control-create { background: #006fba; border-color: #006fba; color: white; }
+.kardex-section button:disabled { opacity: .5; cursor: wait; }
+#kardexRequirements { padding: 16px; border: 1px solid #dde5ee; border-radius: 6px; font-size: 13px; margin: 20px 0; }
+#kardexRequirements summary { cursor: pointer; font-weight: 600; }
+#kardexReasons { line-height: 1.8; }
+.kardex-issued { margin-top: 35px; }
+.kardex-issued h3 { margin-bottom: 5px; }
+.kardex-issued>p { color: #687687; font-size: 13px; }
+.kardex-home-card { grid-column: 1 / -1; }
+.kardex-paper { background: #fff; color: #152a3d; border: 1px solid #d7e0e9; padding: 30px; margin: 26px 0; line-height: 1.5; }
+.kardex-paper-header { display: grid; grid-template-columns: 70px 1fr auto; gap: 20px; align-items: center; padding-bottom: 20px; border-bottom: 2px solid #173b65; }
+.kardex-paper-header img { width: 65px; height: 78px; object-fit: contain; }
+.kardex-paper h2 { font: 700 22px Georgia,serif; color: #173b65; margin: 0 0 4px; }
+.kardex-paper h3 { margin: 5px 0; font-size: 17px; }
+.kardex-paper-header p { margin: 3px 0; font-size: 12px; }
+.kardex-paper-label { font-size: 11px; letter-spacing: .08em; font-weight: 700; color: #466177; }
+.kardex-paper-folio { text-align: right; font-size: 12px; }
+.kardex-paper-data { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 25px; padding: 22px 0; font-size: 12px; }
+.kardex-paper-data p { margin: 0; overflow-wrap: anywhere; }
+.kardex-paper-data strong { display: block; font-size: 10px; text-transform: uppercase; color: #607183; letter-spacing: .05em; margin-bottom: 3px; }
+.kardex-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin: 0 0 22px; }
+.kardex-summary>div { background: #f2f6fa; border-radius: 4px; padding: 14px; }
+.kardex-summary span { display: block; font-size: 11px; color: #607183; }
+.kardex-summary strong { display: block; font-size: 23px; color: #173b65; margin-top: 5px; }
+.kardex-table-scroll { overflow-x: auto; max-width: 100%; }
+.kardex-table { width: 100%; min-width: 650px; border-collapse: collapse; font-size: 12px; }
+.kardex-table th,.kardex-table td { border: 1px solid #ccd7e2; padding: 9px 10px; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.kardex-table th { color: #24405b; background: #edf3f8; font-weight: 600; }
+.kardex-period-row th { background: #e5edf5; font-size: 12px; }
+.kardex-paper-notes { font-size: 11px; color: #4e6276; line-height: 1.65; margin: 18px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.kardex-signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin: 65px 15px 25px; text-align: center; font-size: 12px; }
+.kardex-signatures>div { border-top: 1px solid #496277; padding-top: 8px; }
+.kardex-signatures p { margin: 3px; }
+.kardex-paper-footer { font-size: 10px; text-align: center; color: #637181; border-top: 1px solid #d7e0e9; padding-top: 15px; }
+.kardex-dialog { width: min(900px,calc(100% - 28px)); }
+.kardex-dialog-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.kardex-dialog-fields label { margin: 0; display: grid; gap: 7px; }
+.kardex-dialog-fields label:has(input[type=checkbox]) { display: flex; align-items: center; }
+.kardex-dialog-fields input[type=checkbox] { width: 18px; min-height: 18px; }
+.kardex-dialog-help,.kardex-dialog-wide { grid-column: 1 / -1; }
+.kardex-dialog-help { color: #64768a; font-size: 13px; line-height: 1.7; margin: 0; }
+.kardex-edit-table { min-width: 650px; }
+.kardex-edit-table select { width: 160px; }
+.kardex-edit-table input[type=number] { width: 95px; }
+.kardex-edit-table input[type=text] { width: 160px; }
+#kardexPrintRoot { display: none; }
+@media(max-width:900px) {
+    .kardex-heading { flex-direction: column; }
+    .kardex-issue-form { grid-template-columns: 1fr 1fr; }
+    .kardex-summary { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width:600px) {
+    .kardex-paper { padding: 17px; }
+    .kardex-paper-header { grid-template-columns: 45px 1fr; gap: 12px; }
+    .kardex-paper-header img { width: 42px; height: 56px; }
+    .kardex-paper-header h2 { font-size: 17px; }
+    .kardex-paper-folio { grid-column: 1 / -1; text-align: left; }
+    .kardex-paper-data,.kardex-issue-form,.kardex-dialog-fields { grid-template-columns: 1fr; }
+    .kardex-students li,.kardex-student-heading { align-items: start; flex-direction: column; }
+    .kardex-toolbar>* { width: 100%; }
+    .kardex-signatures { gap: 20px; margin-right: 0; margin-left: 0; }
+}
+@page { size: letter; margin: 14mm; }
+@media print {
+    body.kardex-printing>* { display: none !important; }
+    body.kardex-printing>#kardexPrintRoot { display: block !important; }
+    #kardexPrintRoot .kardex-paper { border: 0; padding: 0; margin: 0; max-width: none; font-family: Arial,sans-serif; }
+    #kardexPrintRoot .kardex-paper-header { grid-template-columns: 60px 1fr auto; padding-bottom: 12px; }
+    #kardexPrintRoot .kardex-paper h2 { font-size: 20px; }
+    #kardexPrintRoot .kardex-paper h3 { font-size: 15px; }
+    #kardexPrintRoot .kardex-paper-data { grid-template-columns: 1fr 1fr; gap: 6px 20px; padding: 14px 0; font-size: 11px; }
+    #kardexPrintRoot .kardex-paper-folio { grid-column: auto; text-align: right; }
+    #kardexPrintRoot .kardex-summary { grid-template-columns: repeat(4,1fr); margin-bottom: 14px; }
+    #kardexPrintRoot .kardex-summary>div { padding: 9px; }
+    #kardexPrintRoot .kardex-summary strong { font-size: 18px; }
+    #kardexPrintRoot .kardex-table-scroll { overflow: visible; }
+    #kardexPrintRoot .kardex-table { min-width: 0; table-layout: fixed; font-size: 10px; }
+    #kardexPrintRoot .kardex-table th:nth-child(1) { width: 11%; }
+    #kardexPrintRoot .kardex-table th:nth-child(2) { width: 24%; }
+    #kardexPrintRoot .kardex-table th:nth-child(3) { width: 13%; }
+    #kardexPrintRoot .kardex-table th:nth-child(4) { width: 14%; }
+    #kardexPrintRoot .kardex-table th:nth-child(5) { width: 12%; }
+    #kardexPrintRoot .kardex-table th,#kardexPrintRoot .kardex-table td { padding: 6px 5px; }
+    #kardexPrintRoot .kardex-table .kardex-paper-notes { margin: 4px 0 0; }
+    #kardexPrintRoot .kardex-period-row th { font-size: 10px; }
+    #kardexPrintRoot thead { display: table-header-group; }
+    #kardexPrintRoot tr,#kardexPrintRoot .kardex-signatures,#kardexPrintRoot .kardex-paper-header { break-inside: avoid; }
+    #kardexPrintRoot .kardex-paper-notes,#kardexPrintRoot .kardex-paper-footer { font-size: 10px; margin-top: 12px; margin-bottom: 12px; }
+    #kardexPrintRoot .kardex-signatures { margin-top: 40px; margin-bottom: 15px; font-size: 11px; }
+}
