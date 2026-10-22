@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="workspace.css?v=20261022-content-1">
     <link rel="stylesheet" href="learning-files.css?v=20261021-aula-1">
     <link rel="stylesheet" href="kardex.css?v=20261022-kardex-1">
+    <link rel="stylesheet" href="personal-record.css?v=20261022-expediente-1">
     <link rel="stylesheet" href="content-files.css?v=20261022-content-1">
     <link rel="stylesheet" href="learning.css?v=20261022-content-1">
 </head>
@@ -51,6 +52,7 @@
             <a href="#profesores" data-route="profesores" data-roles="control_escolar">Profesores</a>
             <a href="#catalogos-academicos" data-route="catalogos-academicos" data-roles="control_escolar">Materias y periodos</a>
             <a href="#kardex" data-route="kardex" data-roles="control_escolar">Kardex</a>
+            <a href="#expedientes" data-route="expedientes" data-roles="control_escolar">Expedientes</a>
             <a href="#actividad" data-route="actividad" data-roles="control_escolar">Actividad</a>
             <a href="#mi-perfil" data-route="mi-perfil">Mi perfil</a>
         </nav>
@@ -76,7 +78,7 @@
                 <p class="welcome-eyebrow">CAMPUS DEL SEMINARIO</p>
                 <h2 id="welcomeTitle">Bienvenido al Portal Escolar</h2>
                 <p id="workspaceWelcome">Tu formación, tus cursos y tu comunidad, en un mismo lugar.</p>
-                <a class="profile-link" href="#mi-perfil">Ver mi perfil</a>
+                <a id="personalProfileLink" class="profile-link" href="#mi-perfil">Ver mi perfil</a>
                 <a id="subjectsLink" class="profile-link" href="#mis-materias" hidden>Ver mis materias</a>
                 <a id="teachingLink" class="profile-link" href="#materias-asignadas" hidden>Ver materias asignadas</a>
                 <a id="controlLink" class="profile-link" href="#catalogos-academicos" hidden>Administrar catálogos</a>
@@ -92,6 +94,22 @@
                     <dt>Estado</dt>
                     <dd id="profileState"></dd>
                 </dl>
+            </section>
+
+            <section id="personalRecordSection" class="dashboard-card personal-record-section" data-screen="mi-perfil expedientes" hidden aria-labelledby="personalRecordTitle">
+                <div class="personal-heading"><div><p class="personal-eyebrow">EXPEDIENTE DEL SEMINARIO</p><h2 id="personalRecordTitle">Mis datos personales</h2><p id="personalRecordIntro">Completa tus datos por secciones. Puedes guardar aunque falte información.</p></div><div class="personal-actions"><button id="personalChooseOther" type="button" class="back-link" hidden>Cambiar alumno</button><button id="personalReload" type="button" class="back-link">Actualizar datos</button></div></div>
+                <p class="personal-privacy">El expediente completo solo está disponible para el alumno y Control Escolar. El nombre se comparte con las listas académicas; la CURP y el nacimiento se vinculan al kardex.</p>
+                <p id="personalStatus" class="control-message" role="status" aria-live="polite"></p>
+                <div id="personalLookup" hidden><form id="personalSearchForm" class="management-search" role="search"><label for="personalSearch">Nombre, matrícula o CURP</label><input id="personalSearch" type="search" maxlength="160" placeholder="Buscar seminarista" autocomplete="off"><button class="back-link control-create" type="submit">Buscar</button></form><ul id="personalStudents" class="personal-students"></ul><button id="personalMore" class="back-link" type="button" hidden>Mostrar más alumnos</button></div>
+                <div id="personalEditor" hidden>
+                    <div class="personal-summary"><div><h3 id="personalStudentName"></h3><p id="personalAccount"></p><p id="personalReviewState"></p></div><div class="personal-completion"><label for="personalProgress" id="personalProgressText"></label><progress id="personalProgress" max="9" value="0"></progress><details><summary>Ver datos sugeridos pendientes</summary><ul id="personalMissing"></ul></details></div></div>
+                    <form id="personalForm" novalidate autocomplete="on">
+                        <div id="personalTabs" class="personal-tabs" role="tablist" aria-label="Secciones del expediente"></div>
+                        <div id="personalGroups"></div>
+                        <div class="personal-save-bar"><div><strong id="personalDirty">Datos guardados</strong><p id="personalSaveHelp">Puedes completar la información poco a poco.</p></div><div class="personal-actions"><button id="personalPrevious" type="button" class="back-link">Anterior</button><button id="personalNext" type="button" class="back-link">Siguiente sección</button><button id="personalSave" type="submit" class="back-link control-create">Guardar mis datos</button></div></div>
+                    </form>
+                    <div id="personalReviewTools" class="personal-review-tools" hidden><p>Revisa los datos capturados. Esta marca registra la revisión interna de Control Escolar; no valida la CURP ante RENAPO.</p><button id="personalMarkReviewed" type="button" class="back-link">Marcar como revisado</button></div>
+                </div>
             </section>
 
             <section data-screen="inicio mis-materias" id="subjectsSection" class="dashboard-card subjects-section"
@@ -247,7 +265,7 @@
                 </div>
                 <div id="kardexWorkspace" hidden>
                     <div class="kardex-student-heading"><div><h3 id="kardexStudentName"></h3><p id="kardexStudentMeta"></p></div><button id="kardexChooseOther" class="back-link" type="button">Cambiar alumno</button></div>
-                    <div class="kardex-toolbar"><label for="kardexProgram">Historial que deseas generar<select id="kardexProgram"><option value="">Historial general</option></select></label><button id="kardexRefresh" class="back-link" type="button">Actualizar historial</button><button id="kardexStudentData" class="back-link" type="button">Datos del alumno</button><button id="kardexAcademicData" class="back-link" type="button">Clasificar materias</button></div>
+                    <div class="kardex-toolbar"><label for="kardexProgram">Historial que deseas generar<select id="kardexProgram"><option value="">Historial general</option></select></label><button id="kardexRefresh" class="back-link" type="button">Actualizar historial</button><button id="kardexStudentData" class="back-link" type="button">Datos del alumno</button><button id="kardexPersonalData" class="back-link" type="button">Expediente personal</button><button id="kardexAcademicData" class="back-link" type="button">Clasificar materias</button></div>
                     <p class="kardex-help">Se utilizan las calificaciones finales publicadas. Las notas de tareas y los borradores del profesor no sustituyen la calificación final.</p>
                     <div id="kardexPreview"></div>
                     <details id="kardexRequirements"><summary>Qué falta para generar un kardex final</summary><ul id="kardexReasons"></ul></details>
@@ -313,19 +331,20 @@
         integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK"
         crossorigin="anonymous" defer></script>
     <script src="supabase-config.js?v=20261021-aula-1" defer></script>
-    <script src="auth.js" defer></script>
+    <script src="auth.js?v=20261022-expediente-1" defer></script>
     <script src="subjects.js" defer></script>
     <script src="grade-editor.js" defer></script>
     <script src="teaching.js" defer></script>
     <script src="course-colors.js?v=20261022-content-1" defer></script>
     <script src="content-files.js?v=20261022-content-1" defer></script>
     <script src="deletion.js?v=20261022-admin-1" defer></script>
-    <script src="kardex.js?v=20261022-kardex-1" defer></script>
-    <script src="management.js?v=20261022-kardex-1" defer></script>
+    <script src="kardex.js?v=20261022-expediente-1" defer></script>
+    <script src="personal-record.js?v=20261022-expediente-1" defer></script>
+    <script src="management.js?v=20261022-expediente-1" defer></script>
     <script src="control.js?v=20261022-admin-1" defer></script>
     <script src="learning-files.js?v=20261021-aula-1" defer></script>
     <script src="learning.js?v=20261022-content-1" defer></script>
-    <script src="workspace.js?v=20261022-kardex-1" defer></script>
-    <script src="panel.js?v=20261022-kardex-1" defer></script>
+    <script src="workspace.js?v=20261022-expediente-1" defer></script>
+    <script src="panel.js?v=20261022-expediente-1" defer></script>
 </body>
 </html>

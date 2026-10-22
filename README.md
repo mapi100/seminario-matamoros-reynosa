@@ -16,3 +16,4 @@ Documentación del proyecto:
 - [Crear periodos y materias desde Control Escolar](docs/control-escolar.md)
 
 - [Generar y reimprimir kardex desde Control Escolar](docs/kardex.md)
+- [Expediente personal del seminarista y revisión de Control Escolar](docs/expediente-personal.md)

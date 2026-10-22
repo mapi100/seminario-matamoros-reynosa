@@ -44,6 +44,7 @@
         window.PortalManagement?.clear();
         window.PortalDeletion?.clear();
         window.PortalKardex?.clear();
+        window.PortalPersonalRecord?.clear();
         window.PortalLearning?.clear();
         window.PortalLearningFiles?.clear();
         window.PortalWorkspace?.clear();
@@ -60,6 +61,7 @@
     });
 
     function goToLogin(reason) {
+        window.PortalPersonalRecord?.discardDraft();
         const target = new URL("index.html", window.location.href);
         if (reason) target.searchParams.set("estado", reason);
         window.location.replace(target.href);
@@ -156,6 +158,7 @@
                     }
                 }
                 window.PortalLearning?.show(result.profile, verifyAccess);
+                window.PortalPersonalRecord?.show(result.profile, verifyAccess);
                 window.PortalWorkspace?.show(result.profile);
             } else {
                 showUnavailable("No fue posible verificar tu acceso. Comprueba tu conexión e inténtalo nuevamente.");
@@ -180,6 +183,7 @@
     window.addEventListener("pagehide", function () {
         version += 1;
         clearProfile();
+        window.PortalPersonalRecord?.discardDraft();
     });
     window.addEventListener("pageshow", function (event) {
         if (event.persisted) void verifyAccess();

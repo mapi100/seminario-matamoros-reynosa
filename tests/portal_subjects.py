@@ -328,7 +328,9 @@ async def finished(context,state,label):
     assert not state['errors'],state['errors']
     assert not state['route_errors'],state['route_errors']
     assert all(method in ['GET','OPTIONS'] or '/auth/v1/' in url
-               or (method == 'POST' and url.endswith('/rpc/portal_learning_read'))
+               # Inicio del campus: lectura LMS y comprobación de limpieza de
+               # archivos ya autorizada; esta fixture siempre tiene cola vacía.
+               or (method == 'POST' and url.endswith(('/rpc/portal_learning_read','/rpc/portal_admin_cleanup_files')))
                for method,url in state['requests']),state['requests']
     checks+=1
     print('PASS '+label,flush=True)

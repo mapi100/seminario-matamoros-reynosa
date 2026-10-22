@@ -62,7 +62,7 @@
                 !Object.hasOwn(roleLabels, profile.role)
             ) return { status: "denied", hasSession };
 
-            return { status: "authorized", hasSession, profile };
+            return { status: "authorized", hasSession, profile: { ...profile, id: userData.user.id } };
         } catch {
             return { status: "unavailable", hasSession };
         }

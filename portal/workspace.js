@@ -10,7 +10,7 @@
         inicio: "Inicio", "mis-materias": "Mis cursos", "materias-asignadas": "Mis cursos",
         personas: "Personas", clases: "Clases", inscripciones: "Inscripciones",
         profesores: "Profesores", "catalogos-academicos": "Materias y periodos",
-        kardex: "Kardex", actividad: "Actividad", "mi-perfil": "Mi perfil", curso: "Curso"
+        kardex: "Kardex", expedientes: "Expedientes", actividad: "Actividad", "mi-perfil": "Mi perfil", curso: "Curso"
     };
     const adminRoutes = {
         personas: "people", clases: "classes", inscripciones: "enrollments",
@@ -78,6 +78,10 @@
             const link = nav.querySelector('[data-route="' + (known ? route : "inicio") + '"]');
             if (!known || !link || link.hidden) route = "inicio";
         }
+        if (window.PortalPersonalRecord?.canNavigate(route) === false) {
+            history.replaceState(null, "", "#" + document.body.dataset.view);
+            return;
+        }
         document.body.dataset.view = route;
         for (const panel of document.querySelectorAll("[data-screen]")) {
             panel.classList.toggle("view-hidden", !panel.dataset.screen.split(" ").includes(route));
@@ -96,6 +100,7 @@
         else window.PortalManagement?.leave();
         if (route === "kardex") window.PortalKardex?.openRoute();
         else window.PortalKardex?.leave();
+        window.PortalPersonalRecord?.navigate(route);
         window.PortalLearning?.navigate();
         closeMenu();
         if (focus) {
@@ -121,6 +126,15 @@
         }[profile.role] || "#inicio";
         navigate();
     }
+
+    window.addEventListener("portal-personal-updated", function (event) {
+        if (!profile || event.detail?.id !== profile.id || typeof event.detail.full_name !== "string") return;
+        profile.full_name = event.detail.full_name;
+        document.getElementById("profileName").textContent = profile.full_name;
+        document.getElementById("welcomeTitle").textContent = "Bienvenido, " + profile.full_name;
+        document.getElementById("workspaceUserName").textContent = profile.full_name;
+        document.getElementById("workspaceAvatar").textContent = profile.full_name.trim().split(/\s+/).slice(0, 2).map(word => word[0]).join("").toLocaleUpperCase("es");
+    });
 
     toggle.addEventListener("click", function () {
         const open = nav.classList.toggle("menu-open");
