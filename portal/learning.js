@@ -95,6 +95,7 @@
     function validCollection(value, max = 500) { return Array.isArray(value) && value.length <= max; }
     function validCourse(value) { return value && uuid.test(value.id) && [value.code, value.name, value.period_name].every(item => typeof item === "string" && item.length < 400); }
     function clear() {
+        window.PortalWeightedGrades?.clear();
         active = false; profile = undefined; recheck = undefined;
         generation++; courseVersion++; dashboardVersion++; routeKey = undefined;
         for (const controller of controllers) controller.abort();
@@ -349,6 +350,7 @@
     }
     function taskStatus(item) {
         if (item.published === false) return ["Borrador", "draft"];
+        if (item.requires_submission === false) return ["Evaluación del profesor", "pending"];
         if (item.submission) return [item.submission.late ? "Entregada fuera de plazo" : "Entregada", "done"];
         if (item.due_at && Date.parse(item.due_at) < Date.now()) return [item.allow_late ? "Entrega pendiente · fuera de plazo" : "Entrega cerrada", "late"];
         return ["Pendiente", "pending"];
@@ -359,7 +361,7 @@
             if (assignment) return renderAssignment(target, assignment);
             note("La tarea solicitada no está disponible en este curso.", "error");
         }
-        toolbar(target, "Tareas", canManage() ? [button("Nueva tarea", () => assignmentDialog())] : []);
+        toolbar(target, "Tareas", canManage() ? [button("Nueva tarea", () => assignmentDialog()), link("Calificaciones y ponderaciones", coursePath(courseId, "calificaciones"), "learning-button secondary")] : [link("Ver mis promedios", coursePath(courseId, "mis-notas"), "learning-button secondary")]);
         if (!course.assignments.length) return empty(target, canManage() ? "Crea la primera tarea y establece su fecha de entrega." : "Tu profesor todavía no ha publicado tareas.");
         const list = node("div", undefined, "learning-assignment-list");
         for (const assignment of course.assignments) {
@@ -384,6 +386,7 @@
         if (assignment.instructions) article.append(paragraph(assignment.instructions)); else empty(article, "No se han agregado instrucciones adicionales.");
         target.append(article);
         if (profile.role === "student") {
+            if (assignment.requires_submission !== false) {
             const delivery = node("section", undefined, "learning-card"); toolbar(delivery, "Tu entrega");
             if (assignment.submission) {
                 delivery.append(paragraph("Última entrega: " + date(assignment.submission.submitted_at), "learning-meta"));
@@ -396,6 +399,7 @@
             const files = node("div", undefined, "learning-files-area"); delivery.append(files);
             window.PortalLearningFiles?.render(files, { courseId, assignmentId: assignment.id, canManage: false });
             target.append(delivery);
+            } else target.append(paragraph("Esta actividad se evalúa directamente por el profesor. No necesitas entregar archivos en el portal.", "learning-meta"));
             if (typeof assignment.published_score === "number" || assignment.published_feedback) {
                 const feedback = node("section", undefined, "learning-card"); toolbar(feedback, "Evaluación publicada"); feedback.append(paragraph(score(assignment.published_score), "learning-score-large"));
                 if (assignment.published_feedback) feedback.append(paragraph(assignment.published_feedback)); target.append(feedback);
@@ -406,7 +410,9 @@
         toolbar(target, "Anuncios del curso", canManage() ? [button("Nuevo anuncio", () => announcementDialog())] : []);
         const wrapper = node("section", undefined, "learning-card"); renderAnnouncements(wrapper, course.announcements); target.append(wrapper);
     }
+    function weightedContext() { return { courseId, canManage: canManage(), onUnauthorized: unauthorized, refresh: refreshCourse, newAssignment: category => assignmentDialog({ grading_category: category, requires_submission: !["exams", "participation"].includes(category) }) }; }
     function renderOwnGrades(target) {
+        if (window.PortalWeightedGrades) { void window.PortalWeightedGrades.render(target, weightedContext()); return; }
         toolbar(target, "Mis calificaciones");
         const final = node("section", undefined, "learning-final-grade"); final.append(node("h3", "Calificación final publicada"), paragraph(score(course.course.final_score), "learning-score-large")); target.append(final);
         const card = node("section", undefined, "learning-card");
@@ -466,6 +472,7 @@
     }
     function gradeRecord(student, assignment) { return student.grades.find(item => item.assignment_id === assignment.id) || { assignment_id: assignment.id, revision: 0, score: null, feedback: "" }; }
     async function renderGradebook(target, offset = 0) {
+        if (window.PortalWeightedGrades) { void window.PortalWeightedGrades.render(target, weightedContext(), offset); return; }
         const operation = courseVersion, current = generation, id = courseId;
         pageOffset = offset; toolbar(target, "Libro de calificaciones"); note("Consultando calificaciones…");
         try {
@@ -574,6 +581,7 @@
         } finally { pendingWrites.delete("grid"); }
     }
     function renderTab(selectedItem) {
+        window.PortalWeightedGrades?.clear();
         if (!active || !course || !$("learningContent")) return;
         window.PortalLearningFiles?.clear();
         window.PortalContentFiles?.clear();
@@ -611,6 +619,7 @@
         if (!active) return;
         const pieces = location.hash.slice(1).split("/");
         if (pieces[0] !== "curso") {
+            window.PortalWeightedGrades?.clear();
             courseVersion++; routeKey = undefined; course = undefined; courseId = undefined; gradebook = undefined; closeModal(true); window.PortalLearningFiles?.clear(); window.PortalContentFiles?.clear();
             if ($("learningRoot")) { $("learningRoot").hidden = true; $("learningRoot").replaceChildren(); }
             return;
@@ -700,7 +709,7 @@
     }
     function values(form) {
         const result = {};
-        for (const input of form.querySelectorAll("input[name],textarea[name]")) result[input.name] = input.type === "checkbox" ? input.checked : input.type === "number" ? input.value === "" ? null : Number(input.value) : input.value.trim();
+        for (const input of form.querySelectorAll("input[name],textarea[name],select[name]")) result[input.name] = input.type === "checkbox" ? input.checked : input.type === "number" ? input.value === "" ? null : Number(input.value) : input.value.trim();
         return result;
     }
     function editData(row, data) { return row.id ? { ...data, id: row.id, revision: row.revision || 0 } : data; }
@@ -795,6 +804,11 @@
         const dialog = openDialog(row.id ? "Editar tarea" : "Nueva tarea", (form, token) => {
             const data = values(form); data.due_at = data.due_at ? new Date(data.due_at).toISOString() : null; return submitModal("assignment_save", courseId, editData(row, data), token);
         });
+        const group = node("div", undefined, "learning-field"), label = node("label", "Tipo de actividad"), select = node("select");
+        select.id = "learning-field-grading_category"; select.name = "grading_category"; label.htmlFor = select.id;
+        for (const [value, caption] of [["tasks", "Tarea"], ["exams", "Examen"], ["projects", "Proyecto"], ["participation", "Participación"], ["practice", "Práctica sin valor"]]) { const option = node("option", caption); option.value = value; select.append(option); }
+        select.value = row.grading_category || "tasks"; group.append(label, select); dialog.fields.append(group);
+        field(dialog.fields, "requires_submission", "El alumno debe entregar un trabajo en el portal", { type: "checkbox", value: row.requires_submission !== false, help: "Desmárcalo para exámenes presenciales o participación. Las ponderaciones se revisan en Configurar evaluación." });
         field(dialog.fields, "title", "Título de la tarea", { required: true, value: row.title });
         field(dialog.fields, "instructions", "Instrucciones", { textarea: true, value: row.instructions });
         field(dialog.fields, "due_at", "Fecha y hora de entrega", { type: "datetime-local", value: localDate(row.due_at), help: "Se utiliza la zona horaria de tu dispositivo." });

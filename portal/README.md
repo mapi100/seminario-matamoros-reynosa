@@ -273,6 +273,11 @@ publicar, conflicto, red incierta sin reintento automático, validaciones y
 cancelación de respuestas. La API sigue siendo simulada; el runner de PostgreSQL
 comprueba la autorización y la atomicidad de la captura por separado.
 
+El libro del curso incluye [promedios ponderados](../docs/promedios-ponderados.md):
+criterios por clase, borrador y publicación del esquema, captura rápida de notas,
+exenciones y revisión de finales. `tests/portal_weighted_grades.py` comprueba sus
+flujos con Chromium y API simulada; el runner SQL comprueba cálculo y permisos.
+
 `tests/portal_control_catalogs.py` comprueba altas de ambos catálogos, validación,
 duplicados, confirmaciones, errores inciertos, paginación, roles y limpieza de
 respuestas tardías. Comparte los fixtures de API simulada con las otras pruebas.

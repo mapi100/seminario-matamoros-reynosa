@@ -1,5 +1,11 @@
 # SQL del Portal Escolar
 
+Para promedios automáticos por tareas, exámenes, proyectos y participación,
+aplica una vez `20261023010000_weighted_gradebook.sql` después de las etapas
+formativas. Consulta [Promedios ponderados](../docs/promedios-ponderados.md).
+Las finales existentes se conservan hasta una publicación explícita del profesor
+o Control Escolar; el kardex sigue utilizando únicamente las finales publicadas.
+
 Para agregar Curso Introductorio (2 semestres), Filosofía (6) y Teología (8),
 consulta [Etapas formativas](../docs/etapas-formativas.md). La migración
 `20261023000000_formation_stages.sql` se aplica una vez después del expediente

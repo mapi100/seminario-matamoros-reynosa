@@ -96,7 +96,7 @@ async def fixture(browser, role='student', *, mobile=False, route='inicio', data
     async def api_route(route):
         request = route.request
         path = urlparse(request.url).path
-        if not ('portal_learning_' in path or 'portal_content_files' in path or '/storage/v1/' in path):
+        if not ('portal_learning_' in path or 'portal_gradebook_' in path or 'portal_content_files' in path or '/storage/v1/' in path):
             return await route.fallback()
         if request.method == 'OPTIONS':
             return await route.fulfill(status=204, headers=headers)
@@ -114,6 +114,25 @@ async def fixture(browser, role='student', *, mobile=False, route='inicio', data
                     return await route.fulfill(status=200, headers=headers, body='[]')
                 raise AssertionError('Unexpected Storage request ' + request.method)
             args = request.post_data_json if request.method == 'POST' else {}
+            if path.endswith('/portal_gradebook_read'):
+                summary={'configured':False,'average':None,'coverage':0,'categories':[],'items':[],'ready':False,'reasons':['Sin criterios publicados'],'token':'fixture-token'}
+                if args['p_resource']=='own':
+                    result={'summary':summary,'final_score':data['course']['course']['final_score'],'categories':[],
+                            'assignments':[{**a,'score':a.get('published_score'),'feedback':a.get('published_feedback'),'submitted':bool(a.get('submission'))} for a in data['course']['assignments']]}
+                else:
+                    result=copy.deepcopy(data['gradebook']);result.update(revision=0,draft=None,published=None,errors=[])
+                    for student in result['students']:student.update(summary=summary,draft_summary=summary,exemptions=[])
+                return await route.fulfill(status=200,headers=headers,body=json.dumps(result))
+            if path.endswith('/portal_gradebook_write'):
+                if data['write_status']!=200:
+                    return await route.fulfill(status=data['write_status'],headers=headers,body=json.dumps({'code':'PT409','message':'Simulated conflict'}))
+                data['writes'].append(copy.deepcopy(args))
+                assert args['p_action']=='assessments_save',args
+                for item in args['p_data']['items']:
+                    grade=next(g for s in data['gradebook']['students'] if s['enrollment_id']==item['enrollment_id'] for g in s['grades'] if g['assignment_id']==item['assignment_id'])
+                    grade.update(score=item['score'],feedback=item.get('feedback',''),revision=grade['revision']+1)
+                    if args['p_data']['publish']:grade.update(published_score=grade['score'],published_feedback=grade['feedback'])
+                return await route.fulfill(status=200,headers=headers,body=json.dumps({'saved':True,'id':COURSE}))
             if path.endswith('/portal_content_files'):
                 assert args['p_action']=='list', args
                 topic=next(t for m in data['course']['modules'] for t in m['topics'] if t['id']==args['p_topic'])
@@ -380,28 +399,33 @@ async def main():
         await done(context, state, data, 'Professor edits the syllabus from the course workspace')
 
         context, page, state, data = await fixture(browser, role='professor', route=f'curso/{COURSE}/calificaciones')
-        await expect(page.locator('#learningGradebook')).to_contain_text('Seminarista de prueba')
-        score = page.locator(f'#learningGradebook input[data-enrollment="{ENROLLMENT}"][data-assignment="{ASSIGNMENT}"]')
+        await expect(page.locator('.weighted-table')).to_contain_text('Seminarista de prueba')
+        await page.get_by_role('button', name='Captura rápida', exact=True).click()
+        score = page.locator(f'.weighted-table input[data-enrollment="{ENROLLMENT}"][data-assignment="{ASSIGNMENT}"]')
         await score.fill('95')
         await page.get_by_role('button', name='Guardar borradores', exact=True).click()
-        await expect(page.locator('#learningStatus')).to_contain_text(re.compile('guardad', re.I))
+        await page.locator('.weighted-dialog').get_by_role('button', name='Guardar borradores', exact=True).click()
+        await expect(page.locator('.weighted-dialog')).to_have_count(0)
         first = data['gradebook']['students'][0]['grades'][0]
         assert first['score'] == 95 and first['published_score'] == 100
-        await page.get_by_role('button', name='Publicar calificaciones', exact=True).click()
-        await expect(page.locator('#learningStatus')).to_contain_text(re.compile('publicad', re.I))
+        await page.get_by_role('button', name='Guardar y publicar notas', exact=True).click()
+        await page.locator('.weighted-dialog').get_by_role('button', name='Guardar y publicar', exact=True).click()
+        await expect(page.locator('.weighted-dialog')).to_have_count(0)
         assert first['published_score'] == 95
-        assert any(w['p_action'] == 'grade_save' for w in data['writes'])
-        assert any(w['p_action'] == 'grade_publish' for w in data['writes'])
+        assert any(w['p_action'] == 'assessments_save' and not w['p_data']['publish'] for w in data['writes'])
+        assert any(w['p_action'] == 'assessments_save' and w['p_data']['publish'] for w in data['writes'])
         await screenshot(page, 'seminario-aula-calificaciones.png')
         await done(context, state, data, 'Teacher gradebook saves drafts separately then publishes score snapshots')
 
         context, page, state, data = await fixture(browser, role='professor', route=f'curso/{COURSE}/calificaciones')
-        await expect(page.locator('#learningGradebook')).to_be_visible()
+        await expect(page.locator('.weighted-table')).to_be_visible()
         data['write_status'] = 409
-        score = page.locator(f'#learningGradebook input[data-enrollment="{ENROLLMENT}"][data-assignment="{ASSIGNMENT}"]')
+        await page.get_by_role('button', name='Captura rápida', exact=True).click()
+        score = page.locator(f'.weighted-table input[data-enrollment="{ENROLLMENT}"][data-assignment="{ASSIGNMENT}"]')
         await score.fill('90')
         await page.get_by_role('button', name='Guardar borradores', exact=True).click()
-        await expect(page.locator('#learningStatus')).to_contain_text(re.compile('cambi|actualiz|conflic', re.I))
+        await page.locator('.weighted-dialog').get_by_role('button', name='Guardar borradores', exact=True).click()
+        await expect(page.locator('.weighted-dialog')).to_contain_text(re.compile('cambi|actualiz|conflic', re.I))
         assert data['gradebook']['students'][0]['grades'][0]['score'] == 82
         await done(context, state, data, 'Optimistic grade conflict is reported without overwriting another revision')
 
@@ -487,7 +511,7 @@ async def main():
         assert data['writes'][-1]['p_course'] is None
         data['gradebook']['students'][0]['name'] = '=FORMULA DE PRUEBA'
         await nav(page, 'calificaciones')
-        await expect(page.locator('#learningGradebook')).to_contain_text('=FORMULA DE PRUEBA')
+        await expect(page.locator('.weighted-table')).to_contain_text('=FORMULA DE PRUEBA')
         async with page.expect_download() as pending:
             await page.get_by_role('button', name='Exportar alumnos mostrados', exact=True).click()
         download = await pending.value
