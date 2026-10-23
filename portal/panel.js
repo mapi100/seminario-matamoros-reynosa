@@ -45,6 +45,7 @@
         window.PortalDeletion?.clear();
         window.PortalKardex?.clear();
         window.PortalPersonalRecord?.clear();
+        window.PortalFormation?.clear();
         window.PortalLearning?.clear();
         window.PortalLearningFiles?.clear();
         window.PortalWorkspace?.clear();
@@ -159,6 +160,7 @@
                 }
                 window.PortalLearning?.show(result.profile, verifyAccess);
                 window.PortalPersonalRecord?.show(result.profile, verifyAccess);
+                window.PortalFormation?.show(result.profile, verifyAccess);
                 window.PortalWorkspace?.show(result.profile);
             } else {
                 showUnavailable("No fue posible verificar tu acceso. Comprueba tu conexión e inténtalo nuevamente.");

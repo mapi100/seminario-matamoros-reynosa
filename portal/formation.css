@@ -1,0 +1,33 @@
+.formation-section { grid-column: 1 / -1; }
+.formation-stages { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+.formation-stage-card { display: flex; flex-direction: column; gap: 8px; padding: 22px; border: 1px solid #d8e1ed; border-top: 4px solid #557789; border-radius: 8px; background: #f8fafc; }
+.formation-stage-card[data-stage="filosofia"] { border-top-color: #92742a; }
+.formation-stage-card[data-stage="teologia"] { border-top-color: #963e43; }
+.formation-stage-card strong { font-size: 1.15rem; }
+.formation-stage-card span { color: #586575; }
+.formation-stage-card p { margin: 0; font-weight: 700; color: #123d69; }
+.formation-tools { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin: 20px 0; }
+.formation-tools label { display: grid; flex: 1 1 220px; gap: 8px; font-weight: 700; }
+.formation-tools input,.formation-tools select,.formation-fields select { width: 100%; min-width: 0; min-height: 46px; padding: 10px; font: inherit; border: 1px solid #a8bbd1; border-radius: 6px; background: white; }
+.formation-students,.formation-history { padding: 0; margin: 20px 0; list-style: none; }
+.formation-students > li { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 0; border-bottom: 1px solid #dce3ec; }
+.formation-students h3,.formation-students p { margin: 0 0 8px; }
+.formation-students h3 { font-size: 1.2rem; }
+.formation-students .back-link { flex-shrink: 0; }
+.formation-label { color: #16446e; font-weight: 700; }
+.formation-history { display: grid; gap: 12px; }
+.formation-history li { padding: 14px 18px; border-left: 4px solid #557789; background: #f3f6fa; border-radius: 4px; }
+.formation-history li[data-stage="filosofia"] { border-left-color: #92742a; }
+.formation-history li[data-stage="teologia"] { border-left-color: #963e43; }
+.formation-history p { margin: 5px 0; }
+.formation-history small { color: #586575; }
+.formation-fields { display: grid; gap: 14px; }
+.formation-fields label { font-weight: 700; }
+.formation-own { grid-column: 1 / -1; }
+.formation-own h2 { margin-top: 0; }
+#formationDialog h3 { margin-top: 28px; }
+@media(max-width:760px) {
+    .formation-stages { grid-template-columns: 1fr; }
+    .formation-students > li { align-items: flex-start; flex-direction: column; }
+    .formation-students .back-link { width: 100%; text-align: center; }
+}

@@ -119,6 +119,9 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
             elif path=='/rest/v1/profiles':
                 assert query=={'select':['full_name,role,active'],'id':['eq.'+UID]},query
                 status=200; data=[state['profile']] if state['profile'] else []
+            elif path=='/rest/v1/rpc/portal_formation_read':
+                assert request.post_data_json=={'p_resource':'own'}
+                status=200; data={'history':[]}
             elif path in ['/rest/v1/subjects', '/rest/v1/academic_periods']:
                 assert request.method == 'GET', request.method
                 kind = 'subjects' if path.endswith('/subjects') else 'periods'
@@ -330,7 +333,7 @@ async def finished(context,state,label):
     assert all(method in ['GET','OPTIONS'] or '/auth/v1/' in url
                # Inicio del campus: lectura LMS y comprobación de limpieza de
                # archivos ya autorizada; esta fixture siempre tiene cola vacía.
-               or (method == 'POST' and url.endswith(('/rpc/portal_learning_read','/rpc/portal_admin_cleanup_files')))
+               or (method == 'POST' and url.endswith(('/rpc/portal_learning_read','/rpc/portal_admin_cleanup_files','/rpc/portal_formation_read')))
                for method,url in state['requests']),state['requests']
     checks+=1
     print('PASS '+label,flush=True)

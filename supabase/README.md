@@ -1,5 +1,10 @@
 # SQL del Portal Escolar
 
+Para agregar Curso Introductorio (2 semestres), Filosofía (6) y Teología (8),
+consulta [Etapas formativas](../docs/etapas-formativas.md). La migración
+`20261023000000_formation_stages.sql` se aplica una vez después del expediente
+personal; vincula etapa y semestre por alumno y periodo académico.
+
 Esta carpeta conserva el esquema y las pruebas de PostgreSQL en Git, junto con
 el código del portal. Guardar los archivos en GitHub no los ejecuta en Supabase.
 

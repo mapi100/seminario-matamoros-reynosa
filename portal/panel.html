@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="workspace.css?v=20261022-content-1">
     <link rel="stylesheet" href="learning-files.css?v=20261021-aula-1">
     <link rel="stylesheet" href="kardex.css?v=20261022-kardex-1">
+    <link rel="stylesheet" href="formation.css?v=20261023-etapas-1">
     <link rel="stylesheet" href="personal-record.css?v=20261022-expediente-1">
     <link rel="stylesheet" href="content-files.css?v=20261022-content-1">
     <link rel="stylesheet" href="learning.css?v=20261022-content-1">
@@ -52,6 +53,7 @@
             <a href="#profesores" data-route="profesores" data-roles="control_escolar">Profesores</a>
             <a href="#catalogos-academicos" data-route="catalogos-academicos" data-roles="control_escolar">Materias y periodos</a>
             <a href="#kardex" data-route="kardex" data-roles="control_escolar">Kardex</a>
+            <a href="#etapas" data-route="etapas" data-roles="control_escolar">Etapas y semestres</a>
             <a href="#expedientes" data-route="expedientes" data-roles="control_escolar">Expedientes</a>
             <a href="#actividad" data-route="actividad" data-roles="control_escolar">Actividad</a>
             <a href="#mi-perfil" data-route="mi-perfil">Mi perfil</a>
@@ -94,6 +96,28 @@
                     <dt>Estado</dt>
                     <dd id="profileState"></dd>
                 </dl>
+            </section>
+
+            <section id="formationOwn" class="dashboard-card formation-own" data-screen="inicio mi-perfil" aria-labelledby="formationOwnTitle" hidden>
+                <h2 id="formationOwnTitle">Mi trayectoria formativa</h2>
+                <p>Tu etapa y semestre por periodo académico. Control Escolar registra y actualiza esta información.</p>
+                <div id="formationOwnSummary" role="status"></div>
+            </section>
+
+            <section id="formationSection" class="dashboard-card formation-section" data-screen="etapas" aria-labelledby="formationTitle" hidden>
+                <div class="management-heading"><div><h2 id="formationTitle">Etapas y semestres</h2><p>Ubica a cada seminarista en su etapa y conserva su trayectoria por periodo académico.</p></div><button id="formationRefresh" type="button" class="back-link">Actualizar</button></div>
+                <div id="formationStages" class="formation-stages"></div>
+                <p>El periodo indica las fechas del calendario; el semestre indica el avance dentro de la etapa. Ejemplo: Ago–Dic 2026 · Filosofía · Semestre 3 de 6.</p>
+                <form id="formationSearchForm" class="formation-tools" role="search">
+                    <label>Periodo académico<select id="formationPeriod" required></select></label>
+                    <label>Etapa<select id="formationFilter"><option value="">Todas las etapas</option></select></label>
+                    <label>Nombre o matrícula<input id="formationSearch" type="search" maxlength="160" placeholder="Buscar seminarista" autocomplete="off"></label>
+                    <button type="submit" class="back-link">Buscar</button>
+                </form>
+                <p id="formationStatus" class="control-message" role="status" aria-live="polite"></p>
+                <ul id="formationStudents" class="formation-students"></ul>
+                <button id="formationMore" type="button" class="back-link" hidden>Mostrar más seminaristas</button>
+                <p>Las inscripciones en materias se administran en Inscripciones. La promoción de semestre y el cambio de etapa los determina el Seminario.</p>
             </section>
 
             <section id="personalRecordSection" class="dashboard-card personal-record-section" data-screen="mi-perfil expedientes" hidden aria-labelledby="personalRecordTitle">
@@ -253,6 +277,7 @@
                 <a href="#catalogos-academicos" class="task-card"><span class="task-mark">02</span><h2>Materias y periodos</h2><p>Organiza el catálogo y las fechas del ciclo académico.</p><span class="task-link">Organizar catálogo →</span></a>
                 <a href="#clases" class="task-card"><span class="task-mark">03</span><h2>Clases</h2><p>Abre una materia para un periodo y asigna sus profesores.</p><span class="task-link">Administrar clases →</span></a>
                 <a href="#inscripciones" class="task-card"><span class="task-mark">04</span><h2>Inscripciones</h2><p>Inscribe alumnos y consulta las altas y bajas de cada clase.</p><span class="task-link">Administrar inscripciones →</span></a>
+                <a href="#etapas" class="task-card"><span class="task-mark">06</span><h2>Etapas y semestres</h2><p>Curso Introductorio, Filosofía y Teología. Registra la etapa de cada seminarista por periodo.</p><span class="task-link">Organizar trayectoria →</span></a>
                 <a href="#kardex" class="task-card kardex-home-card"><span class="task-mark">05</span><h2>Kardex e historial</h2><p>Consulta calificaciones, promedio y créditos. Emite o reimprime el documento del alumno.</p><span class="task-link">Generar kardex →</span></a>
             </section>
             <section id="kardexSection" class="dashboard-card kardex-section" data-screen="kardex" hidden aria-labelledby="kardexTitle">
@@ -326,6 +351,23 @@
         </div>
     </footer>
 
+    <dialog id="formationDialog" class="management-dialog" aria-labelledby="formationDialogTitle">
+        <h2 id="formationDialogTitle">Etapa y semestre</h2>
+        <p id="formationDialogPeriod"></p>
+        <form id="formationForm">
+            <div class="formation-fields">
+                <label for="formationStage">Etapa formativa</label>
+                <select id="formationStage" required><option value="">Selecciona etapa</option></select>
+                <p id="formationStageHelp"></p>
+                <label for="formationSemester">Semestre dentro de la etapa</label>
+                <select id="formationSemester" required disabled><option value="">Selecciona semestre</option></select>
+            </div>
+            <p id="formationDialogStatus" class="control-message" role="status" aria-live="polite"></p>
+            <div class="dialog-actions"><button id="formationSave" type="submit" class="back-link control-create">Guardar etapa y semestre</button><button id="formationCancel" type="button" class="back-link">Cancelar</button></div>
+        </form>
+        <h3>Trayectoria registrada</h3><div id="formationDialogHistory"></div>
+    </dialog>
+
     <script
         src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"
         integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK"
@@ -338,13 +380,14 @@
     <script src="course-colors.js?v=20261022-content-1" defer></script>
     <script src="content-files.js?v=20261022-content-1" defer></script>
     <script src="deletion.js?v=20261022-admin-1" defer></script>
-    <script src="kardex.js?v=20261022-expediente-1" defer></script>
-    <script src="personal-record.js?v=20261022-expediente-2" defer></script>
-    <script src="management.js?v=20261022-expediente-1" defer></script>
+    <script src="formation.js?v=20261023-etapas-1" defer></script>
+    <script src="kardex.js?v=20261023-etapas-1" defer></script>
+    <script src="personal-record.js?v=20261023-etapas-1" defer></script>
+    <script src="management.js?v=20261023-etapas-1" defer></script>
     <script src="control.js?v=20261022-admin-1" defer></script>
     <script src="learning-files.js?v=20261021-aula-1" defer></script>
     <script src="learning.js?v=20261022-content-1" defer></script>
-    <script src="workspace.js?v=20261022-expediente-1" defer></script>
-    <script src="panel.js?v=20261022-expediente-1" defer></script>
+    <script src="workspace.js?v=20261023-etapas-1" defer></script>
+    <script src="panel.js?v=20261023-etapas-1" defer></script>
 </body>
 </html>

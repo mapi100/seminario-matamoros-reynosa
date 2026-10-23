@@ -17,3 +17,4 @@ Documentación del proyecto:
 
 - [Generar y reimprimir kardex desde Control Escolar](docs/kardex.md)
 - [Expediente personal del seminarista y revisión de Control Escolar](docs/expediente-personal.md)
+- [Etapas formativas: Introductorio, Filosofía y Teología](docs/etapas-formativas.md)
