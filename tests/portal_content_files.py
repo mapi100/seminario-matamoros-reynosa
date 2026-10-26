@@ -131,18 +131,18 @@ async def main():
             c,page,state,data=await w.fixture(browser,mobile=mobile,teaching=[h.subject(1),h.subject(2)])
             await expect(page.locator('#teachingList li')).to_have_count(2)
             assert await page.evaluate('''()=>{const a=document.querySelector('#teachingSection').getBoundingClientRect(),b=document.querySelector('#controlHome').getBoundingClientRect();return a.bottom<=b.top || b.bottom<=a.top}''')
-            assert await page.locator('.teaching-card').first.evaluate('(e)=>getComputedStyle(e,"::before").backgroundImage==="none"')
+            assert await page.locator('.teaching-card').first.evaluate('(e)=>getComputedStyle(e,"::before").backgroundImage.includes("/images/")')
             assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             await page.screenshot(path=str(h.ARTIFACTS/('seminario-control-sin-solapamiento-'+('movil' if mobile else 'escritorio')+'.png')),full_page=True)
             checks_label='Control home courses and administration do not overlap '+('mobile' if mobile else 'desktop')
             await done(c,state,{'errors':[]},{'errors':[]},checks_label)
 
         c,page,state,data,x=await fixture(browser)
-        assert await page.locator('.learning-course-banner').evaluate('(e)=>getComputedStyle(e).backgroundImage==="none"')
+        assert await page.locator('.learning-course-banner').evaluate('(e)=>getComputedStyle(e).backgroundImage.includes("/images/")')
         await page.evaluate(f'location.hash="curso/{l.COURSE}/inicio"');await expect(page.locator('.learning-module-picture')).to_have_count(1)
-        assert await page.locator('.learning-module-picture').evaluate('(e)=>getComputedStyle(e).backgroundImage==="none"')
-        await page.screenshot(path=str(h.ARTIFACTS/'seminario-clases-con-colores.png'),full_page=True)
-        await done(c,state,data,x,'course banner and module tiles use color without photos')
+        assert await page.locator('.learning-module-picture').evaluate('(e)=>getComputedStyle(e).backgroundImage.includes("/images/")')
+        await page.screenshot(path=str(h.ARTIFACTS/'seminario-clases-con-portadas.png'),full_page=True)
+        await done(c,state,data,x,'course banner and module tiles share the course image with the same geometry')
         await browser.close();print(f'PASS {checks} content/layout browser scenarios; mock API only')
 
 if __name__=='__main__':

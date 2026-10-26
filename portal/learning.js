@@ -252,7 +252,7 @@
     }
     function courseHeading() {
         $("learningRoot").dataset.learningTab = tab;
-        window.PortalCourseColors?.apply($("learningRoot"), course.course.code);
+        window.PortalCourseColors?.apply($("learningRoot"), course.course.code, course.course.period_name);
         $("learningCourseTitle").textContent = course.course.name;
         $("learningCourseCode").textContent = course.course.code;
         $("learningCoursePeriod").textContent = course.course.period_name;

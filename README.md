@@ -3,6 +3,7 @@ Página Web Oficial del Seminario Diocesano de Matamoros-Reynosa.
 
 Documentación del proyecto:
 
+- [Portadas automáticas al subir fotos a GitHub](docs/portadas-cursos.md)
 - [Promedios automáticos y ponderaciones por clase](docs/promedios-ponderados.md)
 - [Campus autónomo: navegación, clases, personas e invitaciones](docs/campus-autonomo.md)
 - [Aula virtual: anuncios, contenido, tareas, entregas y libro de calificaciones](docs/aula-virtual.md)

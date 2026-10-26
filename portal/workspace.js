@@ -204,7 +204,8 @@
             const needle = search.value.trim().toLocaleLowerCase("es");
             let visible = 0;
             for (const card of cards) {
-                window.PortalCourseColors?.apply(card, card.querySelector(".subject-code,.teaching-code")?.textContent);
+                window.PortalCourseColors?.apply(card, card.querySelector(".subject-code,.teaching-code")?.textContent,
+                    card.querySelector("." + periodClass)?.textContent || "");
                 const text = ((card.querySelector("." + nameClass)?.textContent || card.textContent) + " " +
                     (card.querySelector(".subject-code,.teaching-code")?.textContent || "")).toLocaleLowerCase("es");
                 card.hidden = Boolean((needle && !text.includes(needle)) ||
