@@ -8,3 +8,26 @@
 .content-file-actions button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: left; }
 .content-files > button { margin: 8px 8px 0 0; }
 .content-file-message { font-size: 13px; }
+.content-preview[hidden] { display: none; }
+.content-preview { min-width: 0; margin: 16px 0 0; border: 1px solid #d6dce3; background: #f1f3f5; }
+.content-preview-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 12px 14px; background: #fff; border-bottom: 1px solid #d6dce3; }
+.content-preview-name { min-width: 0; overflow-wrap: anywhere; color: #303030; font-size: 14px; font-weight: 600; }
+.content-preview-toolbar .content-file-actions { margin: 0; }
+.content-pdf-document { min-width: 0; }
+.content-pdf-controls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 10px; background: #f5f6f8; border-bottom: 1px solid #d6dce3; }
+.content-pdf-control { min-width: 32px; min-height: 32px; padding: 5px 10px; border: 1px solid #cbd1d9; border-radius: 4px; background: #fff; color: #303030; font: inherit; font-size: 14px; cursor: pointer; }
+.content-pdf-control:disabled { opacity: .35; cursor: default; }
+.content-pdf-page-label { min-width: 104px; text-align: center; font-size: 13px; color: #51545b; }
+.content-pdf-viewport { width: 100%; height: 72dvh; min-height: 480px; overflow: auto; overscroll-behavior: contain; padding: 16px; background: #dedfe1; }
+.content-pdf-page { display: block; margin: 0 auto; background: #fff; box-shadow: 0 2px 8px #0002; }
+.content-pdf-status:not(:empty) { margin: 0; padding: 10px 16px; background: #fff; font-size: 13px; }
+.content-pdf-accessible-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: pre; }
+.content-preview > .learning-status { margin: 16px; }
+.content-preview > button { margin: 0 16px 16px; }
+.content-preview:fullscreen { display: flex; flex-direction: column; width: 100%; height: 100%; margin: 0; border: 0; }
+.content-preview:fullscreen .content-pdf-document { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.content-preview:fullscreen .content-pdf-viewport { flex: 1; min-height: 0; }
+@media (max-width: 760px) {
+    .content-preview-toolbar { align-items: flex-start; padding: 12px; }
+    .content-pdf-viewport { height: 65dvh; min-height: 360px; }
+}

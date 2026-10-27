@@ -11,7 +11,6 @@
     const publish = document.getElementById("gradePublish");
     const reload = document.getElementById("gradeReload");
     const message = document.getElementById("gradeMessage");
-    const format = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 });
     let version = 0;
     let controller;
     let selection;
@@ -20,9 +19,7 @@
     let needsReload = true;
 
     function inputScore() {
-        if (!/^\d{1,3}(?:\.\d{1,2})?$/.test(input.value)) return null;
-        const score = Number(input.value);
-        return Number.isFinite(score) && score >= 0 && score <= 100 ? score : null;
+        try { return window.PortalGradeScale.toWire(input.value, snapshot?.draft_score ?? snapshot?.published_score); } catch { return null; }
     }
 
     function canPublish() {
@@ -84,14 +81,14 @@
         needsReload = false;
         published.textContent = state.published_score === null
             ? "Sin calificación publicada"
-            : "Publicada: " + format.format(state.published_score) + " / 100";
+            : "Publicada: " + window.PortalGradeScale.format(state.published_score) + " / 10";
         draftState.textContent = state.revision === 0
             ? "Guarda un borrador antes de publicar."
             : state.has_unpublished_changes
-                ? "Borrador guardado: " + format.format(state.draft_score) + " / 100. Pendiente de publicación."
-                : "Borrador publicado: " + format.format(state.draft_score) + " / 100.";
+                ? "Borrador guardado: " + window.PortalGradeScale.format(state.draft_score) + " / 10. Pendiente de publicación."
+                : "Borrador publicado: " + window.PortalGradeScale.format(state.draft_score) + " / 10.";
         const value = state.draft_score ?? state.published_score;
-        input.value = value === null ? "" : String(value);
+        input.value = value === null ? "" : window.PortalGradeScale.format(value);
         input.setCustomValidity("");
         reload.hidden = true;
     }
@@ -197,7 +194,7 @@
 
     input.addEventListener("input", function () {
         input.setCustomValidity(input.value && inputScore() === null
-            ? "Escribe una nota de 0 a 100 con hasta dos decimales." : "");
+            ? "Escribe una nota de 0 a 10 con un decimal." : "");
         syncControls();
     });
     form.addEventListener("submit", function (event) {

@@ -1,6 +1,15 @@
 (function () {
     "use strict";
 
+    // En file:// cada HTML puede tener su propio almacenamiento de sesión.
+    // El acceso local y el panel comparten un solo documento, sin pasar tokens por URL.
+    if (window.location.protocol === "file:") {
+        const target = new URL("panel.html", window.location.href);
+        target.hash = window.location.hash;
+        window.location.replace(target.href);
+        return;
+    }
+
     const loginForm = document.getElementById("loginForm");
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");

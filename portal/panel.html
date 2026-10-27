@@ -13,14 +13,18 @@
     <link rel="stylesheet" href="teaching.css">
     <link rel="stylesheet" href="grade-editor.css">
     <link rel="stylesheet" href="control.css?v=20261022-admin-1">
-    <link rel="stylesheet" href="workspace.css?v=20261023-portadas-1">
+    <link rel="stylesheet" href="workspace.css?v=20261027-acceso-3">
     <link rel="stylesheet" href="learning-files.css?v=20261021-aula-1">
+    <link rel="stylesheet" href="report-cards.css?v=20261027-boletas-1">
     <link rel="stylesheet" href="kardex.css?v=20261022-kardex-1">
     <link rel="stylesheet" href="formation.css?v=20261023-etapas-1">
     <link rel="stylesheet" href="personal-record.css?v=20261022-expediente-1">
-    <link rel="stylesheet" href="content-files.css?v=20261022-content-1">
+    <link rel="stylesheet" href="content-files.css?v=20261027-lector-1">
     <link rel="stylesheet" href="learning.css?v=20261023-portadas-1">
     <link rel="stylesheet" href="weighted-grades.css?v=20261023-notas-1">
+    <link rel="stylesheet" href="content-reader.css?v=20261027-lector-1">
+    <link rel="stylesheet" href="access.css?v=20261021-campus-1">
+    <link rel="stylesheet" href="local-access.css?v=20261027-acceso-3">
 </head>
 <body class="dashboard-page" data-view="inicio">
     <a class="skip-link" href="#panelMain">Saltar al contenido</a>
@@ -33,6 +37,7 @@
                 <div class="brand-text"><span class="brand-small">Seminario Diocesano San José</span><span class="brand-name">Matamoros-Reynosa</span></div>
             </a>
             <span id="workspaceCourseName" class="header-course-name" hidden></span>
+            <a href="../index.html" class="back-link local-access-back">← Sitio principal</a>
             <div class="dashboard-actions">
                 <a id="workspaceCoursesLink" href="#inicio" class="icon-link header-tool" aria-label="Mis cursos" title="Mis cursos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="10" y="3" width="5" height="5" rx="1"/><rect x="17" y="3" width="4" height="5" rx="1"/><rect x="3" y="10" width="5" height="5" rx="1"/><rect x="10" y="10" width="5" height="5" rx="1"/><rect x="17" y="10" width="4" height="5" rx="1"/><rect x="3" y="17" width="5" height="4" rx="1"/><rect x="10" y="17" width="5" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg></a>
                 <a href="#inicio" class="icon-link header-tool" data-widget-focus="learningAnnouncements" aria-label="Anuncios del campus" title="Anuncios"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v5h4l9 4V6l-9 4H4Zm4 5 1 6h3l-2-5M20 9v7"/></svg></a>
@@ -55,7 +60,7 @@
             <a href="#inscripciones" data-route="inscripciones" data-roles="control_escolar">Inscripciones</a>
             <a href="#profesores" data-route="profesores" data-roles="control_escolar">Profesores</a>
             <a href="#catalogos-academicos" data-route="catalogos-academicos" data-roles="control_escolar">Materias y periodos</a>
-            <a href="#kardex" data-route="kardex" data-roles="control_escolar">Kardex</a>
+            <a href="#kardex" data-route="kardex" data-roles="control_escolar">Boletas y kardex</a>
             <a href="#etapas" data-route="etapas" data-roles="control_escolar">Etapas y semestres</a>
             <a href="#expedientes" data-route="expedientes" data-roles="control_escolar">Expedientes</a>
             <a href="#actividad" data-route="actividad" data-roles="control_escolar">Actividad</a>
@@ -64,6 +69,44 @@
     </aside>
 
     <main tabindex="-1" id="panelMain" class="dashboard-main" aria-busy="true">
+        <section id="localAccess" class="local-access access-page" aria-labelledby="localAccessTitle" hidden>
+            <div class="login-main">
+                <section class="access-intro" aria-label="Bienvenida al campus">
+                    <p class="intro-tag">SEMINARIO DIOCESANO SAN JOSÉ</p>
+                    <h2>Tu formación.<br>Tu comunidad.<br>Tu campus.</h2>
+                    <p>Un espacio para tus materias, calificaciones y servicios escolares. Accede con la cuenta que te proporcionó Control Escolar.</p>
+                    <img src="../images/seminario_completo.jpg" alt="Instalaciones del Seminario Diocesano San José">
+                    <p class="intro-caption">Matamoros–Reynosa · Formación sacerdotal</p>
+                </section>
+                <section class="login-card">
+                    <div class="login-heading">
+                        <img src="../images/escudo_seminario_nuevo-Photoroom.png" alt="Escudo del Seminario Diocesano San José" class="login-logo" width="1050" height="1280">
+                        <p class="login-label">Portal Escolar</p>
+                        <h1 id="localAccessTitle">Iniciar sesión</h1>
+                        <p class="login-subtitle">Ingresa tus credenciales para acceder.</p>
+                    </div>
+                    <div id="localLoginMessage" class="login-message info" role="status" aria-live="polite"></div>
+                    <form id="localLoginForm" class="login-form" method="post">
+                        <div class="form-group">
+                            <label for="localEmail">Correo electrónico</label>
+                            <input id="localEmail" name="email" type="email" autocomplete="username" placeholder="correo@ejemplo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="localPassword">Contraseña</label>
+                            <div class="password-wrapper">
+                                <input id="localPassword" name="password" type="password" autocomplete="current-password" placeholder="Ingresa tu contraseña" required>
+                                <button id="localTogglePassword" class="password-toggle" type="button" aria-label="Mostrar contraseña" aria-controls="localPassword" aria-pressed="false">Mostrar</button>
+                            </div>
+                        </div>
+                        <button class="login-button" type="submit" disabled>Iniciar sesión</button>
+                    </form>
+                    <div class="login-help">
+                        <button id="localForgotPassword" class="text-button" type="button">¿Olvidaste tu contraseña?</button>
+                    </div>
+                    <p class="access-note">Acceso exclusivo para alumnos, profesores y personal autorizado del Seminario.</p>
+                </section>
+            </div>
+        </section>
         <div class="dashboard-heading">
             <p id="workspaceBreadcrumb" class="workspace-breadcrumb">Mi campus / Inicio</p>
             <p class="login-label">Portal Escolar</p>
@@ -200,11 +243,11 @@
                         <p id="gradePublished"></p>
                         <p id="gradeDraftState"></p>
                         <form id="gradeForm" method="post" aria-busy="false">
-                            <label for="gradeScore">Calificación de 0 a 100</label>
-                            <input id="gradeScore" name="score" type="number" min="0" max="100"
-                                   step="0.01" required disabled aria-describedby="gradeHelp"
+                            <label for="gradeScore">Calificación de 0 a 10</label>
+                            <input id="gradeScore" name="score" type="number" min="0" max="10"
+                                   step="0.1" required disabled aria-describedby="gradeHelp"
                                    autocomplete="off" inputmode="decimal">
-                            <p id="gradeHelp">Hasta dos decimales. Guarda el borrador y después publícalo para que el alumno lo vea.</p>
+                            <p id="gradeHelp">Un decimal; mínima aprobatoria 7.0. Guarda el borrador y después publícalo para que el alumno lo vea.</p>
                             <div class="grade-actions">
                                 <button id="gradeSave" class="back-link" type="submit" disabled>Guardar borrador</button>
                                 <button id="gradePublish" class="back-link grade-publish" type="button" disabled>Publicar calificación</button>
@@ -281,10 +324,10 @@
                 <a href="#clases" class="task-card"><span class="task-mark">03</span><h2>Clases</h2><p>Abre una materia para un periodo y asigna sus profesores.</p><span class="task-link">Administrar clases →</span></a>
                 <a href="#inscripciones" class="task-card"><span class="task-mark">04</span><h2>Inscripciones</h2><p>Inscribe alumnos y consulta las altas y bajas de cada clase.</p><span class="task-link">Administrar inscripciones →</span></a>
                 <a href="#etapas" class="task-card"><span class="task-mark">06</span><h2>Etapas y semestres</h2><p>Curso Introductorio, Filosofía y Teología. Registra la etapa de cada seminarista por periodo.</p><span class="task-link">Organizar trayectoria →</span></a>
-                <a href="#kardex" class="task-card kardex-home-card"><span class="task-mark">05</span><h2>Kardex e historial</h2><p>Consulta calificaciones, promedio y créditos. Emite o reimprime el documento del alumno.</p><span class="task-link">Generar kardex →</span></a>
+                <a href="#kardex" class="task-card kardex-home-card"><span class="task-mark">05</span><h2>Boletas y kardex</h2><p>Prepara la boleta semestral o consulta el historial por etapa. Emite y reimprime documentos.</p><span class="task-link">Consultar documentos →</span></a>
             </section>
             <section id="kardexSection" class="dashboard-card kardex-section" data-screen="kardex" hidden aria-labelledby="kardexTitle">
-                <div class="kardex-heading"><div><p class="kardex-eyebrow">CONTROL ESCOLAR</p><h2 id="kardexTitle">Kardex e historial académico</h2><p>Busca al seminarista, revisa sus calificaciones y genera su documento.</p></div><div class="kardex-actions"><button id="kardexInstitution" class="back-link" type="button">Datos del plantel</button><button id="kardexPrograms" class="back-link" type="button">Programas y planes</button></div></div>
+                <div class="kardex-heading"><div><p class="kardex-eyebrow">CONTROL ESCOLAR</p><h2 id="kardexTitle">Boletas y kardex</h2><p>Busca al seminarista, revisa sus calificaciones y genera su documento.</p></div><div class="kardex-actions"><button id="kardexInstitution" class="back-link" type="button">Datos del plantel</button><button id="kardexPrograms" class="back-link" type="button">Programas y planes</button></div></div>
                 <ol class="kardex-steps" aria-label="Pasos para generar un kardex"><li>1. Buscar alumno</li><li>2. Revisar historial</li><li>3. Emitir y guardar PDF</li></ol>
                 <p id="kardexStatus" class="control-message" role="status" aria-live="polite"></p>
                 <div id="kardexLookup">
@@ -293,6 +336,23 @@
                 </div>
                 <div id="kardexWorkspace" hidden>
                     <div class="kardex-student-heading"><div><h3 id="kardexStudentName"></h3><p id="kardexStudentMeta"></p></div><button id="kardexChooseOther" class="back-link" type="button">Cambiar alumno</button></div>
+                    <details id="reportCards" class="report-cards" hidden open>
+                        <summary>Boleta semestral</summary>
+                        <p class="kardex-help">Elige alumno y periodo: se reúnen sus materias y calificaciones finales publicadas. Control Escolar revisa y emite la boleta. Escala 0 a 10, un decimal y mínima aprobatoria 7.0.</p>
+                        <div class="report-fields">
+                            <label>Periodo académico<select id="reportPeriod"></select></label>
+                            <label>Ciclo escolar<input id="reportCycle" maxlength="9" pattern="[0-9]{4}-[0-9]{4}" placeholder="2025-2026" autocomplete="off"></label>
+                            <label>Nombre del Rector<input id="reportRector" maxlength="160" autocomplete="off"></label>
+                            <label>Nombre del Prefecto de Estudios<input id="reportPrefect" maxlength="160" autocomplete="off"></label>
+                        </div>
+                        <button id="reportRefresh" class="back-link" type="button">Actualizar vista previa y archivo</button>
+                        <p id="reportStatus" class="control-message" role="status" aria-live="polite"></p>
+                        <ul id="reportReasons"></ul>
+                        <div id="reportPreview"></div>
+                        <div class="report-actions"><label><input id="reportReviewed" type="checkbox">He revisado los datos, materias y notas de esta boleta.</label><button id="reportIssue" class="back-link control-create" type="button" disabled>Emitir boleta revisada</button></div>
+                        <h3>Boletas emitidas</h3><p class="kardex-help">Cada folio conserva la copia que revisó Control Escolar.</p>
+                        <ul id="reportIssues" class="kardex-students"></ul><button id="reportMore" class="back-link" type="button" hidden>Más boletas</button>
+                    </details>
                     <div class="kardex-toolbar"><label for="kardexProgram">Historial que deseas generar<select id="kardexProgram"><option value="">Historial general</option></select></label><button id="kardexRefresh" class="back-link" type="button">Actualizar historial</button><button id="kardexStudentData" class="back-link" type="button">Datos del alumno</button><button id="kardexPersonalData" class="back-link" type="button">Expediente personal</button><button id="kardexAcademicData" class="back-link" type="button">Clasificar materias</button></div>
                     <p class="kardex-help">Se utilizan las calificaciones finales publicadas. Las notas de tareas y los borradores del profesor no sustituyen la calificación final.</p>
                     <div id="kardexPreview"></div>
@@ -377,22 +437,25 @@
         crossorigin="anonymous" defer></script>
     <script src="supabase-config.js?v=20261021-aula-1" defer></script>
     <script src="auth.js?v=20261022-expediente-1" defer></script>
-    <script src="subjects.js" defer></script>
-    <script src="grade-editor.js" defer></script>
+    <script src="grade-scale.js?v=20261027-boletas-1" defer></script>
+    <script src="subjects.js?v=20261027-boletas-1" defer></script>
+    <script src="grade-editor.js?v=20261027-boletas-1" defer></script>
     <script src="teaching.js" defer></script>
     <script src="course-images.js?v=20261026-auto-1" defer></script>
     <script src="course-colors.js?v=20261026-auto-1" defer></script>
-    <script src="content-files.js?v=20261022-content-1" defer></script>
+    <script src="pdf-preview.js?v=20261027-local-2" defer></script>
+    <script src="content-files.js?v=20261027-lector-1" defer></script>
     <script src="deletion.js?v=20261022-admin-1" defer></script>
     <script src="formation.js?v=20261023-etapas-1" defer></script>
-    <script src="kardex.js?v=20261023-etapas-1" defer></script>
+    <script src="report-cards.js?v=20261027-boletas-1" defer></script>
+    <script src="kardex.js?v=20261027-boletas-1" defer></script>
     <script src="personal-record.js?v=20261023-etapas-1" defer></script>
-    <script src="management.js?v=20261023-etapas-1" defer></script>
+    <script src="management.js?v=20261027-boletas-1" defer></script>
     <script src="control.js?v=20261022-admin-1" defer></script>
     <script src="learning-files.js?v=20261021-aula-1" defer></script>
-    <script src="weighted-grades.js?v=20261023-notas-1" defer></script>
-    <script src="learning.js?v=20261026-auto-1" defer></script>
+    <script src="weighted-grades.js?v=20261027-boletas-1" defer></script>
+    <script src="learning.js?v=20261027-boletas-1" defer></script>
     <script src="workspace.js?v=20261026-auto-1" defer></script>
-    <script src="panel.js?v=20261023-etapas-1" defer></script>
+    <script src="panel.js?v=20261027-acceso-3" defer></script>
 </body>
 </html>

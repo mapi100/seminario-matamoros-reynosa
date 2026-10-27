@@ -9,16 +9,20 @@
     function button(text, action) { const el = node("button", text, "learning-button secondary compact"); el.type = "button"; el.addEventListener("click", action); return el; }
     function clear(scope) {
         for (const state of [...states]) if (!scope || scope === state.container || scope.contains(state.container)) {
-            state.alive = false; state.controller.abort(); for (const url of state.urls) URL.revokeObjectURL(url); state.container.replaceChildren(); states.delete(state);
+            state.alive = false; state.previewVersion++; state.pdf?.destroy(); state.controller.abort(); state.container.replaceChildren();
+            for (const url of state.urls) URL.revokeObjectURL(url); states.delete(state);
         }
     }
     function render(container, options) {
         clear(container);
-        const state = {container, courseId:options.courseId, topicId:options.topicId, alive:true, controller:new AbortController(), items:[], pending:[], selected:[], urls:new Set(), busy:false, locked:false, loaded:!options.topicId};
+        const state = {container, courseId:options.courseId, topicId:options.topicId, alive:true, controller:new AbortController(), items:[], pending:[], selected:[], urls:new Set(), previewVersion:0, previewURL:null, previewLoading:false, pdf:null, busy:false, locked:false, loaded:!options.topicId};
         states.add(state); container.classList.add("content-files");
+        container.classList.toggle("content-files-reader", Boolean(options.preview)); container.classList.remove("content-files-preview-open");
         const heading = node("h4", "Archivos del tema"), list = node("ul", undefined, "content-file-list"), message = node("p", "", "learning-status content-file-message");
         message.setAttribute("role", "status"); message.setAttribute("aria-live", "polite");
         container.append(heading, list, message);
+        const viewer = node("section", undefined, "content-preview"); viewer.hidden = true; viewer.setAttribute("aria-label", "Vista previa del documento");
+        container.append(viewer);
         const input = node("input"); input.type = "file"; input.multiple = true; input.accept = Object.keys(types).map(ext => "." + ext).join(","); input.setAttribute("aria-label", "Seleccionar archivos desde la computadora");
         const selectedList = node("ul", undefined, "content-file-list"), cleanup = button("Limpiar subidas incompletas", () => void cleanPending()), refresh = button("Actualizar archivos", () => void load());
         cleanup.hidden = true; refresh.hidden = !options.topicId;
@@ -30,7 +34,7 @@
         function note(text, error = false) { if (state.alive) { message.textContent = text; message.classList.toggle("error", error); } }
         function busy(value) {
             state.busy = value; container.setAttribute("aria-busy", String(value)); input.disabled = value || state.locked || !state.loaded;
-            for (const control of container.querySelectorAll("button")) control.disabled = value || state.locked;
+            for (const control of container.querySelectorAll("button:not(.content-pdf-control)")) control.disabled = value || state.locked;
         }
         function validateRows(rows) {
             if (!Array.isArray(rows) || rows.length > maxFiles || rows.some(f => !f || !uuid.test(f.id) || typeof f.name !== "string" || !f.name || f.name.length > 160 || !Number.isSafeInteger(f.size) || f.size < 1 || f.size > maxSize || typeof f.object_path !== "string" || f.object_path.length > 400 || !f.object_path.startsWith(state.courseId + "/" + state.topicId + "/"))) throw new Error("Archivos inválidos");
@@ -51,10 +55,61 @@
             } catch { note("No se pudo descargar el archivo. Comprueba tu conexión y tu acceso al curso.", true); }
             finally { if (state.alive) busy(false); }
         }
+        function isPDF(file) { return file.mimetype === "application/pdf" || /\.pdf$/i.test(file.name); }
+        function closePreview() {
+            state.previewVersion++; state.pdf?.destroy(); state.pdf = null; viewer.replaceChildren(); viewer.hidden = true;
+            container.classList.remove("content-files-preview-open");
+            if (state.previewURL) { URL.revokeObjectURL(state.previewURL); state.urls.delete(state.previewURL); state.previewURL = null; }
+            if (state.previewLoading) { state.previewLoading = false; busy(false); }
+        }
+        async function preview(file) {
+            if (state.busy || state.locked) return;
+            closePreview(); const version = state.previewVersion;
+            viewer.hidden = false; viewer.append(node("p", "Cargando vista previa de " + file.name + "…", "learning-status"));
+            viewer.setAttribute("aria-busy", "true"); state.previewLoading = true; busy(true);
+            try {
+                const response = await api().storage.from(bucket).download(file.object_path); live();
+                if (version !== state.previewVersion) return;
+                if (response.error || !(response.data instanceof Blob) || response.data.size < 1 || response.data.size > maxSize) throw new Error("Vista previa no disponible");
+                // El tipo lo fija el lector; nunca se incrusta HTML ni una URL pública de Storage.
+                const signature = await response.data.slice(0, 1024).text(); live();
+                if (version !== state.previewVersion) return;
+                if (!signature.includes("%PDF-")) throw new Error("El archivo no es un PDF");
+                const pdfBlob = new Blob([response.data], {type:"application/pdf"}), url = URL.createObjectURL(pdfBlob);
+                state.urls.add(url); state.previewURL = url;
+                const bar = node("div", undefined, "content-preview-toolbar"), tools = node("div", undefined, "content-file-actions");
+                bar.append(node("span", file.name, "content-preview-name"));
+                const open = node("a", "Abrir PDF en otra pestaña", "learning-button secondary compact");
+                open.href = url; open.target = "_blank"; open.rel = "noopener noreferrer";
+                if (options.preview && state.items.length === 1) {
+                    const get = button("Descargar " + file.name, () => void download(file)); get.disabled = state.busy; tools.append(get);
+                }
+                tools.append(open, button("Ampliar PDF", async () => {
+                    try { if (document.fullscreenElement === viewer) await document.exitFullscreen(); else await viewer.requestFullscreen(); }
+                    catch { note("Puedes ampliar el documento abriéndolo en otra pestaña."); }
+                }), button("Cerrar vista previa", () => { closePreview(); list.querySelector("button")?.focus(); }));
+                bar.append(tools);
+                const pages = node("div", undefined, "content-pdf-document"); pages.setAttribute("aria-label", "Vista previa de " + file.name);
+                viewer.replaceChildren(bar, pages);
+                container.classList.add("content-files-preview-open");
+                state.pdf = window.PortalPDFPreview.render(pages, pdfBlob); await state.pdf.ready; live();
+                if (version !== state.previewVersion) return;
+                note("Vista previa del PDF disponible.");
+            } catch {
+                if (state.alive && version === state.previewVersion) {
+                    container.classList.remove("content-files-preview-open");
+                    state.pdf?.destroy(); state.pdf = null;
+                    if (state.previewURL) { URL.revokeObjectURL(state.previewURL); state.urls.delete(state.previewURL); state.previewURL = null; }
+                    viewer.replaceChildren(node("p", "No se pudo mostrar el PDF. Comprueba tu conexión y tu acceso al curso; también puedes intentar descargarlo.", "learning-status error"), button("Reintentar vista previa", () => void preview(file)));
+                }
+            } finally { if (state.alive && version === state.previewVersion) { state.previewLoading = false; viewer.setAttribute("aria-busy", "false"); busy(false); } }
+        }
         function draw() {
             list.replaceChildren();
+            container.classList.toggle("content-files-single-pdf", state.items.length === 1 && isPDF(state.items[0]));
             for (const file of state.items) {
                 const li = node("li"), info = node("span", file.name + " · " + Math.ceil(file.size / 1024) + " KB"), actions = node("div", undefined, "content-file-actions");
+                if (isPDF(file)) actions.append(button("Ver PDF: " + file.name, () => void preview(file)));
                 actions.append(button("Descargar " + file.name, () => void download(file)));
                 if (options.edit) actions.append(button("Quitar", () => void remove(file)));
                 li.append(info, actions); list.append(li);
@@ -63,6 +118,7 @@
         }
         async function load() {
             if (!state.topicId || state.busy || state.locked) return; busy(true); note("Consultando archivos…");
+            closePreview();
             try {
                 const data = await rpc("list"); live(); state.items = validateRows(data?.items);
                 if (!Array.isArray(data.pending) || data.pending.length > maxFiles || data.pending.some(path => typeof path !== "string" || !path.startsWith(state.courseId + "/" + state.topicId + "/") || path.length > 400)) throw new Error("Subidas inválidas");
@@ -73,6 +129,7 @@
         async function remove(file) {
             if (state.busy || state.locked || !window.confirm("¿Quitar " + file.name + " de este tema?")) return;
             busy(true); note("Quitando archivo…"); let removed = false;
+            closePreview();
             try {
                 const result = await rpc("remove", {id:file.id}); live(); if (result?.saved !== true) throw new Error("Cambio no confirmado"); removed = true;
                 const response = await api().storage.from(bucket).remove([file.object_path]); live();
@@ -124,6 +181,7 @@
         if (options.items) { try { state.items = validateRows(options.items); draw(); } catch { note("No se pudieron mostrar los archivos del tema.", true); } }
         else draw();
         if (options.edit && state.topicId) void load(); else { state.loaded = true; busy(false); }
+        if (options.preview && !options.edit) { const first = state.items.find(isPDF); if (first) void preview(first); }
         return Object.freeze({validate,uploadTo,hasSelection:() => state.selected.length > 0});
     }
     window.PortalContentFiles = Object.freeze({render,clear});

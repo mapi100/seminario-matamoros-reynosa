@@ -12,7 +12,7 @@
     let modal, modalToken = 0, modalBusy = false, modalUncertain = false, returnFocus;
     let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     const controllers = new Set();
-    const openTopics = new Set();
+    const openUnits = new Set();
     const pendingWrites = new Set();
 
     function node(tag, value, className) {
@@ -51,7 +51,7 @@
         if (!value || !Number.isFinite(Date.parse(value))) return "Sin fecha límite";
         return (compact ? shortDate : dateTime).format(new Date(value));
     }
-    function score(value) { return typeof value === "number" && Number.isFinite(value) ? number.format(value) + " / 100" : "Sin publicar"; }
+    function score(value) { return typeof value === "number" && Number.isFinite(value) ? window.PortalGradeScale.format(value) + " / 10" : "Sin publicar"; }
     function paragraph(value, className = "learning-prose") { return node("p", value || "", className); }
     function empty(target, message) { target.append(node("p", message, "learning-empty")); }
     function note(value, kind = "", target = $("learningStatus")) {
@@ -100,7 +100,7 @@
         generation++; courseVersion++; dashboardVersion++; routeKey = undefined;
         for (const controller of controllers) controller.abort();
         controllers.clear(); dashboard = undefined; dashboardPromise = undefined; course = undefined; courseId = undefined; gradebook = undefined; pageOffset = 0;
-        pendingWrites.clear(); openTopics.clear();
+        pendingWrites.clear(); openUnits.clear();
         closeModal(true);
         window.PortalLearningFiles?.clear();
         window.PortalContentFiles?.clear();
@@ -272,7 +272,7 @@
         target.append(row);
     }
     function moduleCard(module) {
-        const card = link("", coursePath(courseId, "contenido"), "learning-module-card");
+        const card = link("", coursePath(courseId, "contenido", module.id), "learning-module-card");
         const picture = node("span", undefined, "learning-module-picture"); picture.setAttribute("aria-hidden", "true");
         const info = node("div", undefined, "learning-module-info");
         info.append(node("h3", module.title));
@@ -309,44 +309,101 @@
         else empty(article, canManage() ? "Agrega los objetivos, contenidos, criterios de evaluación y recursos de tu curso." : "El profesor todavía no ha publicado el programa del curso.");
         target.append(article);
     }
-    function renderModules(target) {
-        toolbar(target, "Contenido", canManage() ? [button("Nueva unidad", () => moduleDialog())] : []);
-        if (!course.modules.length) return empty(target, "Este curso todavía no tiene unidades publicadas.");
-        for (const module of course.modules) {
-            const card = node("section", undefined, "learning-card learning-unit");
-            const actions = canManage() ? [button("Editar unidad", () => moduleDialog(module), "learning-button secondary"), button("Agregar contenido", () => topicDialog({}, module))] : [];
-            toolbar(card, module.title, actions);
-            if (module.published === false) card.append(badge("Unidad en borrador", "draft"));
-            if (!module.topics.length) empty(card, canManage() ? "Agrega un tema, una lectura o un enlace a esta unidad." : "Todavía no hay temas publicados en esta unidad.");
-            for (const topic of module.topics) {
-                const details = node("details", undefined, "learning-topic"); details.open = openTopics.has(topic.id);
-                details.addEventListener("toggle", () => details.open ? openTopics.add(topic.id) : openTopics.delete(topic.id));
-                const summary = node("summary"); summary.append(node("span", "▤", "learning-topic-icon"), node("span", topic.title));
-                if (topic.completed) summary.append(badge("Completado", "done"));
-                if (topic.published === false) summary.append(badge("Borrador", "draft"));
-                details.append(summary);
-                const body = node("div", undefined, "learning-topic-body");
-                if (topic.body) body.append(paragraph(topic.body));
-                const resource = external("Abrir recurso ↗", topic.url); if (resource) body.append(resource);
-                if (Array.isArray(topic.files) && topic.files.length) {
-                    const files = node("div"); body.append(files);
-                    window.PortalContentFiles?.render(files, {courseId,topicId:topic.id,items:topic.files,edit:false});
-                }
-                if (canManage()) body.append(button("Editar contenido", () => topicDialog(topic, module), "learning-button secondary"));
-                if (profile.role === "student") {
-                    const complete = document.createElement("input"); complete.type = "checkbox"; complete.checked = Boolean(topic.completed); complete.id = "learning-complete-" + topic.id;
-                    const label = node("label", "Marcar como completado", "learning-complete-label"); label.htmlFor = complete.id; label.prepend(complete);
-                    complete.addEventListener("change", async () => {
-                        const current = generation, view = courseVersion, value = complete.checked; complete.disabled = true;
-                        try { await write("topic_complete", courseId, { topic_id: topic.id, completed: value }); if (active && current === generation && view === courseVersion) { topic.completed = value; const marker = summary.querySelector(".learning-badge.done"); if (value && !marker) summary.append(badge("Completado", "done")); else if (!value && marker) marker.remove(); note(value ? "Tema marcado como completado." : "Tema pendiente de completar.", "success"); } }
-                        catch (error) { if (active && current === generation && view === courseVersion && !unauthorized(error)) { complete.checked = !value; note(writeError(error), "error"); } }
-                        finally { if (active && current === generation && view === courseVersion) complete.disabled = false; }
-                    }); body.append(label);
-                }
-                details.append(body); card.append(details);
-            }
-            target.append(card);
+    function renderModules(target, selectedItem) {
+        if (!course.modules.length) {
+            toolbar(target, "Contenido", canManage() ? [button("Nueva unidad", () => moduleDialog())] : []);
+            return empty(target, "Este curso todavía no tiene unidades publicadas.");
         }
+        const entries = course.modules.flatMap(module => module.topics.map(topic => ({module, topic})));
+        const selected = selectedItem ? entries.find(entry => entry.topic.id === selectedItem) : entries[0];
+        const unit = selected?.module || course.modules.find(module => module.id === selectedItem) || (!selectedItem ? course.modules[0] : null);
+        const layout = node("div", undefined, "learning-reader-layout");
+        const outline = node("details", undefined, "learning-outline"); outline.open = !matchMedia("(max-width:760px)").matches;
+        const outlineTitle = node("summary", "Unidades y temas", "learning-outline-title");
+        const outlineBody = node("div", undefined, "learning-outline-body");
+        const search = node("input"); search.type = "search"; search.placeholder = "Buscar títulos y descripciones"; search.setAttribute("aria-label", "Buscar en el contenido del curso");
+        const resultStatus = paragraph("", "learning-meta"); resultStatus.setAttribute("role", "status");
+        const tree = node("nav", undefined, "learning-outline-tree"); tree.setAttribute("aria-label", "Contenido del curso");
+        outlineBody.append(search, resultStatus, tree);
+        if (canManage()) outlineBody.append(button("Nueva unidad", () => moduleDialog(), "learning-button secondary"));
+        outline.append(outlineTitle, outlineBody);
+        function normalized(value) { return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es"); }
+        function drawOutline() {
+            const query = normalized(search.value.trim()); tree.replaceChildren(); let matches = 0;
+            for (const module of course.modules) {
+                const allTopics = !query || normalized(module.title).includes(query);
+                const topics = module.topics.filter(topic => allTopics || normalized(topic.title + " " + (topic.body || "")).includes(query));
+                if (query && !allTopics && !topics.length) continue;
+                matches += topics.length;
+                const group = node("details", undefined, "learning-outline-unit");
+                group.open = Boolean(query) || unit?.id === module.id || openUnits.has(module.id);
+                group.addEventListener("toggle", () => {
+                    if (group.isConnected && !query) { if (group.open) openUnits.add(module.id); else openUnits.delete(module.id); }
+                });
+                const title = node("summary"); title.append(node("span", module.title));
+                if (module.published === false) title.append(badge("Borrador", "draft"));
+                const count = profile.role === "student" ? module.topics.filter(topic => topic.completed).length + " / " + module.topics.length + " completados" : module.topics.length + " temas";
+                title.append(node("small", count)); group.append(title);
+                group.append(link("Ver unidad", coursePath(courseId, "contenido", module.id), "learning-outline-overview"));
+                for (const topic of topics) {
+                    const item = link("", coursePath(courseId, "contenido", topic.id), "learning-outline-topic");
+                    item.append(node("span", "▤", "learning-topic-icon"));
+                    const text = node("span"); text.append(node("span", topic.title));
+                    if (topic.completed) text.append(node("small", "✓ Completado"));
+                    if (topic.published === false) text.append(node("small", "Borrador"));
+                    item.append(text); if (selected?.topic.id === topic.id) item.setAttribute("aria-current", "page"); group.append(item);
+                }
+                tree.append(group);
+            }
+            resultStatus.textContent = query ? matches + " temas encontrados" : "";
+            if (!tree.children.length) empty(tree, "No hay contenido que coincida con tu búsqueda.");
+        }
+        search.addEventListener("input", drawOutline); drawOutline();
+        const reader = node("article", undefined, "learning-reader"); reader.setAttribute("aria-label", "Lector de contenido");
+        const readerBar = node("div", undefined, "learning-reader-toolbar");
+        readerBar.append(paragraph(unit?.title || "Contenido del curso", "learning-reader-breadcrumb"));
+        const arrows = node("div", undefined, "learning-reader-arrows");
+        const index = selected ? entries.indexOf(selected) : -1;
+        for (const [label, symbol, destination] of [["Tema anterior", "‹", index > 0 ? entries[index - 1] : null], ["Tema siguiente", "›", index >= 0 ? entries[index + 1] : null]]) {
+            const arrow = button(symbol, () => { if (destination) location.hash = coursePath(courseId, "contenido", destination.topic.id); }, "learning-reader-arrow");
+            arrow.setAttribute("aria-label", label); arrow.disabled = !destination; arrows.append(arrow);
+        }
+        readerBar.append(arrows); reader.append(readerBar);
+        const body = node("div", undefined, "learning-reader-body");
+        if (!unit) {
+            body.append(node("h2", "Contenido no disponible")); empty(body, "El contenido solicitado no está disponible en este curso. Elige otro tema del índice.");
+        } else if (!selected) {
+            toolbar(body, unit.title, canManage() ? [button("Editar unidad", () => moduleDialog(unit), "learning-button secondary"), button("Agregar contenido", () => topicDialog({}, unit))] : []);
+            if (unit.published === false) body.append(badge("Unidad en borrador", "draft"));
+            if (!unit.topics.length) empty(body, canManage() ? "Agrega un tema, una lectura o un enlace a esta unidad." : "Todavía no hay temas publicados en esta unidad.");
+            const list = node("ul", undefined, "learning-unit-topics");
+            for (const topic of unit.topics) { const row = node("li"); row.append(link(topic.title, coursePath(courseId, "contenido", topic.id), "learning-text-link")); list.append(row); }
+            body.append(list);
+        } else {
+            const topic = selected.topic;
+            toolbar(body, topic.title, canManage() ? [button("Editar contenido", () => topicDialog(topic, unit), "learning-button secondary"), button("Agregar contenido", () => topicDialog({}, unit)), button("Editar unidad", () => moduleDialog(unit), "learning-button secondary")] : []);
+            if (topic.published === false) body.append(badge("Borrador", "draft"));
+            if (topic.body) body.append(paragraph(topic.body));
+            const resource = external("Abrir recurso ↗", topic.url); if (resource) body.append(resource);
+            if (Array.isArray(topic.files) && topic.files.length) {
+                const files = node("div"); body.append(files);
+                window.PortalContentFiles?.render(files, {courseId,topicId:topic.id,items:topic.files,edit:false,preview:true});
+            }
+            if (!topic.body && !resource && !topic.files?.length) empty(body, "Este tema todavía no tiene texto, enlaces ni archivos adjuntos.");
+            if (profile.role === "student") {
+                const complete = node("input"); complete.type = "checkbox"; complete.checked = Boolean(topic.completed); complete.id = "learning-complete-" + topic.id;
+                const label = node("label", "Marcar como completado", "learning-complete-label"); label.htmlFor = complete.id; label.prepend(complete);
+                complete.addEventListener("change", async () => {
+                    const current = generation, view = courseVersion, value = complete.checked; complete.disabled = true;
+                    try {
+                        await write("topic_complete", courseId, {topic_id:topic.id,completed:value});
+                        if (active && current === generation && view === courseVersion) { topic.completed = value; drawOutline(); note(value ? "Tema marcado como completado." : "Tema pendiente de completar.", "success"); }
+                    } catch (error) { if (active && current === generation && view === courseVersion && !unauthorized(error)) { complete.checked = !value; note(writeError(error), "error"); } }
+                    finally { if (active && current === generation && view === courseVersion) complete.disabled = false; }
+                }); body.append(label);
+            }
+        }
+        reader.append(body); layout.append(outline, reader); target.append(layout);
     }
     function taskStatus(item) {
         if (item.published === false) return ["Borrador", "draft"];
@@ -504,12 +561,12 @@
             const row = node("tr"), name = node("th", student.name); name.scope = "row"; row.append(name, node("td", score(student.final_score)));
             for (const assignment of data.assignments) {
                 const grade = gradeRecord(student, assignment), cell = node("td", undefined, "learning-grade-cell");
-                const input = document.createElement("input"); input.type = "number"; input.min = "0"; input.max = "100"; input.step = "0.01"; input.inputMode = "decimal";
-                input.value = typeof grade.score === "number" ? String(grade.score) : "";
+                const input = document.createElement("input"); input.type = "number"; input.min = "0"; input.max = "10"; input.step = "0.1"; input.inputMode = "decimal";
+                input.value = window.PortalGradeScale.format(grade.score);
                 input.dataset.enrollment = student.enrollment_id; input.dataset.assignment = assignment.id; input.dataset.original = input.value;
                 input.setAttribute("aria-label", "Calificación de " + student.name + ": " + assignment.title);
                 input.addEventListener("input", () => { cell.classList.toggle("is-dirty", input.value !== input.dataset.original); });
-                const field = node("div", undefined, "learning-score-input"); field.append(input, node("span", "/ 100"));
+                const field = node("div", undefined, "learning-score-input"); field.append(input, node("span", "/ 10"));
                 cell.append(field, paragraph(typeof grade.published_score === "number" ? "Publicada: " + score(grade.published_score) : "Sin publicar", "learning-grade-published"));
                 if (grade.submitted_at) cell.append(paragraph("Entregada " + date(grade.submitted_at, true), "learning-meta"));
                 cell.append(button("Revisar entrega", () => gradeDialog(student, assignment, grade), "learning-review-button"));
@@ -551,7 +608,7 @@
         const selected = inputs.filter(input => input.value !== input.dataset.original || publish && input.value !== "");
         if (!selected.length) { note("No hay calificaciones nuevas para guardar."); return; }
         for (const input of selected) {
-            if (input.value === "" || !input.reportValidity()) { input.focus(); note("Escribe una calificación de 0 a 100. Los campos vacíos se conservan sin calificar.", "error"); return; }
+            if (input.value === "" || !input.reportValidity()) { input.focus(); note("Escribe una calificación de 0 a 10 con un decimal. Los campos vacíos se conservan sin calificar.", "error"); return; }
         }
         const current = generation, operation = courseVersion, id = courseId;
         pendingWrites.add("grid");
@@ -564,7 +621,7 @@
                 const student = gradebook.students.find(item => item.enrollment_id === input.dataset.enrollment);
                 const assignment = gradebook.assignments.find(item => item.id === input.dataset.assignment);
                 const grade = gradeRecord(student, assignment);
-                const response = await write("grade_save", id, { assignment_id: assignment.id, enrollment_id: student.enrollment_id, score: Number(input.value), feedback: grade.feedback || "", revision: grade.revision || 0 });
+                const response = await write("grade_save", id, { assignment_id: assignment.id, enrollment_id: student.enrollment_id, score: window.PortalGradeScale.toWire(input.value, grade.score), feedback: grade.feedback || "", revision: grade.revision || 0 });
                 savedCount++;
                 const revision = Number.isInteger(response.revision) ? response.revision : (grade.revision || 0) + 1;
                 if (publish) { await write("grade_publish", id, { assignment_id: assignment.id, enrollment_id: student.enrollment_id, revision }); publishedCount++; }
@@ -588,7 +645,7 @@
         const target = $("learningContent"); target.replaceChildren(); note(""); courseHeading();
         if (tab === "inicio") renderHome(target);
         else if (tab === "programa") renderSyllabus(target);
-        else if (tab === "contenido") renderModules(target);
+        else if (tab === "contenido") renderModules(target, selectedItem);
         else if (tab === "tareas") renderTasks(target, selectedItem);
         else if (tab === "anuncios") renderCourseAnnouncements(target);
         else if (tab === "mis-notas") renderOwnGrades(target);
@@ -599,7 +656,7 @@
     async function loadCourse(id, selectedTab, selectedItem) {
         const operation = ++courseVersion, current = generation;
         const changedCourse = courseId !== id;
-        courseId = id; course = undefined; gradebook = undefined; pageOffset = 0; if (changedCourse) openTopics.clear();
+        courseId = id; course = undefined; gradebook = undefined; pageOffset = 0; if (changedCourse) openUnits.clear();
         skeleton();
         try {
             const data = await request("course", id, 0, 100);
@@ -752,7 +809,11 @@
     }
     function moduleDialog(row = {}) {
         if (!canManage()) return;
-        const dialog = openDialog(row.id ? "Editar unidad" : "Nueva unidad", (form, token) => submitModal("module_save", courseId, editData(row, values(form)), token));
+        const targetCourse = courseId, current = generation;
+        const dialog = openDialog(row.id ? "Editar unidad" : "Nueva unidad", (form, token) => submitModal("module_save", targetCourse, editData(row, values(form)), token, async result => {
+            await refreshCourse();
+            if (!row.id && active && current === generation && courseId === targetCourse) location.hash = coursePath(targetCourse, "contenido", result.id);
+        }));
         field(dialog.fields, "title", "Nombre de la unidad", { required: true, value: row.title });
         field(dialog.fields, "position", "Orden", { type: "number", required: true, value: row.position ?? course.modules.length + 1, max: 10000 });
         field(dialog.fields, "published", "Publicar unidad", { type: "checkbox", value: row.published !== false }); dialog.open();
@@ -777,7 +838,8 @@
                 }
                 await files.uploadTo(savedTopic.id);
                 if (!active || current !== generation || token !== modalToken) return;
-                openTopics.add(savedTopic.id); modalBusy = false; closeModal(); await refreshCourse();
+                openUnits.add(module.id); modalBusy = false; closeModal(); await refreshCourse();
+                if (active && current === generation && courseId === targetCourse && tab === "contenido") location.hash = coursePath(targetCourse, "contenido", savedTopic.id);
                 if (active && current === generation) note("Contenido y archivos guardados.", "success");
             } catch (error) {
                 if (!active || current !== generation || token !== modalToken || (error?.source !== "storage" && unauthorized(error))) return;
@@ -850,7 +912,7 @@
             if (modalBusy || modalUncertain || token !== modalToken) return;
             modalBusy = true; $("learningSave").disabled = true; publishButton.disabled = true; note("Guardando evaluación…", "", $("learningDialogMessage"));
             try {
-                const result = await write("grade_save", id, { assignment_id: assignment.id, enrollment_id: student.enrollment_id, score: data.score, feedback: data.feedback, revision });
+                const result = await write("grade_save", id, { assignment_id: assignment.id, enrollment_id: student.enrollment_id, score: window.PortalGradeScale.toWire(data.score, grade.score), feedback: data.feedback, revision });
                 revision = Number.isInteger(result.revision) ? result.revision : revision + 1;
                 if (publish) await write("grade_publish", id, { assignment_id: assignment.id, enrollment_id: student.enrollment_id, revision });
                 if (!active || current !== generation || token !== modalToken) return;
@@ -869,7 +931,7 @@
         const resource = external("Abrir trabajo entregado ↗", grade.url); if (resource) dialog.fields.append(resource);
         const files = node("div", undefined, "learning-files-area"); dialog.fields.append(files);
         window.PortalLearningFiles?.render(files, { courseId, assignmentId: assignment.id, canManage: true, enrollmentId: student.enrollment_id });
-        field(dialog.fields, "score", "Calificación", { type: "number", required: true, min: 0, max: 100, step: 0.01, value: grade.score });
+        field(dialog.fields, "score", "Calificación", { type: "number", required: true, min: 0, max: 10, step: 0.1, value: window.PortalGradeScale.format(grade.score) });
         field(dialog.fields, "feedback", "Comentarios para el alumno", { textarea: true, rows: 5, max: 4000, value: grade.feedback });
         dialog.fields.append(paragraph("Última calificación publicada: " + score(grade.published_score), "learning-meta"));
         const publishButton = button("Publicar evaluación", () => { if (dialog.form.reportValidity()) void saveGrade(dialog.form, dialog.token, true); }, "learning-button secondary"); dialog.actions.insertBefore(publishButton, dialog.actions.lastChild);

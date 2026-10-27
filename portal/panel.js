@@ -11,6 +11,14 @@
     const name = document.getElementById("profileName");
     const role = document.getElementById("profileRole");
     const state = document.getElementById("profileState");
+    const localMode = window.location.protocol === "file:";
+    const localAccess = document.getElementById("localAccess");
+    const localForm = document.getElementById("localLoginForm");
+    const localEmail = document.getElementById("localEmail");
+    const localPassword = document.getElementById("localPassword");
+    const localMessage = document.getElementById("localLoginMessage");
+    const localToggle = document.getElementById("localTogglePassword");
+    const localForgot = document.getElementById("localForgotPassword");
     const headings = {
         student: "Panel de alumno",
         professor: "Panel de profesor",
@@ -34,9 +42,15 @@
         document.getElementById("panelMain").setAttribute("aria-busy", String(value));
         logoutButton.disabled = value;
         retryButton.disabled = value;
+        if (localForm) {
+            for (const control of localForm.elements) control.disabled = value;
+            localForm.querySelector('button[type="submit"]').textContent = value ? "Verificando tu acceso…" : "Iniciar sesión";
+        }
+        if (localForgot) localForgot.disabled = value;
     }
 
     function clearProfile() {
+        if (localAccess) localAccess.hidden = true;
         content.hidden = true;
         window.PortalSubjects?.clear();
         window.PortalTeaching?.clear();
@@ -63,12 +77,32 @@
 
     function goToLogin(reason) {
         window.PortalPersonalRecord?.discardDraft();
+        if (localMode && localAccess && localForm) {
+            clearProfile();
+            document.body.dataset.view = "acceso";
+            localForm.reset(); localPassword.type = "password"; localToggle.textContent = "Mostrar";
+            localToggle.setAttribute("aria-pressed", "false");
+            localToggle.setAttribute("aria-label", "Mostrar contraseña");
+            const notices = {
+                sesion_cerrada: "Has cerrado sesión.",
+                sesion_invalida: "Tu sesión no pudo verificarse. Inicia sesión nuevamente.",
+                sin_acceso: "Tu cuenta no tiene un perfil activo autorizado. Contacta a Control Escolar."
+            };
+            localMessage.textContent = notices[reason] || "";
+            localMessage.classList.toggle("error", ["sesion_invalida", "sin_acceso"].includes(reason));
+            showMessage(""); recovery.hidden = true; logoutButton.hidden = true;
+            localAccess.hidden = false; setBusy(false);
+            return;
+        }
         const target = new URL("index.html", window.location.href);
         if (reason) target.searchParams.set("estado", reason);
         window.location.replace(target.href);
     }
 
     function showUnavailable(text) {
+        if (localMode && localAccess) {
+            goToLogin(); localMessage.textContent = text; localMessage.classList.add("error"); return;
+        }
         clearProfile();
         subtitle.textContent = "Tu acceso todavía no pudo verificarse.";
         recovery.hidden = false;
@@ -181,9 +215,59 @@
         if (!busy) window.location.reload();
     });
 
+    if (localMode && localForm) {
+        localToggle.addEventListener("click", () => {
+            const visible = localPassword.type === "password";
+            localPassword.type = visible ? "text" : "password";
+            localToggle.textContent = visible ? "Ocultar" : "Mostrar";
+            localToggle.setAttribute("aria-pressed", String(visible));
+            localToggle.setAttribute("aria-label", visible ? "Ocultar contraseña" : "Mostrar contraseña");
+        });
+        localForm.addEventListener("submit", async event => {
+            event.preventDefault();
+            if (busy || !client || !localForm.reportValidity()) return;
+            const operation = ++version;
+            setBusy(true); localMessage.textContent = ""; localMessage.classList.remove("error");
+            try {
+                const {error} = await client.auth.signInWithPassword({email:localEmail.value.trim(),password:localPassword.value});
+                if (operation !== version) return;
+                if (error) {
+                    localMessage.textContent = error.status === 429 ? "Demasiados intentos. Espera un momento antes de volver a intentar." : "No se pudo iniciar sesión. Revisa tus datos o contacta a Control Escolar.";
+                    localMessage.classList.add("error"); return;
+                }
+                await verifyAccess();
+            } catch {
+                if (operation === version) { localMessage.textContent = "No fue posible conectar. Comprueba tu conexión e inténtalo nuevamente."; localMessage.classList.add("error"); }
+            } finally {
+                localPassword.value = ""; localPassword.type = "password"; localToggle.textContent = "Mostrar"; localToggle.setAttribute("aria-pressed", "false");
+                localToggle.setAttribute("aria-label", "Mostrar contraseña");
+                if (operation === version) setBusy(false);
+            }
+        });
+        localForgot?.addEventListener("click", async () => {
+            if (busy || !client) return;
+            if (!localEmail.value.trim() || !localEmail.reportValidity()) {
+                localMessage.textContent = "Escribe primero el correo de tu cuenta para recuperar el acceso.";
+                localMessage.classList.remove("error"); localEmail.focus(); return;
+            }
+            const operation = ++version;
+            setBusy(true); localMessage.textContent = ""; localMessage.classList.remove("error");
+            try {
+                const {error} = await client.auth.resetPasswordForEmail(localEmail.value.trim(), {redirectTo:"https://seminariomr.org/portal/activar.html"});
+                if (operation !== version) return;
+                if (error) throw error;
+                localMessage.textContent = "Si tu cuenta está registrada, recibirás un enlace para crear una contraseña nueva. Revisa también el correo no deseado.";
+            } catch {
+                if (operation === version) { localMessage.textContent = "No fue posible solicitar el enlace. Inténtalo más tarde o contacta a Control Escolar."; localMessage.classList.add("error"); }
+            } finally { if (operation === version) setBusy(false); }
+        });
+    }
+
     // Limpiar datos antes de guardar una página en la caché del navegador.
     window.addEventListener("pagehide", function () {
         version += 1;
+        if (localForm) localForm.reset();
+        if (localPassword) localPassword.type = "password";
         clearProfile();
         window.PortalPersonalRecord?.discardDraft();
     });
@@ -191,6 +275,7 @@
         if (event.persisted) void verifyAccess();
     });
     document.addEventListener("visibilitychange", function () {
+        if (localMode && localAccess && !localAccess.hidden && !busy) return;
         if (document.visibilityState === "hidden") {
             version += 1;
             clearProfile();

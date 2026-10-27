@@ -107,7 +107,7 @@
             cards.forEach((card, index) => {
                 const id = ids[index];
                 card.querySelector(".subject-grade").textContent = grades.has(id)
-                    ? "Calificación publicada: " + scoreFormat.format(grades.get(id)) + " / 100"
+                    ? "Calificación publicada: " + window.PortalGradeScale.format(grades.get(id)) + " / 10"
                     : "Sin calificación publicada";
             });
             return true;

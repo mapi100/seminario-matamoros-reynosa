@@ -10,7 +10,7 @@
     function text(value, cls = "learning-meta") { return el("p", value, cls); }
     function btn(label, action, secondary = true) { const e = el("button", label, "learning-button" + (secondary ? " secondary" : "")); e.type = "button"; e.addEventListener("click", action); return e; }
     function num(value) { return typeof value === "number" && Number.isFinite(value) ? format.format(value) : "—"; }
-    function score(value) { return typeof value === "number" && Number.isFinite(value) ? num(value) + " / 100" : "Pendiente"; }
+    function score(value) { return typeof value === "number" && Number.isFinite(value) ? window.PortalGradeScale.format(value) + " / 10" : "Pendiente"; }
     function urlFor(id) { return "#curso/" + current.ctx.courseId + "/tareas/" + id; }
     function link(label, href) { const a = el("a", label); a.href = href; return a; }
     function message(target, value, error = false) { target.textContent = value; target.className = "learning-status " + (error ? "error" : "success"); target.setAttribute("role", "status"); }
@@ -71,7 +71,7 @@
         const e = el(options.textarea ? "textarea" : "input"); e.id = "weighted-" + crypto.randomUUID(); caption.htmlFor = e.id;
         if (!options.textarea) e.type = options.type || "text";
         e.value = options.value ?? ""; e.required = Boolean(options.required); e.autocomplete = "off";
-        if (e.type === "number") { e.min = "0"; e.max = "100"; e.step = "0.01"; }
+        if (e.type === "number") { e.min = "0"; e.max = options.grade ? "10" : "100"; e.step = options.grade ? "0.1" : "0.01"; }
         if (e.type === "checkbox") e.checked = Boolean(options.value);
         if (options.textarea) { e.rows = 3; e.maxLength = 1000; }
         if (e.type === "checkbox") { group.classList.add("learning-checkbox"); group.append(e, caption); } else group.append(caption, e);
@@ -136,7 +136,7 @@
                 const grade = student.grades.find(g => g.assignment_id === a.id), exempt = student.exemptions.find(e => e.id === a.id), cell = el("td");
                 cell.append(text(exempt ? "Exentada" : "Publicada: " + score(grade?.published_score)), btn("Revisar / calificar", () => assessment(student, a)));
                 if (current.quick) {
-                    const mark = input(cell, "Calificación de " + student.name + ": " + a.title, { type: "number", value: grade?.score });
+                    const mark = input(cell, "Calificación de " + student.name + ": " + a.title, { type: "number", grade: true, value: window.PortalGradeScale.format(grade?.score) });
                     mark.dataset.enrollment = student.enrollment_id; mark.dataset.assignment = a.id; mark.dataset.original = mark.value; mark.disabled = Boolean(exempt);
                 }
                 if (!a.published) cell.append(text("Actividad sin publicar")); row.append(cell);
@@ -169,11 +169,11 @@
     function saveGrid(publish) {
         const changed = [...current.target.querySelectorAll("input[data-enrollment]")].filter(e => { const s = current.data.students.find(s => s.enrollment_id === e.dataset.enrollment), g = s.grades.find(g => g.assignment_id === e.dataset.assignment); return e.value !== e.dataset.original || publish && e.value !== "" && g?.score !== g?.published_score; });
         if (!changed.length) { const status = text("No hay notas modificadas para guardar."); current.target.prepend(status); return; }
-        if (changed.some(e => e.value === "" || !e.checkValidity())) { current.target.prepend(text("Introduce notas entre 0 y 100. Para exentar una actividad, usa Revisar / calificar.", "learning-status error")); return; }
+        if (changed.some(e => e.value === "" || !e.checkValidity())) { current.target.prepend(text("Introduce notas entre 0 y 10 con un decimal. Para exentar una actividad, usa Revisar / calificar.", "learning-status error")); return; }
         const data = current.data;
         const form = modal(publish ? "Publicar notas capturadas" : "Guardar notas como borrador", publish ? "Guardar y publicar" : "Guardar borradores", () => write("assessments_save", { publish, items: changed.map(e => {
             const s = data.students.find(s => s.enrollment_id === e.dataset.enrollment), g = s.grades.find(g => g.assignment_id === e.dataset.assignment);
-            return { enrollment_id: s.enrollment_id, assignment_id: e.dataset.assignment, token: s.summary.token, score: Number(e.value), feedback: g?.feedback || "", revision: g?.revision || 0 };
+            return { enrollment_id: s.enrollment_id, assignment_id: e.dataset.assignment, token: s.summary.token, score: window.PortalGradeScale.toWire(e.value, g?.score), feedback: g?.feedback || "", revision: g?.revision || 0 };
         }) }));
         form.fields.append(text("Se guardarán " + changed.length + " notas modificadas. " + (publish ? "Los alumnos verán estas notas y se recalcularán sus promedios actuales." : "Las calificaciones publicadas de los alumnos conservarán sus valores."))); form.open();
     }
@@ -249,16 +249,16 @@
         const g = student.grades.find(g => g.assignment_id === a.id) || { revision: 0 }, exemption = student.exemptions.find(e => e.id === a.id);
         const form = modal("Evaluar: " + a.title, "Guardar evaluación", () => {
             const value = Number(mark.value);
-            if (!exempt.checked && (mark.value === "" || !Number.isFinite(value) || value < 0 || value > 100)) throw { code: "22023", message: "Introduce una calificación entre 0 y 100." };
+            if (!exempt.checked && (mark.value === "" || !Number.isFinite(value) || value < 0 || value > 10)) throw { code: "22023", message: "Introduce una calificación entre 0 y 10 con un decimal." };
             return write("assessment_save", { enrollment_id: student.enrollment_id, assignment_id: a.id, revision: g.revision || 0, token: student.summary.token,
-                exempt: exempt.checked, reason: reason.value.trim(), score: exempt.checked ? null : value, feedback: feedback.value, publish: publish.checked });
+                exempt: exempt.checked, reason: reason.value.trim(), score: exempt.checked ? null : window.PortalGradeScale.toWire(mark.value, g.score), feedback: feedback.value, publish: publish.checked });
         });
         form.fields.append(el("h3", student.name), text("Última calificación publicada: " + score(g.published_score)));
         if (g.submitted_at) form.fields.append(text("Entrega registrada: " + new Date(g.submitted_at).toLocaleString("es-MX")));
         if (g.body) form.fields.append(text(g.body, "learning-prose"));
         if (g.url) { try { const u = new URL(g.url); if (["https:", "http:"].includes(u.protocol) && !u.username && !u.password) { const a = link("Abrir trabajo entregado", u.href); a.target = "_blank"; a.rel = "noopener noreferrer"; form.fields.append(a); } } catch {} }
         if (a.requires_submission !== false) { const files = el("div"); form.fields.append(files); window.PortalLearningFiles?.render(files, { courseId: current.ctx.courseId, assignmentId: a.id, enrollmentId: student.enrollment_id, canManage: true }); }
-        const mark = input(form.fields, "Calificación (0 a 100)", { type: "number", value: g.score });
+        const mark = input(form.fields, "Calificación (0 a 10)", { type: "number", grade: true, value: window.PortalGradeScale.format(g.score) });
         const feedback = input(form.fields, "Comentarios para el alumno", { textarea: true, value: g.feedback || "" }); feedback.maxLength = 4000;
         const publish = input(form.fields, "Publicar esta calificación para el alumno", { type: "checkbox", value: true });
         const zero = btn("Registrar cero por no entregar", () => { mark.value = "0"; feedback.value = "No entregada. Calificación registrada por el profesor."; exempt.checked = false; toggle(); }); form.fields.append(zero);
@@ -277,21 +277,21 @@
         const form = modal("Revisar calificaciones finales", "Publicar finales seleccionadas", () => {
             const selected = fields.filter(f => f.check.checked);
             if (!confirm.checked || !selected.length) throw { code: "22023", message: "Selecciona al menos un alumno y confirma las notas finales." };
-            return write("final_publish", { confirmed: true, reason: reason.value.trim(), students: selected.map(f => ({ id: f.student.enrollment_id, token: f.student.summary.token, override: f.override.value === "" ? null : Number(f.override.value) })) });
+            return write("final_publish", { confirmed: true, reason: reason.value.trim(), students: selected.map(f => ({ id: f.student.enrollment_id, token: f.student.summary.token, override: f.override.value === "" ? null : window.PortalGradeScale.toWire(f.override.value) })) });
         });
         form.d.classList.add("weighted-configuration"); form.fields.append(text("Se muestran los alumnos de esta página. Se comprueban nuevamente sus notas al publicar. Los pendientes impiden cerrar la calificación."));
         const body = table(form.fields, ["Seleccionar", "Alumno", "Calculada", "Final publicada", "Ajuste manual (opcional)", "Revisión"]), fields = [];
         for (const student of students) {
             const row = el("tr"), choice = el("td"), adjustment = el("td"), check = input(choice, "Seleccionar a " + student.name, { type: "checkbox", value: false }); check.disabled = !student.summary.ready;
-            const override = input(adjustment, "Ajuste de " + student.name, { type: "number" }); override.disabled = !student.summary.ready;
+            const override = input(adjustment, "Ajuste de " + student.name, { type: "number", grade: true }); override.disabled = !student.summary.ready;
             row.append(choice, el("th", student.name), el("td", score(student.summary.average)), el("td", score(student.final_score)), adjustment, el("td", student.summary.ready ? "Lista para publicar" : (student.summary.reasons || ["Sin criterios publicados"]).join(" "))); body.append(row); fields.push({ student, check, override });
         }
         const reason = input(form.fields, "Motivo de ajustes o correcciones (mínimo 10 caracteres si corresponde)", { textarea: true });
         const confirm = input(form.fields, "He revisado las notas seleccionadas y confirmo su publicación en el historial académico", { type: "checkbox", required: true }); form.open();
     }
     function exportCSV() {
-        const data = current.data, rows = [["Alumno", ...codes.map(c => labels[c]), "Promedio actual publicado", "Promedio con borradores", "Peso evaluado (%)", "Final publicada"]];
-        for (const s of data.students) rows.push([s.name, ...codes.map(c => s.summary.categories.find(x => x.code === c)?.average), s.summary.average, s.draft_summary.average, s.summary.coverage, s.final_score]);
+        const data = current.data, rows = [["Alumno", ...codes.map(c => labels[c]), "Promedio actual publicado (0–10)", "Promedio con borradores (0–10)", "Peso evaluado (%)", "Final publicada (0–10)"]];
+        for (const s of data.students) rows.push([s.name, ...codes.map(c => window.PortalGradeScale.format(s.summary.categories.find(x => x.code === c)?.average)), window.PortalGradeScale.format(s.summary.average), window.PortalGradeScale.format(s.draft_summary.average), s.summary.coverage, window.PortalGradeScale.format(s.final_score)]);
         const csv = rows.map(row => row.map(value => '"' + String(value ?? "").replace(/^[=+@\-\t\r]/, "'$&").replace(/"/g, '""') + '"').join(",")).join("\r\n");
         const url = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" })), a = link("", url); a.download = "promedios-clase.csv"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
