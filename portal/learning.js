@@ -254,7 +254,8 @@
         $("learningRoot").dataset.learningTab = tab;
         window.PortalCourseColors?.apply($("learningRoot"), course.course.code, course.course.period_name);
         $("learningCourseTitle").textContent = course.course.name;
-        $("learningCourseCode").textContent = course.course.code;
+        if (window.PortalCourseGroups) window.PortalCourseGroups.bind($("learningCourseCode"), course.course.code, course.course.period_name);
+        else $("learningCourseCode").textContent = "Curso";
         $("learningCoursePeriod").textContent = course.course.period_name;
         window.PortalWorkspace?.setCourseTitle?.(course.course.name, course.course.period_name);
         const nav = $("learningCourseNav"); nav.replaceChildren();

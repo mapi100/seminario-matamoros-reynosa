@@ -52,6 +52,7 @@
     function clearProfile() {
         if (localAccess) localAccess.hidden = true;
         content.hidden = true;
+        window.PortalCourseGroups?.clear();
         window.PortalSubjects?.clear();
         window.PortalTeaching?.clear();
         window.PortalControl?.clear();
@@ -160,6 +161,7 @@
                 document.title = headings[result.profile.role] + " | Seminario Diocesano San José";
                 content.hidden = false;
                 showMessage("");
+                window.PortalCourseGroups?.show(result.profile);
                 if (result.profile.role === "student") {
                     subtitle.textContent = "Consulta tu perfil y tus materias.";
                     if (window.PortalSubjects) {

@@ -119,6 +119,8 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
             elif path=='/rest/v1/profiles':
                 assert query=={'select':['full_name,role,active'],'id':['eq.'+UID]},query
                 status=200; data=[state['profile']] if state['profile'] else []
+            elif path=='/rest/v1/rpc/portal_course_groups_read':
+                status=200; data={'items':state.get('course_groups',[])}
             elif path=='/rest/v1/rpc/portal_formation_read':
                 assert request.post_data_json=={'p_resource':'own'}
                 status=200; data={'history':[]}
@@ -333,7 +335,7 @@ async def finished(context,state,label):
     assert all(method in ['GET','OPTIONS'] or '/auth/v1/' in url
                # Inicio del campus: lectura LMS y comprobación de limpieza de
                # archivos ya autorizada; esta fixture siempre tiene cola vacía.
-               or (method == 'POST' and url.endswith(('/rpc/portal_learning_read','/rpc/portal_admin_cleanup_files','/rpc/portal_formation_read')))
+               or (method == 'POST' and url.endswith(('/rpc/portal_learning_read','/rpc/portal_admin_cleanup_files','/rpc/portal_formation_read','/rpc/portal_course_groups_read')))
                for method,url in state['requests']),state['requests']
     checks+=1
     print('PASS '+label,flush=True)
@@ -349,7 +351,7 @@ async def main():
         await visible(page)
         await expect(page.locator('#subjectsList .subject-item')).to_have_count(2)
         await expect(page.locator('.subject-name').first).to_have_text('Materia de ejemplo 1')
-        await expect(page.locator('.subject-code').first).to_contain_text('MAT-001')
+        await expect(page.locator('#subjectsList .subject-code').first).to_have_attribute('data-course-subject-code','MAT-001')
         await expect(page.locator('.subject-period').first).to_contain_text('Periodo de prueba 2026')
         assert state['enrollment_requests'][0]['query']['order']==['created_at.desc,id.asc']
         await page.screenshot(path=str(ARTIFACTS/'subjects-desktop.png'),full_page=True)
@@ -396,7 +398,7 @@ async def main():
         context,page,state=await fixture(browser,mobile=True,rows=rows)
         await visible(page)
         await expect(page.locator('.subject-name')).to_have_text('<img src=x onerror=alert(1)>')
-        await expect(page.locator('.subject-code')).to_contain_text('<svg onload=alert(2)>')
+        await expect(page.locator('#subjectsList .subject-code')).to_have_attribute('data-course-subject-code','<svg onload=alert(2)>')
         await expect(page.locator('.subject-period')).to_contain_text('<script>alert(3)</script>')
         assert await page.locator('#subjectsList img, #subjectsList svg, #subjectsList script').count()==0
         assert await page.evaluate('document.documentElement.scrollWidth <= innerWidth')

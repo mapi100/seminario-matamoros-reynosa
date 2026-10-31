@@ -98,10 +98,9 @@
         const item = document.createElement("li");
         item.className = kind === "period" ? "period-item" : "catalog-subject";
         if (kind === "subject") {
-            const code = document.createElement("span");
-            code.className = "subject-code";
-            code.textContent = record.code;
-            item.append(code);
+            const reference = document.createElement("details"), label = document.createElement("summary"), code = document.createElement("span");
+            label.textContent = "Referencia interna"; code.className = "subject-code"; code.textContent = record.code;
+            reference.append(label, code); item.append(reference);
         }
         const name = document.createElement("h4");
         name.className = kind + "-name";
@@ -194,7 +193,8 @@
         }
         if (state.kind === "subject") {
             const code = document.getElementById("subjectCode");
-            if (!text(code.value, 40)) code.setCustomValidity("Escribe un código válido de hasta 40 caracteres.");
+            if (!code.value) code.value = "M-" + crypto.randomUUID().replaceAll("-", "").slice(0, 16).toUpperCase();
+            if (!text(code.value, 40)) code.setCustomValidity("No se pudo preparar la materia. Actualiza la página.");
         } else {
             const start = document.getElementById("periodStart");
             const end = document.getElementById("periodEnd");

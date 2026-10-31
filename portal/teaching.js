@@ -90,6 +90,7 @@
             element.className = className;
             element.textContent = text;
             item.append(element);
+            if (className === "teaching-code") window.PortalCourseGroups?.bind(element, course.subjects.code, course.academic_periods.name);
         }
         const button = document.createElement("button");
         button.type = "button";

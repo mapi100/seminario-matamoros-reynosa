@@ -1,0 +1,6 @@
+.course-group-dialog form { display: grid; gap: 16px; min-width: 0; }
+.course-group-dialog h2 { margin: 0; color: #263c52; font-size: 24px; }
+.course-group-dialog p { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
+.course-group-dialog select { width: 100%; max-width: 100%; min-height: 44px; font: inherit; padding: 10px; border: 1px solid #a9b9ca; border-radius: 5px; background: white; }
+.course-group-dialog label { font-weight: 600; }
+.course-group-dialog select:focus-visible { outline: 3px solid #0078c9; outline-offset: 2px; }

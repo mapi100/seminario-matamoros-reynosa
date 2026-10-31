@@ -204,10 +204,10 @@
             const needle = search.value.trim().toLocaleLowerCase("es");
             let visible = 0;
             for (const card of cards) {
-                window.PortalCourseColors?.apply(card, card.querySelector(".subject-code,.teaching-code")?.textContent,
+                window.PortalCourseColors?.apply(card, card.querySelector(".subject-code,.teaching-code")?.dataset.courseSubjectCode || card.querySelector(".subject-code,.teaching-code")?.textContent,
                     card.querySelector("." + periodClass)?.textContent || "");
                 const text = ((card.querySelector("." + nameClass)?.textContent || card.textContent) + " " +
-                    (card.querySelector(".subject-code,.teaching-code")?.textContent || "")).toLocaleLowerCase("es");
+                    (card.querySelector(".subject-code,.teaching-code")?.textContent || "") + " " + (card.querySelector(".subject-code,.teaching-code")?.dataset.courseSubjectCode || "")).toLocaleLowerCase("es");
                 card.hidden = Boolean((needle && !text.includes(needle)) ||
                     (period.value && card.querySelector("." + periodClass)?.textContent !== period.value));
                 if (!card.hidden) visible += 1;
@@ -215,6 +215,7 @@
             document.getElementById(kind + "FilterStatus").textContent = (needle || period.value)
                 ? visible + " coincidencias entre las materias mostradas." : "";
         }
+        window.addEventListener("portal-course-groups-loaded", filter);
         search.addEventListener("input", filter);
         period.addEventListener("change", filter);
         new MutationObserver(filter).observe(list, { childList: true });

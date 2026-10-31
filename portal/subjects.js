@@ -62,6 +62,7 @@
             element.className = className;
             element.textContent = text;
             item.append(element);
+            if (className === "subject-code") window.PortalCourseGroups?.bind(element, subject.code, period.name);
         }
         const grade = document.createElement("p");
         grade.className = "subject-grade";
