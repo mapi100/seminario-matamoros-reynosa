@@ -3,6 +3,7 @@ Página Web Oficial del Seminario Diocesano de Matamoros-Reynosa.
 
 Documentación del proyecto:
 
+- [Clases por bloques e inscripción directa de alumnos y profesores](docs/clases-e-inscripciones.md)
 - [Organizador visual de materias e inscripciones por etapa y curso](docs/organizador-cursos.md)
 
 - [Clases por curso: CI-1, CI-2, Filosofía y Teología](docs/clases-por-curso.md)

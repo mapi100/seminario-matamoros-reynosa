@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="access.css?v=20261021-campus-1">
     <link rel="stylesheet" href="course-groups.css?v=20261031-cursos-1">
     <link rel="stylesheet" href="course-organizer.css?v=20261101-organizer-1">
+    <link rel="stylesheet" href="class-directory.css?v=20261101-clases-1">
     <link rel="stylesheet" href="local-access.css?v=20261027-acceso-3">
 </head>
 <body class="dashboard-page" data-view="inicio">
@@ -370,7 +371,26 @@
                     <section class="kardex-issued" aria-labelledby="kardexIssuedTitle"><h3 id="kardexIssuedTitle">Kardex emitidos</h3><p>Cada emisión conserva su contenido original y su folio interno.</p><ul id="kardexIssues" class="kardex-students"></ul><button id="kardexIssuesMore" class="back-link" type="button" hidden>Más documentos</button></section>
                 </div>
             </section>
-            <section id="managementSection" class="dashboard-card management-section" data-screen="personas clases inscripciones profesores actividad" hidden>
+            <section id="classDirectory" class="dashboard-card class-directory" data-screen="clases" hidden aria-labelledby="classDirectoryTitle" aria-busy="false">
+                <div class="class-directory-heading">
+                    <div><h2 id="classDirectoryTitle">Clases por curso</h2><p>Elige el periodo académico, abre un curso e inscribe alumnos o asigna profesores a sus clases.</p></div>
+                    <div><button id="classDirectoryCreate" class="back-link control-create" type="button" disabled>Abrir clase</button><a class="back-link" href="#catalogos-academicos">Organizar materias</a></div>
+                </div>
+                <div class="class-directory-tools">
+                    <div><label for="classDirectoryPeriod">1. Periodo académico</label><select id="classDirectoryPeriod" disabled></select></div>
+                    <div><label for="classDirectorySearch">Buscar clase por nombre</label><input id="classDirectorySearch" type="search" maxlength="160" placeholder="Nombre de la materia" autocomplete="off" disabled></div>
+                    <label class="class-directory-inactive"><input id="classDirectoryInactive" type="checkbox" disabled>Incluir clases inactivas</label>
+                    <button id="classDirectoryRefresh" class="back-link" type="button">Actualizar</button>
+                </div>
+                <p id="classDirectoryStatus" class="control-message" role="status" aria-live="polite"></p>
+                <div class="class-directory-results-heading"><h3>2. Selecciona el curso</h3><button id="classDirectoryAll" class="back-link" type="button" aria-pressed="false" disabled>Ver todas las clases</button></div>
+                <div id="classDirectoryGroups" class="class-directory-groups" aria-label="Cursos por etapa"></div>
+                <div id="classDirectoryResults" class="class-directory-results">
+                    <div class="class-directory-results-heading"><h3 id="classDirectoryListTitle" tabindex="-1">Elige un curso para ver sus clases</h3><span id="classDirectoryCount"></span></div>
+                    <ul id="classDirectoryList" class="class-directory-list" aria-labelledby="classDirectoryListTitle"></ul>
+                </div>
+            </section>
+            <section id="managementSection" class="dashboard-card management-section" data-screen="personas inscripciones profesores actividad" hidden>
                 <div class="management-heading"><div><h2 id="managementTitle"></h2><p id="managementDescription"></p></div><button id="managementCreate" type="button" class="back-link control-create">Nuevo</button></div>
                 <form id="managementSearchForm" class="management-search" role="search"><label for="managementSearch">Buscar en esta sección</label><input id="managementSearch" type="search" maxlength="160" placeholder="Nombre, materia o periodo" autocomplete="off"><button type="submit" class="back-link">Buscar</button><button id="managementRefresh" type="button" class="back-link">Actualizar</button></form>
                 <p id="managementMessage" class="control-message" role="status" aria-live="polite"></p>
@@ -447,7 +467,8 @@
     <script src="auth.js?v=20261022-expediente-1" defer></script>
     <script src="grade-scale.js?v=20261027-boletas-1" defer></script>
     <script src="course-groups.js?v=20261101-organizer-1" defer></script>
-    <script src="course-organizer.js?v=20261101-organizer-1" defer></script>
+    <script src="course-organizer.js?v=20261101-clases-1" defer></script>
+    <script src="class-directory.js?v=20261101-clases-1" defer></script>
     <script src="subjects.js?v=20261031-cursos-1" defer></script>
     <script src="grade-editor.js?v=20261027-boletas-1" defer></script>
     <script src="teaching.js?v=20261031-cursos-1" defer></script>
@@ -460,12 +481,12 @@
     <script src="report-cards.js?v=20261027-boletas-1" defer></script>
     <script src="kardex.js?v=20261027-boletas-1" defer></script>
     <script src="personal-record.js?v=20261023-etapas-1" defer></script>
-    <script src="management.js?v=20261101-organizer-1" defer></script>
+    <script src="management.js?v=20261101-clases-1" defer></script>
     <script src="control.js?v=20261101-organizer-1" defer></script>
     <script src="learning-files.js?v=20261021-aula-1" defer></script>
     <script src="weighted-grades.js?v=20261027-boletas-1" defer></script>
     <script src="learning.js?v=20261031-cursos-1" defer></script>
-    <script src="workspace.js?v=20261101-organizer-1" defer></script>
-    <script src="panel.js?v=20261101-organizer-1" defer></script>
+    <script src="workspace.js?v=20261101-clases-1" defer></script>
+    <script src="panel.js?v=20261101-clases-1" defer></script>
 </body>
 </html>

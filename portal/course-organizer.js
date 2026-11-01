@@ -18,7 +18,7 @@
             data.period_id!==null&&!uuid.test(data.period_id)||
             data.periods.some(p=>!uuid.test(p.id)||typeof p.name!=="string")||
             data.subjects.some(s=>!uuid.test(s.id)||typeof s.name!=="string"||typeof s.code!=="string")||
-            data.classes.some(c=>!uuid.test(c.id)||!uuid.test(c.subject_id)||c.period_id!==data.period_id||typeof c.name!=="string"||typeof c.active!=="boolean"||!validGroup(c.group_code)||!Number.isInteger(c.revision)||c.revision<0))throw new Error("Respuesta de clases inválida");
+            data.classes.some(c=>!uuid.test(c.id)||!uuid.test(c.subject_id)||c.period_id!==data.period_id||typeof c.name!=="string"||typeof c.period_name!=="string"||typeof c.code!=="string"||typeof c.active!=="boolean"||!validGroup(c.group_code)||!Number.isInteger(c.revision)||c.revision<0))throw new Error("Respuesta de clases inválida");
         return data;
     }
     function closeMover(){if(mover){mover.remove();mover=undefined;}}
@@ -151,5 +151,5 @@
     $("organizerAll").addEventListener("click",()=>{selected="all";library=false;render();});
     window.addEventListener("portal-catalog-changed",()=>{if(opened&&!busy)void load($("organizerPeriod").value);});
     window.addEventListener("portal-academic-deleted",()=>{if(opened&&!busy)void load($("organizerPeriod").value);});
-    window.PortalCourseOrganizer=Object.freeze({clear,leave,mountPicker,show(value,check){clear();if(value.role==="control_escolar"){profile=value;verify=check;}},openRoute(){if(!profile||opened)return;opened=true;$("courseOrganizer").hidden=false;void load(null);}});
+    window.PortalCourseOrganizer=Object.freeze({clear,leave,mountPicker,readSnapshot:read,show(value,check){clear();if(value.role==="control_escolar"){profile=value;verify=check;}},openRoute(){if(!profile||opened)return;opened=true;$("courseOrganizer").hidden=false;void load(null);}});
 })();

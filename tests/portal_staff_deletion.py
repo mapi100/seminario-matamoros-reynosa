@@ -55,15 +55,15 @@ async def done(context,state,label):
     assert not state['errors'],state['errors'];assert not state['route_errors'],state['route_errors'];checks+=1;print('PASS '+label,flush=True);await context.close()
 
 async def open_class(page):
-    await w.nav(page,'clases');await page.get_by_role('button',name='Eliminar clase',exact=True).click();await expect(page.locator('#deletionTarget')).to_contain_text('Cristología')
+    await w.nav(page,'clases');await page.locator('#classDirectoryList summary').click();await page.get_by_role('button',name='Eliminar clase',exact=True).click();await expect(page.locator('#deletionTarget')).to_contain_text('Cristología')
 
 async def main():
     async with async_playwright() as p:
         browser=await p.chromium.launch(executable_path=shutil.which('chromium'),headless=True)
         c,page,state,data,x=await fixture(browser)
-        await w.nav(page,'clases');await page.get_by_role('button',name='Asignar profesor',exact=True).click();await w.select_ready(page,'class_id',w.CL)
+        await w.nav(page,'clases');await page.get_by_role('button',name='Asignar profesor',exact=True).click();await expect(page.locator('#managementFields input[name=class_id]')).to_have_value(w.CL)
         await expect(page.locator('#admin-person_id')).to_contain_text('Pbro. Martín de prueba (Control Escolar)')
-        await w.select_ready(page,'person_id',h.UID);await page.locator('#managementSave').click();await expect(page.locator('#managementList')).to_contain_text('2 profesores')
+        await w.select_ready(page,'person_id',h.UID);await page.locator('#managementSave').click();await expect(page.locator('#classDirectoryStatus')).to_contain_text('Profesor asignado');assert data['classes'][0]['professors']==2
         assert data['people'][-1]['role']=='control_escolar'
         await expect(page.locator('#workspaceNav [data-route=materias-asignadas]')).not_to_have_attribute('hidden','')
         await done(c,state,'Control Escolar appears in teacher picker and keeps administrative role/menu')
@@ -80,7 +80,7 @@ async def main():
                 await w.nav(page,'catalogos-academicos');await page.get_by_role('button',name='Eliminar '+('materia' if kind=='subject' else 'periodo'),exact=True).click();await expect(page.locator('#deletionTarget')).to_contain_text('Cristología')
             await expect(page.locator('#deletionCounts')).to_contain_text('Entregas: 1')
             await page.locator('#deletionConfirmation').fill('ELIMINAR');await page.locator('#deletionSave').click();await expect(page.locator('#deletionDialog')).not_to_be_visible();await expect(page.locator('#deletionNotice')).to_contain_text('eliminado definitivamente')
-            if kind=='class':await expect(page.locator('#managementList li')).to_have_count(0)
+            if kind=='class':await expect(page.locator('#classDirectoryList .class-directory-card')).to_have_count(0)
             else:await expect(page.locator('#'+('subject' if kind=='subject' else 'period')+'List li')).to_have_count(0)
             assert len([r for k,r in x['calls'] if k=='delete'])==1
             await done(c,state,'Confirmed '+kind+' deletion refreshes its list exactly once')
@@ -100,7 +100,7 @@ async def main():
         await done(c,state,'Storage failure remains visible and retry completes without deleting academic data twice')
 
         c,page,state,data,x=await fixture(browser);x['preview_status']=500
-        await w.nav(page,'clases');await page.get_by_role('button',name='Eliminar clase',exact=True).click();await expect(page.locator('#deletionMessage')).to_contain_text('No se pudo calcular');await expect(page.locator('#deletionSave')).to_be_disabled()
+        await w.nav(page,'clases');await page.locator('#classDirectoryList summary').click();await page.get_by_role('button',name='Eliminar clase',exact=True).click();await expect(page.locator('#deletionMessage')).to_contain_text('No se pudo calcular');await expect(page.locator('#deletionSave')).to_be_disabled()
         await done(c,state,'Failed impact calculation cannot enable deletion')
 
         c,page,state,data,x=await fixture(browser);x['label']='<img src=x onerror=alert(1)> Cristología'
@@ -108,7 +108,7 @@ async def main():
         await done(c,state,'Server labels render as text without HTML execution')
 
         c,page,state,data,x=await fixture(browser);x['gate']=asyncio.Event()
-        await w.nav(page,'clases');await page.get_by_role('button',name='Eliminar clase',exact=True).click();await x['started'].wait();await page.evaluate('location.hash="inicio"');await expect(page.locator('#deletionDialog')).not_to_be_visible();x['gate'].set();await page.wait_for_timeout(100);await expect(page.locator('#deletionSave')).to_be_disabled()
+        await w.nav(page,'clases');await page.locator('#classDirectoryList summary').click();await page.get_by_role('button',name='Eliminar clase',exact=True).click();await x['started'].wait();await page.evaluate('location.hash="inicio"');await expect(page.locator('#deletionDialog')).not_to_be_visible();x['gate'].set();await page.wait_for_timeout(100);await expect(page.locator('#deletionSave')).to_be_disabled()
         await done(c,state,'Navigation discards delayed preview and closes confirmation')
 
         c,page,state,data,x=await fixture(browser,mobile=True)

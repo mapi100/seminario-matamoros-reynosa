@@ -28,6 +28,7 @@ async def fixture(browser,**kwargs):
         if '/functions/v1/invite-person' in path:
             data['calls'].append(('invite',body));return await route.fulfill(status=503,headers=headers,body=json.dumps({'error':'Email not configured'}))
         if path.endswith('portal_course_board_read'):
+            data['calls'].append(('board',copy.deepcopy(body)))
             periods=copy.deepcopy(state['catalog_periods']);chosen=body.get('p_period') or (periods[0]['id'] if periods else None)
             rows=[dict(r,name=r['subject_name'],group_code=r.get('group_code'),revision=r.get('revision',0)) for r in data['classes'] if r['period_id']==chosen]
             subjects=copy.deepcopy(state['catalog_subjects'])
@@ -52,7 +53,8 @@ async def fixture(browser,**kwargs):
             if action=='class_create':data['classes'].append({'id':CL,'subject_id':subject(1)['id'],'period_id':period(7)['id'],'active':True,'code':'CAT-001','subject_name':'Cristología','period_name':'Enero–Junio 2027','starts_on':'2027-01-01','ends_on':'2027-06-30','students':0,'professors':0})
             elif action in ('enroll','assign'):
                 kind='enrollments' if action=='enroll' else 'assignments';user=next(r for r in data['people'] if r['id']==args['person_id']);entity=EN if action=='enroll' else AS
-                data[kind].append({'id':entity,'person_id':user['id'],'class_id':CL,'full_name':user['full_name'],'subject_name':'Cristología','period_name':'Enero–Junio 2027','active':True});data['classes'][0]['students' if action=='enroll' else 'professors']+=1
+                selected=next(r for r in data['classes'] if r['id']==args['class_id'])
+                data[kind].append({'id':entity,'person_id':user['id'],'class_id':selected['id'],'full_name':user['full_name'],'subject_name':selected['subject_name'],'period_name':selected['period_name'],'active':True});selected['students' if action=='enroll' else 'professors']+=1
             elif action in ('enrollment_state','assignment_state','class_state'):
                 kind={'enrollment_state':'enrollments','assignment_state':'assignments','class_state':'classes'}[action];next(r for r in data[kind] if r['id']==entity)['active']=args['active']
             elif action=='person_update':
@@ -70,7 +72,11 @@ async def done(context,state,label):
 
 async def nav(page,route):
     await page.evaluate('(route)=>location.hash=route',route)
-    if route in ['personas','clases','inscripciones','profesores','actividad']:await expect(page.locator('#managementSection')).to_be_visible()
+    if route in ['personas','inscripciones','profesores','actividad']:await expect(page.locator('#managementSection')).to_be_visible()
+    if route=='clases':
+        await expect(page.locator('#classDirectory')).to_be_visible()
+        # Estos escenarios de administración usan la lista completa; el flujo de bloques se prueba aparte.
+        await expect(page.locator('#classDirectoryAll')).to_be_enabled();await page.locator('#classDirectoryAll').click()
 
 async def select_ready(page,name,value):
     target=page.locator('#admin-'+name);await expect(target).to_be_enabled();await target.select_option(value)
@@ -81,12 +87,12 @@ async def main():
         context,page,state,data=await fixture(browser)
         await expect(page.locator('#controlHome')).to_be_visible();assert not data['calls']
         await page.screenshot(path=str(OUT/'seminario-campus-control.png'),full_page=True,animations='disabled')
-        await nav(page,'clases');await expect(page.locator('#managementMessage')).to_contain_text('No hay registros')
-        await page.locator('#managementCreate').click();await select_ready(page,'subject_id',subject(1)['id']);await select_ready(page,'period_id',period(7)['id']);await page.locator('#managementSave').click()
-        await expect(page.locator('#managementDialog')).not_to_be_visible();await expect(page.locator('#managementList')).to_contain_text('Cristología')
+        await nav(page,'clases');await expect(page.locator('#classDirectoryCount')).to_have_text('0 clases')
+        await page.locator('#classDirectoryCreate').click();await select_ready(page,'subject_id',subject(1)['id']);await select_ready(page,'period_id',period(7)['id']);await page.locator('#managementSave').click()
+        await expect(page.locator('#managementDialog')).not_to_be_visible();await expect(page.locator('#classDirectoryList')).to_contain_text('Cristología')
         assert data['calls'][-2][0]=='write' or any(c[0]=='write' for c in data['calls'])
-        await page.get_by_role('button',name='Asignar profesor',exact=True).click();await select_ready(page,'class_id',CL);await select_ready(page,'person_id',P);await page.locator('#managementSave').click();await expect(page.locator('#managementList')).to_contain_text('1 profesores')
-        await page.get_by_role('button',name='Inscribir',exact=True).click();await select_ready(page,'class_id',CL);await select_ready(page,'person_id',A);await page.locator('#managementSave').click();await expect(page.locator('#managementList')).to_contain_text('1 alumnos')
+        await page.get_by_role('button',name='Asignar profesor',exact=True).click();await expect(page.locator('#managementFields input[name=class_id]')).to_have_value(CL);await select_ready(page,'person_id',P);await page.locator('#managementSave').click();await expect(page.locator('#classDirectoryStatus')).to_contain_text('Profesor asignado');assert data['classes'][0]['professors']==1
+        await page.get_by_role('button',name='Inscribir alumno',exact=True).click();await expect(page.locator('#managementFields input[name=class_id]')).to_have_value(CL);await select_ready(page,'person_id',A);await page.locator('#managementSave').click();await expect(page.locator('#classDirectoryStatus')).to_contain_text('Alumno inscrito');assert data['classes'][0]['students']==1
         await nav(page,'inscripciones');await expect(page.locator('#managementList')).to_contain_text('Alumno de prueba');await page.get_by_role('button',name='Dar de baja',exact=True).click();await page.locator('#managementSave').click();await expect(page.locator('#managementList')).to_contain_text('Inactivo')
         await page.get_by_role('button',name='Reactivar',exact=True).click();await page.locator('#managementSave').click();await expect(page.locator('#managementList')).to_contain_text('Activo')
         await done(context,state,'Control opens a class, assigns a professor, enrolls a student, deactivates and restores enrollment')

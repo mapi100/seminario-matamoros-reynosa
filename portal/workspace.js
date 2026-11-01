@@ -13,7 +13,7 @@
         kardex: "Kardex", etapas: "Etapas y semestres", expedientes: "Expedientes", actividad: "Actividad", "mi-perfil": "Mi perfil", curso: "Curso"
     };
     const adminRoutes = {
-        personas: "people", clases: "classes", inscripciones: "enrollments",
+        personas: "people", inscripciones: "enrollments",
         profesores: "assignments", actividad: "events"
     };
     const courseRoute = /^curso\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\/|$)/i;
@@ -98,6 +98,8 @@
         }
         if (Object.hasOwn(adminRoutes, route)) window.PortalManagement?.openResource(adminRoutes[route]);
         else window.PortalManagement?.leave();
+        if (route === "clases") window.PortalClassDirectory?.openRoute();
+        else window.PortalClassDirectory?.leave();
         if (route === "kardex") window.PortalKardex?.openRoute();
         else window.PortalKardex?.leave();
         if (route === "etapas") window.PortalFormation?.openRoute();

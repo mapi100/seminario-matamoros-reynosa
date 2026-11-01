@@ -7,7 +7,7 @@ import portal_subjects as h
 import portal_learning as l
 import portal_workspace as w
 
-async def mock_groups(context,rows,save_status=200):
+async def mock_groups(context,rows,save_status=200,class_rows=None):
     state={'items':rows,'writes':[]}
     async def route(req):
         path=urlparse(req.request.url).path
@@ -17,6 +17,7 @@ async def mock_groups(context,rows,save_status=200):
             args=req.request.post_data_json;state['writes'].append(args)
             if save_status!=200:return await req.fulfill(status=save_status,content_type='application/json',body=json.dumps({'code':'PT409','message':'El curso cambió. Actualiza la lista.'}))
             row=next(x for x in state['items'] if x['course_id']==args['p_course']);row.update(group_code=args['p_group'],revision=row['revision']+1)
+            if class_rows is not None:next(x for x in class_rows if x['id']==row['course_id']).update(group_code=row['group_code'],revision=row['revision'])
             return await req.fulfill(status=200,content_type='application/json',body=json.dumps({'saved':True,'group_code':row['group_code'],'revision':row['revision']}))
         await req.fallback()
     await context.route(h.API+'/**',route)
@@ -46,13 +47,14 @@ async def main():
         c,page,state,data=await w.fixture(browser)
         data['classes']=[{'id':w.CL,'subject_id':w.subject(1)['id'],'period_id':w.period(7)['id'],'active':True,'code':'CAT-001','subject_name':'Cristología','period_name':'Enero–Junio 2027','starts_on':'2027-01-01','ends_on':'2027-06-30','students':0,'professors':0}]
         rows=[{'course_id':w.CL,'code':'CAT-001','period_name':'Enero–Junio 2027','group_code':'1T-2','revision':1,'planned_professor':'Docente ficticio'}]
-        groups=await mock_groups(c,rows);await page.evaluate('PortalCourseGroups.reload()');await w.nav(page,'clases')
-        await expect(page.locator('#managementList')).to_contain_text('1T-2');assert 'CAT-001' not in await page.locator('#managementList').inner_text()
-        await page.get_by_role('button',name='Curso / semestre').click();await expect(page.locator('.course-group-dialog')).to_be_visible()
+        data['classes'][0].update(group_code='1T-2',revision=1)
+        groups=await mock_groups(c,rows,class_rows=data['classes']);await page.evaluate('PortalCourseGroups.reload()');await w.nav(page,'clases')
+        await expect(page.locator('#classDirectoryList')).to_contain_text('1T-2');assert 'CAT-001' not in await page.locator('#classDirectoryList').inner_text()
+        await page.locator('#classDirectoryList summary').click();await page.get_by_role('button',name='Curso / semestre').click();await expect(page.locator('.course-group-dialog')).to_be_visible()
         await page.locator('#classFormationCourse').select_option('2T-3');await page.get_by_role('button',name='Guardar curso',exact=True).click()
-        await expect(page.locator('.course-group-dialog')).to_have_count(0);await expect(page.locator('#managementList')).to_contain_text('2T-3')
+        await expect(page.locator('.course-group-dialog')).to_have_count(0);await expect(page.locator('#classDirectoryList')).to_contain_text('2T-3')
         assert groups['writes'][0]['p_revision']==1
-        await page.get_by_role('button',name='Curso / semestre').click();await page.get_by_role('button',name='Cancelar',exact=True).click();await expect(page.locator('.course-group-dialog')).to_have_count(0)
+        await page.locator('#classDirectoryList summary').click();await page.get_by_role('button',name='Curso / semestre').click();await page.get_by_role('button',name='Cancelar',exact=True).click();await expect(page.locator('.course-group-dialog')).to_have_count(0)
         await mock_groups(c,groups['items'],save_status=409)
         await page.get_by_role('button',name='Curso / semestre').click();await page.locator('#classFormationCourse').select_option('CI-1');await page.get_by_role('button',name='Guardar curso',exact=True).click()
         await expect(page.locator('.course-group-dialog')).to_contain_text('El curso cambió');await expect(page.get_by_role('button',name='Guardar curso',exact=True)).to_be_disabled();await page.get_by_role('button',name='Cancelar',exact=True).click()
