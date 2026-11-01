@@ -741,6 +741,22 @@ img {
     text-align: right;
 }
 
+.footer-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    margin-top: 6px;
+    color: inherit;
+    font-size: 13px;
+    text-decoration: none;
+    text-underline-offset: 4px;
+}
+
+.footer-source svg { flex-shrink: 0; }
+.footer-source:hover { color: var(--gold-light); text-decoration: underline; }
+.footer-source:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 4px; }
+
 .footer-links {
     display: flex;
     flex-wrap: wrap;
