@@ -44,6 +44,8 @@
     function hidden(name,value){const input=document.createElement("input");input.type="hidden";input.name=name;input.value=String(value);fields.append(input);}
     function help(content){fields.append(element("p",content,"dialog-help"));}
     function lookup(name,label,kind,selected){
+        if(kind==="active_classes"&&window.PortalCourseOrganizer){const operation=modalVersion;return window.PortalCourseOrganizer.mountPicker(fields,{name,selected,signal:modalController.signal,isAlive:()=>active&&operation===modalVersion,onDenied:forbidden});}
+
         const group=element("div",undefined,"lookup-group"),labelNode=element("label",label);const search=document.createElement("input");search.type="search";search.placeholder="Buscar por nombre";search.maxLength=160;search.autocomplete="off";search.setAttribute("aria-label","Buscar: "+label);const select=document.createElement("select");select.name=name;select.id="admin-"+name;select.required=true;labelNode.htmlFor=select.id;const status=element("p","","lookup-status");group.append(labelNode,search,select,status);fields.append(group);
         const dialogOperation=modalVersion;let sequence=0,timer;
         async function refresh(){const operation=++sequence;select.disabled=true;status.textContent="Buscando…";
@@ -72,7 +74,7 @@
     }
     async function submit(){
         if(!active||modalBusy||uncertain||!dialog.open||!form.reportValidity())return;
-        if([...fields.querySelectorAll("select")].some(select=>select.disabled||!select.value)){note("Espera a que carguen las listas y selecciona una opción.","error",formMessage);return;}
+        if([...fields.querySelectorAll("select[name]")].some(select=>select.disabled||!select.value)){note("Espera a que carguen las listas y selecciona una opción.","error",formMessage);return;}
         const data=Object.fromEntries(new FormData(form));for(const key of Object.keys(data))data[key]=data[key].trim();if(Object.hasOwn(data,"active"))data.active=data.active==="true";if(Object.hasOwn(data,"revision"))data.revision=Number(data.revision);
         if(Object.values(data).some(value=>typeof value==="string"&&(!value.trim()||/[\u0000-\u001f\u007f]/u.test(value)))){note("Revisa los campos; no pueden estar vacíos ni incluir saltos de línea.","error",formMessage);return;}
         if(modalAction==="period_update"&&data.ends_on<data.starts_on){note("La fecha de fin debe ser igual o posterior al inicio.","error",formMessage);return;}
@@ -80,7 +82,7 @@
         try{
             if(action==="invite"){const result=await api().functions.invoke("invite-person",{body:{email:data.email,full_name:data.full_name,role:data.role,request_id:requestId}});if(result.error)throw {code:"INVITE_ERROR",message:"No se pudo confirmar el envío. Comprueba la lista de personas antes de intentarlo otra vez."};if(result.data?.sent!==true)throw new Error("Envío no confirmado");}
             else{const response=await api().rpc("portal_admin_write",{p_action:action,p_data:data}).retry(false).abortSignal(modalController.signal);if(response.error)throw {...response.error,status:response.status};if(response.data?.saved!==true||!uuid.test(response.data.id))throw new Error("Operación no confirmada");}
-            if(!active||operation!==modalVersion)return;cancelModal();if(callback)callback();if(resource)await load();if(active)note(action==="invite"?"Invitación enviada. La persona recibirá un enlace para crear su contraseña.":"Cambios guardados.","success");
+            if(!active||operation!==modalVersion)return;cancelModal();if(callback)callback();if(resource)await load();if(["subject_update","period_update","class_create"].includes(action))window.dispatchEvent(new Event("portal-catalog-changed"));if(active)note(action==="invite"?"Invitación enviada. La persona recibirá un enlace para crear su contraseña.":"Cambios guardados.","success");
         }catch(error){if(!active||operation!==modalVersion||forbidden(error))return;if(["22023","PT409","23505"].includes(error?.code)){note(error.code==="22023"?(text(error.message,220)?error.message:"Revisa los datos del formulario."):"El registro ya existe o cambió. Actualiza la lista antes de continuar.","error",formMessage);}else{uncertain=true;note(action==="invite"?"No se pudo confirmar la invitación. Revisa la lista y contacta al responsable si el envío aún no está habilitado.":"No se pudo confirmar el cambio. Cierra y actualiza la lista antes de repetirlo.","error",formMessage);}}
         finally{if(operation===modalVersion){modalBusy=false;form.setAttribute("aria-busy","false");save.disabled=uncertain;for(const id of ["managementCancel","managementCancelBottom"])$(id).disabled=false;}}
     }

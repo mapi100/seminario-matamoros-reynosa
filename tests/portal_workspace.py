@@ -27,6 +27,11 @@ async def fixture(browser,**kwargs):
             return await route.fulfill(status=200,headers=headers,body=json.dumps(rows))
         if '/functions/v1/invite-person' in path:
             data['calls'].append(('invite',body));return await route.fulfill(status=503,headers=headers,body=json.dumps({'error':'Email not configured'}))
+        if path.endswith('portal_course_board_read'):
+            periods=copy.deepcopy(state['catalog_periods']);chosen=body.get('p_period') or (periods[0]['id'] if periods else None)
+            rows=[dict(r,name=r['subject_name'],group_code=r.get('group_code'),revision=r.get('revision',0)) for r in data['classes'] if r['period_id']==chosen]
+            subjects=copy.deepcopy(state['catalog_subjects'])
+            return await route.fulfill(status=200,headers=headers,body=json.dumps({'periods':periods,'period_id':chosen,'subjects':subjects,'classes':rows}))
         if path.endswith('portal_course_classes_read'):
             body={'p_resource':'active_classes' if body['p_active_only'] else 'classes','p_search':body['p_search'],'p_offset':body['p_offset'],'p_limit':body['p_limit']}
         if path.endswith(('portal_admin_read','portal_course_classes_read')):

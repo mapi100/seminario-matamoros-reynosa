@@ -34,7 +34,7 @@
             if (error) throw error;
             if (!Array.isArray(data?.items) || data.items.length > 10000 || data.items.some(x =>
                 !uuid.test(x.course_id) || typeof x.code !== "string" || typeof x.period_name !== "string" ||
-                !groupPattern.test(x.group_code) || !Number.isInteger(x.revision) || x.revision < 1)) throw new Error("Respuesta inválida");
+                (x.group_code !== null && !groupPattern.test(x.group_code)) || !Number.isInteger(x.revision) || x.revision < 1)) throw new Error("Respuesta inválida");
             byClass = new Map(data.items.map(x => [x.course_id,x]));
             byCard = new Map(data.items.map(x => [key(x.code,x.period_name),x]));
             loaded = true;

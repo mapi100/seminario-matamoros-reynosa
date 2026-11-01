@@ -1,0 +1,39 @@
+.course-organizer { grid-column:1/-1; padding:26px; min-width:0; margin-bottom:26px; }
+.organizer-heading,.organizer-source-heading { display:flex;align-items:center;justify-content:space-between;gap:14px; }
+.organizer-heading h2 { margin:0 0 8px;font-size:23px;color:#25364b; }
+.organizer-heading p,.organizer-scope { color:#647080;font-size:14px;line-height:1.6; }
+.organizer-tools { display:flex;gap:16px;align-items:end;flex-wrap:wrap;margin:24px 0 12px; }
+.organizer-tools>div { flex:1 1 220px;min-width:0; }
+.organizer-tools label,.course-picker label { display:block;font-weight:600;font-size:13px;margin-bottom:7px; }
+.organizer-tools input,.organizer-tools select,.course-picker select,.course-picker input { width:100%;min-height:44px;padding:10px 12px;border:1px solid #b7c5d4;border-radius:5px;background:white;color:#263c52;font:inherit;box-sizing:border-box; }
+.organizer-status { min-height:23px;font-size:14px;line-height:1.5;color:#226651; }
+.organizer-status.error { color:#a12d2d; }
+.organizer-board { display:grid;grid-template-columns:minmax(245px,.9fr) minmax(0,1.5fr);gap:24px;align-items:start; }
+.organizer-source-panel { scroll-margin-top:160px; padding:18px;border:1px solid #dce1e7;border-radius:8px;background:#f6f8fa;min-width:0; }
+.organizer-source-heading h3 { margin:0;font-size:16px;line-height:1.5; }
+#organizerCount { color:#687480;font-size:13px; }
+#organizerSources { margin:0;padding:0;list-style:none;max-height:590px;overflow:auto;overscroll-behavior:contain; }
+.organizer-subject { padding:14px;margin:0 0 10px;border:1px solid #d7dfe8;border-radius:7px;background:white;overflow-wrap:anywhere;cursor:grab; }
+.organizer-subject:active { cursor:grabbing; }
+.organizer-subject.dragging { opacity:.5; }
+.organizer-subject strong { display:block;font-size:14px;line-height:1.5; }
+.organizer-subject p { font-size:12px;color:#687480;margin:7px 0 10px; }
+.organizer-subject .back-link { min-height:34px;padding:7px 12px;font-size:12px; }
+.organizer-stages { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;min-width:0; }
+.organizer-stage { min-width:0; }
+.organizer-stage h3 { font-size:15px;margin:0 0 12px;color:#263c52; }
+.organizer-stage-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px; }
+.organizer-drop { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:91px;padding:12px 7px;border:2px solid #c5d5e7;border-radius:8px;background:#eef5fc;color:#14598a;font:inherit;font-weight:700;cursor:pointer;overflow-wrap:anywhere; }
+.organizer-drop small { font-size:11px;color:#596f84;font-weight:400; }
+.organizer-drop:hover,.organizer-drop[aria-pressed=true] { border-color:#0078c9;background:#dfedfb; }
+.organizer-drop.active { outline:3px dashed #0078c9;outline-offset:2px;background:#cce5ff; }
+.organizer-stages>.organizer-drop { grid-column:1/-1;min-height:65px;background:#f7f8fa;color:#4c5c6b; }
+.organizer-empty { padding:15px;color:#687480;line-height:1.5;font-size:14px; }
+.course-picker { margin-bottom:20px;min-width:0; }
+.course-picker-filters { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px; }
+.course-picker-filters>div:first-child { grid-column:1/-1; }
+.course-picker>div:not(.course-picker-filters) { margin:12px 0; }
+.course-picker select { max-width:100%;text-overflow:ellipsis; }
+.course-organizer :focus-visible { outline:3px solid #0078c9;outline-offset:3px; }
+@media(max-width:1100px){.organizer-board{grid-template-columns:minmax(0,1fr)}.organizer-stages{grid-row:1}.organizer-source-panel{grid-row:2}}
+@media(max-width:600px){.course-organizer{padding:18px 14px}.organizer-heading{align-items:start;flex-wrap:wrap}.organizer-heading h2{font-size:20px}.organizer-tools{display:grid;grid-template-columns:1fr}.organizer-tools>div{min-width:0}.organizer-stages{grid-template-columns:1fr}.organizer-stage-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.organizer-drop{min-height:75px;font-size:13px}#organizerSources{max-height:440px}.course-picker-filters{grid-template-columns:1fr}.course-picker-filters>div:first-child{grid-column:auto}}

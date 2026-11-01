@@ -234,6 +234,7 @@
             }
             const record = response.data[0];
             state.form.reset();
+            window.dispatchEvent(new Event("portal-catalog-changed"));
             showMessage(state, state.kind === "period"
                 ? "Periodo creado: " + record.name + "."
                 : "Materia creada: " + record.code + " — " + record.name + ".", "success");

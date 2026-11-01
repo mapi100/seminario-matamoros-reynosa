@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="content-reader.css?v=20261027-lector-1">
     <link rel="stylesheet" href="access.css?v=20261021-campus-1">
     <link rel="stylesheet" href="course-groups.css?v=20261031-cursos-1">
+    <link rel="stylesheet" href="course-organizer.css?v=20261101-organizer-1">
     <link rel="stylesheet" href="local-access.css?v=20261027-acceso-3">
 </head>
 <body class="dashboard-page" data-view="inicio">
@@ -260,6 +261,13 @@
                     </section>
                 </section>
             </section>
+            <section id="courseOrganizer" class="dashboard-card course-organizer" data-screen="catalogos-academicos" hidden aria-labelledby="organizerTitle">
+                <div class="organizer-heading"><div><h2 id="organizerTitle">Organiza las materias por curso</h2><p>Elige un periodo y arrastra cada materia a su bloque. También puedes usar Mover.</p></div><button id="organizerRefresh" class="back-link" type="button">Actualizar</button></div>
+                <div class="organizer-tools"><div><label for="organizerPeriod">Periodo académico</label><select id="organizerPeriod"></select></div><div><label for="organizerSearch">Buscar materia</label><input id="organizerSearch" type="search" placeholder="Nombre de la materia"></div><button id="organizerLibrary" class="back-link" type="button">Agregar desde catálogo</button></div>
+                <p id="organizerScope" class="organizer-scope"></p><p id="organizerStatus" role="status" aria-live="polite"></p>
+                <div class="organizer-board"><section class="organizer-source-panel" aria-labelledby="organizerListTitle"><div class="organizer-source-heading"><h3 id="organizerListTitle" tabindex="-1">Todas las clases del periodo</h3><button id="organizerAll" class="back-link" type="button">Ver todas</button></div><p id="organizerCount"></p><ul id="organizerSources"></ul></section><div id="organizerGroups" class="organizer-stages" aria-label="Bloques de cursos"></div></div>
+            </section>
+
             <section data-screen="catalogos-academicos" id="controlSection" class="dashboard-card control-section"
                      aria-labelledby="controlTitle" hidden>
                 <div id="catalogos-academicos">
@@ -438,7 +446,8 @@
     <script src="supabase-config.js?v=20261021-aula-1" defer></script>
     <script src="auth.js?v=20261022-expediente-1" defer></script>
     <script src="grade-scale.js?v=20261027-boletas-1" defer></script>
-    <script src="course-groups.js?v=20261031-cursos-1" defer></script>
+    <script src="course-groups.js?v=20261101-organizer-1" defer></script>
+    <script src="course-organizer.js?v=20261101-organizer-1" defer></script>
     <script src="subjects.js?v=20261031-cursos-1" defer></script>
     <script src="grade-editor.js?v=20261027-boletas-1" defer></script>
     <script src="teaching.js?v=20261031-cursos-1" defer></script>
@@ -451,12 +460,12 @@
     <script src="report-cards.js?v=20261027-boletas-1" defer></script>
     <script src="kardex.js?v=20261027-boletas-1" defer></script>
     <script src="personal-record.js?v=20261023-etapas-1" defer></script>
-    <script src="management.js?v=20261031-cursos-1" defer></script>
-    <script src="control.js?v=20261031-cursos-1" defer></script>
+    <script src="management.js?v=20261101-organizer-1" defer></script>
+    <script src="control.js?v=20261101-organizer-1" defer></script>
     <script src="learning-files.js?v=20261021-aula-1" defer></script>
     <script src="weighted-grades.js?v=20261027-boletas-1" defer></script>
     <script src="learning.js?v=20261031-cursos-1" defer></script>
-    <script src="workspace.js?v=20261031-cursos-1" defer></script>
-    <script src="panel.js?v=20261031-cursos-1" defer></script>
+    <script src="workspace.js?v=20261101-organizer-1" defer></script>
+    <script src="panel.js?v=20261101-organizer-1" defer></script>
 </body>
 </html>

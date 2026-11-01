@@ -103,6 +103,8 @@
         if (route === "etapas") window.PortalFormation?.openRoute();
         else window.PortalFormation?.leave();
         window.PortalPersonalRecord?.navigate(route);
+        if (route === "catalogos-academicos") window.PortalCourseOrganizer?.openRoute();
+        else window.PortalCourseOrganizer?.leave();
         window.PortalLearning?.navigate();
         closeMenu();
         if (focus) {
