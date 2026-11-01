@@ -3,6 +3,7 @@ Página Web Oficial del Seminario Diocesano de Matamoros-Reynosa.
 
 Documentación del proyecto:
 
+- [Apariencia del portal: Claro, Oscuro y OLED](docs/temas-portal.md)
 - [Filtros de inscripción por etapa, semestre y nombre; tipografía más legible](docs/filtros-etapas-legibilidad.md)
 - [Inscribir varios seminaristas, profesores agrupados y menú en una fila](docs/inscripciones-multiples-y-profesores.md)
 - [Clases por bloques e inscripción directa de alumnos y profesores](docs/clases-e-inscripciones.md)

@@ -1,0 +1,138 @@
+/* El tema solo cambia la presentación del portal, nunca las páginas/documentos impresos. */
+@media screen {
+    :root { color-scheme:light; --theme-page:#f6f7f8; --theme-card:#fff; --theme-raised:#f0f4f8; --theme-input:#fff; --theme-line:#bccbdc; --theme-ink:#243447; --theme-muted:#52657a; --theme-accent:#006fba; --theme-hover:#e9f2fb; --theme-ring:#006fba; }
+    :root[data-theme-tone=dark] {
+        color-scheme:dark;
+        --theme-page:#0e1219; --theme-header:#151b25; --theme-nav:#202734; --theme-card:#171e29; --theme-raised:#202a38; --theme-input:#111824;
+        --theme-line:#3b4a60; --theme-ink:#e8eef7; --theme-muted:#b0bfd2; --theme-accent:#91c6ff; --theme-hover:#27374c; --theme-ring:#a7d1ff;
+        --theme-action:#a4cfff; --theme-action-ink:#10253d; --theme-success:#98e5b9; --theme-success-bg:#163629; --theme-error:#ffb9bf; --theme-error-bg:#42232d; --theme-warning:#ffdb94; --theme-warning-bg:#3e311e;
+        --campus-ink:var(--theme-ink); --campus-muted:var(--theme-muted); --campus-line:var(--theme-line); --campus-bg:var(--theme-page); --campus-accent:var(--theme-accent);
+    }
+    :root[data-theme=oled] {
+        --theme-page:#000; --theme-header:#000; --theme-nav:#080808; --theme-card:#000; --theme-raised:#111; --theme-input:#080808;
+        --theme-line:#383d46; --theme-ink:#f0f2f6; --theme-muted:#b9c1ce; --theme-accent:#a6ceff; --theme-hover:#192330;
+        --theme-success-bg:#0a2516; --theme-error-bg:#2c1019; --theme-warning-bg:#2a200c;
+    }
+    .portal-theme { position:relative; flex-shrink:0; display:inline-flex; align-items:center; font-family:Arial,"Segoe UI",sans-serif; line-height:1.4; }
+    .portal-theme .portal-theme-button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-width:42px; min-height:40px; padding:9px 12px; border:1px solid var(--theme-line); border-radius:24px; background:var(--theme-card); color:var(--theme-ink); font:inherit; font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 2px 7px #10243d08; }
+    .portal-theme .portal-theme-button:hover { background:var(--theme-hover); border-color:var(--theme-accent); }
+    .portal-theme svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+    .portal-theme .portal-theme-options { position:absolute; top:calc(100% + 12px); right:0; z-index:100; width:300px; max-width:calc(100vw - 24px); padding:14px; border:1px solid var(--theme-line); border-radius:14px; background:var(--theme-card); color:var(--theme-ink); box-shadow:0 14px 40px #0004; text-align:left; }
+    .portal-theme [hidden] { display:none; }
+    .portal-theme fieldset { border:0; padding:0; margin:0; min-width:0; }
+    .portal-theme legend { padding:0 4px 12px; color:var(--theme-ink); font-size:14px; font-weight:700; }
+    .portal-theme label { display:flex; align-items:center; gap:10px; padding:11px 8px; margin:3px 0; border-radius:9px; cursor:pointer; }
+    .portal-theme label:hover,.portal-theme label:has(input:checked) { background:var(--theme-hover); }
+    .portal-theme input { width:17px; height:17px; min-height:0; padding:0; margin:0; flex-shrink:0; accent-color:var(--theme-accent); }
+    .portal-theme strong,.portal-theme small { display:block; }
+    .portal-theme strong { font-size:14px; color:var(--theme-ink); }
+    .portal-theme small { font-size:12px; font-weight:400; margin-top:3px; color:var(--theme-muted); }
+    .portal-theme-swatch { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:34px; height:38px; border:1px solid #78879b; border-radius:7px; }
+    .portal-theme-swatch.light { background:#fff; color:#24537a; }
+    .portal-theme-swatch.dark { background:#202938; color:#bdd8ff; }
+    .portal-theme-swatch.oled { background:#000; color:#e8eef7; }
+    .portal-theme :focus-visible { outline:3px solid var(--theme-ring); outline-offset:3px; }
+    .access-header-actions { display:flex; align-items:center; justify-content:flex-end; gap:16px; }
+    .dashboard-page .header-container:has(.portal-theme) { gap:14px; }
+    .dashboard-page .header-course-name { min-width:0; flex:0 1 240px; }
+    .dashboard-page[data-view=acceso] .dashboard-actions { display:flex; margin-left:0; }
+    .dashboard-page[data-view=acceso] .dashboard-actions>:not([data-theme-control]) { display:none; }
+    :root[data-theme-tone=dark] body.dashboard-page[data-view=acceso] { background:var(--theme-page); color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body .local-access.access-page { background:transparent; color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body { background:var(--theme-page); color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body :is(h1,h2,h3,h4,h5,h6,legend,label,strong,dt,dd) { color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body a { color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body :is(p,small,output) { color:inherit; }
+    :root[data-theme-tone=dark] body :is(.portal-header,.portal-footer) { background:var(--theme-header); color:var(--theme-muted); border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body .portal-header { border-top-color:#c58d57; }
+    :root[data-theme-tone=dark] body .brand-name { color:#c4dbff; }
+    :root[data-theme-tone=dark] body .brand-small { color:#f3a7a7; }
+    :root[data-theme-tone=dark] body :is(.header-account,.header-home,.header-course-name) { color:var(--theme-ink); border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body :is(.icon-link,.menu-toggle,.header-avatar) { color:var(--theme-accent); background:var(--theme-raised); border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body :is(.dashboard-main,.login-main) { background:transparent; }
+    :root[data-theme-tone=dark] body :is(.workspace-nav,.learning-course-nav) { background:var(--theme-nav); color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body .learning-course-nav { box-shadow:0 0 0 100vmax var(--theme-nav); }
+    :root[data-theme-tone=dark] body :is(.workspace-nav nav a,.learning-course-nav a) { color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body :is(.workspace-nav nav a,.learning-course-nav a):is(:hover,[aria-current=page]) { background:var(--theme-hover); border-bottom-color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body :is(.dashboard-card,.campus-widget,.login-card,.session-panel,.subject-item,.teaching-card,.task-card,.learning-card,.learning-module-card,.learning-final-grade,.learning-participants,.class-directory-card,.organizer-subject,.report-cards) { background:var(--theme-card); color:var(--theme-ink); border-color:var(--theme-line); box-shadow:none; }
+    :root[data-theme-tone=dark] body :is(.dashboard-welcome,.learning-course-banner) { color:#fff; }
+    :root[data-theme-tone=dark] body :is(.dashboard-welcome,.learning-course-banner) :is(h1,h2,p,a) { color:#fff; }
+    :root[data-theme-tone=dark] body .dashboard-welcome { background:linear-gradient(90deg,#06101de6,#10243d99),url("../images/seminario_completo.jpg") center 52%/cover; }
+    :root[data-theme-tone=dark] body .welcome-eyebrow { color:#ffe1a0; }
+    :root[data-theme-tone=dark] body :is(.access-note,.login-subtitle,.login-footer,.intro-caption,.intro-tag,.subject-code,.teaching-code,.subject-period,.subject-dates,.teaching-period,.teaching-card p,.subjects-status,.teaching-status,.control-list-status,.workspace-breadcrumb,.dashboard-heading>p:last-child,.course-tools p,.learning-meta,.learning-empty,.learning-calendar-weekday,.learning-score-input,.learning-grade-published,.lookup-status,.dialog-help,.management-heading p,.management-row p,.personal-group-help,.personal-privacy,.personal-summary p,.personal-completion,.personal-field small,.personal-readonly p,.personal-students p,.personal-heading p,.personal-save-bar p,.personal-review-tools p,.formation-history small,.formation-stage-card span,.organizer-heading p,.organizer-scope,.organizer-subject p,.organizer-drop small,.class-directory-heading p,.class-directory-card p,.class-directory-tile small,.kardex-heading p,.kardex-help,.kardex-student-heading p,.kardex-students p,.kardex-dialog-help,.learning-file-help,.learning-file-list span,.content-preview-name,.content-pdf-page-label) { color:var(--theme-muted); }
+    :root[data-theme-tone=dark] body :is(.profile-details dd,.subject-grade,.learning-score-large,.weighted-number,.weighted-category-score,.learning-row-heading h3,.learning-module-info h3,.formation-label,.formation-stage-card p,.learning-calendar-heading h3,.class-directory-course,.learning-deadline,.batch-enrollment-person strong) { color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body :is(.profile-link,.text-button,.password-toggle,.teaching-open,.course-enter,.learning-back,.learning-text-link,.learning-work-title,.learning-review-button,.learning-quick-links a,.learning-assignment-title,.learning-topic>summary,.learning-outline-topic,.learning-outline-overview,.learning-reader-arrow,.class-directory-enter,.personal-eyebrow,.kardex-eyebrow) { color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body .learning-outline-title { color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body :is(.learning-outline-topic small,.learning-outline-unit>summary small,.learning-reader-breadcrumb,.learning-topic-icon) { color:var(--theme-muted); }
+    :root[data-theme-tone=dark] body :is(.management-professor summary>span,#organizerCount,#classDirectoryCount) { color:var(--theme-muted); }
+    :root[data-theme-tone=dark] body .roster-student { color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body :is(.catalog-list li,.roster-list,.roster-row,.content-file-list li,.learning-reader,.learning-reader-toolbar,.learning-unit-topics li) { border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body .organizer-status.error { background:var(--theme-error-bg); color:var(--theme-error); }
+    :root[data-theme-tone=dark] body :is(input:not([type=radio]):not([type=checkbox]):not([type=hidden]),select,textarea,.personal-field output) { background:var(--theme-input); color:var(--theme-ink); border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body input::placeholder,:root[data-theme-tone=dark] body textarea::placeholder { color:var(--theme-muted); opacity:1; }
+    :root[data-theme-tone=dark] body input::file-selector-button { background:var(--theme-raised); color:var(--theme-ink); border:1px solid var(--theme-line); border-radius:5px; padding:8px; }
+    :root[data-theme-tone=dark] body :is(input[type=checkbox],input[type=radio],progress) { accent-color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body :is(.back-link,.dashboard-logout,.subjects-actions button,.teaching-section button,.control-section button,.learning-button.secondary,.learning-calendar-arrow,.learning-calendar-day,.learning-file-button,.content-pdf-control,.dialog-close,.learning-dialog-close,.personal-tabs button,.period-tabs button,.organizer-drop,.class-directory-tile) { background:var(--theme-raised); color:var(--theme-accent); border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body :is(.back-link,.dashboard-logout,.subjects-actions button,.teaching-section button,.control-section button,.learning-button.secondary,.learning-calendar-arrow,.learning-calendar-day,.learning-file-button,.content-pdf-control,.personal-tabs button,.period-tabs button):hover { background:var(--theme-hover); color:var(--theme-ink); border-color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body :is(.login-button,.control-create,.grade-publish,.learning-button:not(.secondary):not(.danger),.learning-file-primary,.learning-calendar-day.today) { background:var(--theme-action); color:var(--theme-action-ink); border-color:var(--theme-action); }
+    :root[data-theme-tone=dark] body :is(.login-button,.control-create,.grade-publish,.learning-button:not(.secondary):not(.danger),.learning-file-primary):hover { background:#c5e1ff; color:#10253d; border-color:#c5e1ff; }
+    :root[data-theme-tone=dark] body :is(.login-message.info,.personal-privacy,.personal-save-bar,.personal-readonly,.class-selection-summary,.batch-enrollment-group,.organizer-source-panel,.organizer-empty,.class-directory-empty,.formation-stage-card,.formation-history li,.weighted-config-category,.learning-reader-layout,.learning-outline-unit>summary,.learning-reader-body,.content-files,.content-preview,.content-preview-toolbar,.content-pdf-controls,.content-pdf-status,.learning-score-input,.management-professor>details>summary,.kardex-issue-form,.kardex-steps li) { background:var(--theme-raised); color:var(--theme-ink); border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body :is(.management-professor,.management-professor-class,.management-row,.lookup-group,.subject-grade,.period-tabs,.personal-tabs,.personal-summary,.personal-review-tools,.personal-students li,.formation-students>li,.learning-participants li,.learning-topic,.learning-quick-links a,.learning-outline-topic,.learning-outline-overview,.learning-outline-unit,.learning-outline-body,.learning-outline-title,.content-files,.learning-files,.batch-enrollment-list,.batch-enrollment-list li+li,.class-directory-results) { border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body :is(.management-dialog,.learning-dialog,.kardex-dialog,.deletion-dialog,.grade-editor) { background:var(--theme-card); color:var(--theme-ink); border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body dialog::backdrop { background:#000a; }
+    :root[data-theme-tone=dark] body :is(.organizer-drop,.class-directory-tile):is(:hover,[aria-pressed=true]),
+    :root[data-theme-tone=dark] body :is(.personal-tabs button[aria-selected=true],.period-tabs button[aria-pressed=true],#classDirectoryAll[aria-pressed=true],.learning-outline-topic[aria-current=page],.learning-outline-topic:hover,.batch-enrollment-person:has(input:checked)) { background:var(--theme-hover); color:var(--theme-accent); border-color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body :is(.learning-table-scroll,.learning-gradebook-scroll,.learning-grades-table,.learning-gradebook,.weighted-table) { background:var(--theme-card); color:var(--theme-ink); border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body :is(.learning-grades-table,.learning-gradebook,.weighted-table) :is(td,th) { border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body :is(.learning-grades-table thead th,.learning-gradebook thead th,.learning-gradebook th:first-child,.weighted-table th:first-child) { background:var(--theme-raised); color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body .learning-gradebook td:nth-child(2) { background:var(--theme-success-bg); color:var(--theme-success); }
+    :root[data-theme-tone=dark] body .learning-grade-cell.is-dirty { background:var(--theme-warning-bg); }
+    :root[data-theme-tone=dark] body :is(.status-pill,.learning-badge.done,.learning-status.success,.control-message.success,.grade-message.success,.weighted-total) { background:var(--theme-success-bg); color:var(--theme-success); }
+    :root[data-theme-tone=dark] body :is(.status-pill.inactive,.learning-badge,.learning-badge.draft,.learning-badge.pending) { background:var(--theme-raised); color:var(--theme-muted); }
+    :root[data-theme-tone=dark] body :is(.learning-badge.pinned) { background:var(--theme-hover); color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body :is(.learning-badge.late,.learning-meta.overdue,.learning-status.error,.login-message.error,.control-message.error,.grade-message.error,.subjects-status.error,.teaching-status.error,.control-list-status.error,.subject-grade.error,.learning-file-message.error,.content-file-message.error,.weighted-total.invalid,.learning-button.danger,.delete-link,.deletion-save) { background:var(--theme-error-bg); color:var(--theme-error); border-color:#a65b6c; }
+    :root[data-theme-tone=dark] body :is(#kardexRequirements,#reportReasons) { color:var(--theme-warning); }
+    :root[data-theme-tone=dark] body :is(.weighted-result,.weighted-category,.weighted-config-category) { border-top-color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body :is(.weighted-category.exams,.weighted-config-category.exams) { border-top-color:#c1a3ff; }
+    :root[data-theme-tone=dark] body :is(.weighted-category.projects,.weighted-config-category.projects) { border-top-color:#79d8c6; }
+    :root[data-theme-tone=dark] body :is(.weighted-category.participation,.weighted-config-category.participation) { border-top-color:var(--theme-warning); }
+    :root[data-theme-tone=dark] body .content-pdf-viewport { background:var(--theme-page); }
+    :root[data-theme-tone=dark] body #learningRoot[data-learning-tab=calificaciones] .learning-course-banner { background:var(--theme-card); }
+    :root[data-theme-tone=dark] body #learningRoot[data-learning-tab=calificaciones] .learning-course-banner h1 { color:var(--theme-ink); }
+    :root[data-theme-tone=dark] body .learning-calendar-day.has-events::after { background:var(--theme-warning); }
+    :root[data-theme-tone=dark] body :is(.weighted-result,.learning-final-grade) { border-left-color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body .formation-stage-card { border-top-color:var(--theme-accent); }
+    :root[data-theme-tone=dark] body .formation-stage-card[data-stage=filosofia] { border-top-color:var(--theme-warning); }
+    :root[data-theme-tone=dark] body .formation-stage-card[data-stage=teologia] { border-top-color:var(--theme-error); }
+    :root[data-theme-tone=dark] body :is(.batch-enrollment-person small,.batch-enrollment-state,#batchEnrollmentCount,.batch-enrollment-formation-help) { color:var(--theme-muted); }
+    :root[data-theme-tone=dark] body #batchEnrollmentForm>.dialog-actions { background:var(--theme-card); }
+    :root[data-theme-tone=dark] body :focus-visible { outline-color:var(--theme-ring); }
+    /* Los documentos y las páginas PDF mantienen papel blanco y texto oscuro. */
+    :root[data-theme-tone=dark] body :is(.report-paper,.kardex-paper) { background:#fff; color:#17212b; color-scheme:light; }
+    :root[data-theme-tone=dark] body :is(.report-paper,.kardex-paper) :is(h1,h2,h3,h4,h5,h6,p,span,strong,small,th,td,footer) { color:#17212b; }
+    :root[data-theme-tone=dark] body :is(.report-paper,.kardex-paper) :is(th,td) { background:#fff; border-color:#c9d2de; }
+    :root[data-theme-tone=dark] body .kardex-summary>div { background:#f2f5f8; border-color:#c9d2de; }
+    :root[data-theme-tone=dark] body :is(.report-paper,.kardex-paper) :is(.report-draft,.kardex-paper-notes,.kardex-period-row th) { background:#f2f5f8; color:#17212b; }
+    @media(max-width:1100px) {
+        .portal-theme-current { display:none; }
+        .portal-theme .portal-theme-button { padding:9px; }
+        .dashboard-page .header-tool { display:none; }
+    }
+    @media(max-width:760px) {
+        .dashboard-page .header-account { display:none; }
+        .dashboard-page .dashboard-actions { gap:7px; }
+        .dashboard-page .header-container:has(.portal-theme) { gap:8px; }
+        .dashboard-page .brand { min-width:0; flex:1 1 auto; }
+        .dashboard-page .brand-name { max-width:calc(100vw - 228px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .dashboard-page .dashboard-logout { max-width:58px; padding:6px 5px; }
+        .portal-theme .portal-theme-button { min-width:34px; min-height:36px; padding:7px; }
+        .portal-theme .portal-theme-options { position:fixed; top:var(--theme-menu-top,86px); right:12px; max-height:calc(100dvh - var(--theme-menu-top,86px) - 12px); overflow:auto; }
+        :root[data-theme-tone=dark] body .workspace-nav nav a[aria-current=page] { border-left-color:var(--theme-accent); }
+        .access-page:not(.dashboard-page) .header-container { flex-direction:row; flex-wrap:wrap; gap:12px; }
+        .access-header-actions { margin-left:auto; gap:10px; }
+        .dashboard-page[data-view=acceso] .header-container { flex-wrap:wrap; gap:10px; padding:10px 0; }
+        .dashboard-page[data-view=acceso] .local-access-back { margin-left:auto; }
+    }
+    @media(prefers-reduced-motion:no-preference) { .portal-theme-button { transition:border-color .15s; } }
+}
+@media print { .portal-theme { display:none !important; } :root { color-scheme:light; } }
