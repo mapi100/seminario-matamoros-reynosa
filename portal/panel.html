@@ -18,7 +18,8 @@
     <link rel="stylesheet" href="learning-files.css?v=20261021-aula-1">
     <link rel="stylesheet" href="report-cards.css?v=20261027-boletas-1">
     <link rel="stylesheet" href="kardex.css?v=20261022-kardex-1">
-    <link rel="stylesheet" href="formation.css?v=20261023-etapas-1">
+    <link rel="stylesheet" href="formation.css?v=20261101-grupos-1">
+    <link rel="stylesheet" href="formation-groups.css?v=20261101-grupos-1">
     <link rel="stylesheet" href="personal-record.css?v=20261022-expediente-1">
     <link rel="stylesheet" href="content-files.css?v=20261027-lector-1">
     <link rel="stylesheet" href="learning.css?v=20261023-portadas-1">
@@ -160,10 +161,16 @@
 
             <section id="formationSection" class="dashboard-card formation-section" data-screen="etapas" aria-labelledby="formationTitle" hidden>
                 <div class="management-heading"><div><h2 id="formationTitle">Etapas y semestres</h2><p>Ubica a cada seminarista en su etapa y conserva su trayectoria por periodo académico.</p></div><button id="formationRefresh" type="button" class="back-link">Actualizar</button></div>
-                <div id="formationStages" class="formation-stages"></div>
                 <p>El periodo indica las fechas del calendario; el semestre indica el avance dentro de la etapa. Ejemplo: Ago–Dic 2026 · Filosofía · Semestre 3 de 6.</p>
-                <form id="formationSearchForm" class="formation-tools" role="search">
+                <div class="formation-tools formation-period-tools">
                     <label>Periodo académico<select id="formationPeriod" required></select></label>
+                    <p>Elige un curso para agregar seminaristas o inscribir al grupo en sus materias.</p>
+                </div>
+                <p id="formationGroupStatus" class="control-message" role="status" aria-live="polite"></p>
+                <div id="formationStages" class="formation-stages"></div>
+                <div id="formationGroupContent"></div>
+                <h3>Consulta individual y trayectoria</h3>
+                <form id="formationSearchForm" class="formation-tools" role="search">
                     <label>Etapa<select id="formationFilter"><option value="">Todas las etapas</option></select></label>
                     <label>Nombre o matrícula<input id="formationSearch" type="search" maxlength="160" placeholder="Buscar seminarista" autocomplete="off"></label>
                     <button type="submit" class="back-link">Buscar</button>
@@ -171,7 +178,7 @@
                 <p id="formationStatus" class="control-message" role="status" aria-live="polite"></p>
                 <ul id="formationStudents" class="formation-students"></ul>
                 <button id="formationMore" type="button" class="back-link" hidden>Mostrar más seminaristas</button>
-                <p>Las inscripciones en materias se administran en Inscripciones. La promoción de semestre y el cambio de etapa los determina el Seminario.</p>
+                <p>Puedes inscribir al grupo desde su bloque o administrar excepciones en Clases e Inscripciones. La promoción de semestre y el cambio de etapa los determina el Seminario.</p>
             </section>
 
             <section id="personalRecordSection" class="dashboard-card personal-record-section" data-screen="mi-perfil expedientes" hidden aria-labelledby="personalRecordTitle">
@@ -501,7 +508,8 @@
     <script src="pdf-preview.js?v=20261027-local-2" defer></script>
     <script src="content-files.js?v=20261027-lector-1" defer></script>
     <script src="deletion.js?v=20261022-admin-1" defer></script>
-    <script src="formation.js?v=20261023-etapas-1" defer></script>
+    <script src="formation-groups.js?v=20261101-grupos-1" defer></script>
+    <script src="formation.js?v=20261101-grupos-1" defer></script>
     <script src="report-cards.js?v=20261027-boletas-1" defer></script>
     <script src="kardex.js?v=20261027-boletas-1" defer></script>
     <script src="personal-record.js?v=20261023-etapas-1" defer></script>

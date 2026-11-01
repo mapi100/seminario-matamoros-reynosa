@@ -40,6 +40,7 @@
         $("formationCancel").disabled=false;if(returnFocus?.isConnected&&!force)returnFocus.focus();returnFocus=undefined;
     }
     function leave() {
+        window.PortalFormationGroups?.clear();
         opened=false;sequence++;busy=false;closeDialog(true);$("formationSection").hidden=true;
         $("formationStudents").replaceChildren();note("");
     }
@@ -103,6 +104,7 @@
             if(periods.some(p=>p.id===preferredPeriod))$("formationPeriod").value=preferredPeriod;
             if(!periods.length){note("Crea primero un periodo en Materias y periodos. Después podrás asignar la etapa y el semestre.");return;}
             await load();
+            if(profile&&opened&&g===generation)void window.PortalFormationGroups?.show($("formationPeriod").value,recheck,()=>load());
         } catch(error) {if(profile&&opened&&g===generation)failure(error);}
     }
     async function save(event) {
@@ -113,20 +115,19 @@
         try {const result=await rpc("portal_formation_save",{p_student:row.id,p_period:row.period_id,p_stage:$("formationStage").value,
             p_semester:Number($("formationSemester").value),p_revision:row.revision});
             if(!profile||g!==generation||op!==dialogSequence)return;if(result?.saved!==true)throw new Error("Guardado sin confirmar");
-            saving=false;closeDialog();await load();if(profile&&g===generation)note("Etapa y semestre guardados. Ya están vinculados al expediente y al kardex.","success");
+            saving=false;closeDialog();await load();if(profile&&opened&&g===generation)void window.PortalFormationGroups?.show($("formationPeriod").value,recheck,()=>load());if(profile&&g===generation)note("Etapa y semestre guardados. Ya están vinculados al expediente y al kardex.","success");
         } catch(error) {if(profile&&g===generation&&op===dialogSequence){
             if(["22023","PT409","42501"].includes(error?.code))failure(error,$("formationDialogStatus"));
             else {uncertain=true;note("No se pudo confirmar el guardado. Cierra y actualiza la lista para comprobar el resultado antes de repetirlo.","error",$("formationDialogStatus"));}
         }} finally {if(g===generation&&op===dialogSequence){saving=false;$("formationSave").disabled=uncertain;$("formationCancel").disabled=false;$("formationStage").disabled=uncertain;$("formationSemester").disabled=uncertain||!stage($("formationStage").value);$("formationForm").setAttribute("aria-busy","false");}}
     }
-    for(const s of stages){$("formationFilter").append(new Option(s.name,s.code));$("formationStage").append(new Option(s.name,s.code));
-        const card=el("article",undefined,"formation-stage-card");card.dataset.stage=s.code;card.append(el("strong",s.name),el("span",s.ecclesial_name),el("p",s.semesters+" semestres"));$("formationStages").append(card);}
+    for(const s of stages){$("formationFilter").append(new Option(s.name,s.code));$("formationStage").append(new Option(s.name,s.code));}
     $("formationStage").addEventListener("change",()=>semesterOptions($("formationStage").value));
     $("formationForm").addEventListener("submit",event=>void save(event));
     $("formationCancel").addEventListener("click",()=>closeDialog());
     $("formationDialog").addEventListener("cancel",event=>{event.preventDefault();closeDialog();});
     $("formationSearchForm").addEventListener("submit",event=>{event.preventDefault();void load();});
-    for(const id of ["formationPeriod","formationFilter"])$(id).addEventListener("change",()=>{sequence++;busy=false;void load();});
+    for(const id of ["formationPeriod","formationFilter"])$(id).addEventListener("change",()=>{sequence++;busy=false;void load();if(id==="formationPeriod")void window.PortalFormationGroups?.show($("formationPeriod").value,recheck,()=>load());});
     $("formationMore").addEventListener("click",()=>void load(false));
     $("formationRefresh").addEventListener("click",()=>{const period=$("formationPeriod").value;leave();void openRoute(period);});
     window.PortalFormation=Object.freeze({stages,clear,leave,openRoute,show(value,verify){clear();profile=value;recheck=verify;if(profile.role==="student")void own();}});

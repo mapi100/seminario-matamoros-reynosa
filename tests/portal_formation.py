@@ -24,6 +24,8 @@ async def fixture(browser,role='control_escolar',mobile=False):
         # El kardex monta también Boletas; aquí se comprueba formación con esa extensión opcional ausente.
         if req.url.endswith('/rpc/portal_report_card_read'):
             return await route.fulfill(status=404,content_type='application/json',body=json.dumps({'code':'PGRST202','message':'Boletas fuera de esta prueba de formación'}))
+        if '/rpc/portal_formation_group_' in req.url:
+            return await route.fulfill(status=404,content_type='application/json',body=json.dumps({'code':'PGRST202','message':'Grupos fuera de esta prueba individual'}))
         if '/rpc/portal_formation_' not in req.url:return await route.fallback()
         args=req.post_data_json;data['calls'].append(copy.deepcopy(args));headers={'Access-Control-Allow-Origin':'*','Content-Type':'application/json'}
         async def reply(status,value):return await route.fulfill(status=status,headers=headers,body=json.dumps(value))
