@@ -44,6 +44,7 @@
 
     function clear() {
         profile = undefined;
+        delete document.body.dataset.portalRole;
         nav.hidden = true;
         closeMenu();
         document.getElementById("controlHome").hidden = true;
@@ -71,6 +72,7 @@
     function navigate(focus = false) {
         if (!profile) return;
         window.PortalDeletion?.leave();
+        window.PortalEnrollmentBatch?.leave();
         const hash = location.hash.slice(1) || "inicio";
         let route = courseRoute.test(hash) ? "curso" : hash;
         if (route !== "curso") {
@@ -89,6 +91,14 @@
         for (const item of nav.querySelectorAll("a")) {
             if (item.dataset.route === route) item.setAttribute("aria-current", "page");
             else item.removeAttribute("aria-current");
+        }
+        if (!mobile.matches) {
+            const scroller = nav.querySelector("nav"), current = nav.querySelector('a[aria-current="page"]');
+            if (scroller && current) {
+                const bounds = scroller.getBoundingClientRect(), link = current.getBoundingClientRect();
+                if (link.right > bounds.right) scroller.scrollLeft += link.right - bounds.right;
+                else if (link.left < bounds.left) scroller.scrollLeft -= bounds.left - link.left;
+            }
         }
         breadcrumb.textContent = "Mi campus / " + routes[route];
         if (route !== "curso") {
@@ -117,6 +127,7 @@
 
     function show(value) {
         profile = value;
+        document.body.dataset.portalRole = profile.role;
         nav.hidden = false;
         syncMenu();
         for (const link of nav.querySelectorAll("a")) {

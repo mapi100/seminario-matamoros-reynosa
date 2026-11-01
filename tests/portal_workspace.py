@@ -1,7 +1,7 @@
 """Campus navigation/administration/activation: real SDK and simulated API.
 Run: python tests/portal_workspace.py. No production requests or credentials.
 """
-import asyncio, copy, json, re, shutil
+import asyncio, copy, json, re, shutil, uuid
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from playwright.async_api import async_playwright, expect
@@ -17,7 +17,7 @@ def person(uid,name,role):return {'id':uid,'full_name':name,'role':role,'active'
 async def fixture(browser,**kwargs):
     catalog={'subjects':[subject(1,'Cristología')],'periods':[period(7,'Enero–Junio 2027')]}
     context,page,state=await h.fixture(browser,profile=CONTROL_PROFILE,catalog=catalog,start='panel.html#inicio',**kwargs)
-    data={'people':[person(P,'Pbro. Profesor','professor'),person(A,'Alumno de prueba','student')],'classes':[],'enrollments':[],'assignments':[],'events':[],'calls':[],'read_status':200,'write_status':200,'read_gate':None,'read_started':asyncio.Event(),'write_gate':None,'write_started':asyncio.Event()}
+    data={'people':[person(P,'Pbro. Profesor','professor'),person(A,'Alumno de prueba','student')],'classes':[],'enrollments':[],'assignments':[],'events':[],'calls':[],'read_status':200,'write_status':200,'read_gate':None,'read_started':asyncio.Event(),'write_gate':None,'write_started':asyncio.Event(),'batch_calls':[],'candidate_status':200,'candidate_gate':None,'candidate_started':asyncio.Event(),'formations':[],'formation_calls':[],'formation_status':200,'formation_gate':None,'formation_started':asyncio.Event()}
     async def route_api(route):
         req=route.request;url=urlparse(req.url);path=url.path;body=req.post_data_json;headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'*','Content-Type':'application/json'}
         if path in ['/rest/v1/subjects','/rest/v1/academic_periods']:
@@ -33,6 +33,38 @@ async def fixture(browser,**kwargs):
             rows=[dict(r,name=r['subject_name'],group_code=r.get('group_code'),revision=r.get('revision',0)) for r in data['classes'] if r['period_id']==chosen]
             subjects=copy.deepcopy(state['catalog_subjects'])
             return await route.fulfill(status=200,headers=headers,body=json.dumps({'periods':periods,'period_id':chosen,'subjects':subjects,'classes':rows}))
+        if path.endswith('portal_formation_read') and body.get('p_resource')=='students':
+            data['formation_calls'].append(copy.deepcopy(body));data['formation_started'].set()
+            if data['formation_gate']:await data['formation_gate'].wait()
+            if data['formation_status']!=200:return await route.fulfill(status=data['formation_status'],headers=headers,body=json.dumps({'code':'42501' if data['formation_status']==403 else 'XX000','message':'Fixture'}))
+            rows=[r for r in data['formations'] if r['period_id']==body['p_period'] and (not body['p_stage'] or r['stage_code']==body['p_stage'])]
+            start=body['p_offset'];end=start+body['p_limit']
+            return await route.fulfill(status=200,headers=headers,body=json.dumps({'items':rows[start:end],'has_more':len(rows)>end}))
+        if path.endswith('portal_enrollment_candidates'):
+            data['candidate_started'].set()
+            if data['candidate_gate']:await data['candidate_gate'].wait()
+            if data['candidate_status']!=200:return await route.fulfill(status=data['candidate_status'],headers=headers,body=json.dumps({'code':'PGRST202' if data['candidate_status']==404 else '42501' if data['candidate_status']==403 else 'XX000','message':'Fixture'}))
+            items=[]
+            for user in data['people']:
+                if not user['active'] or user['role']!='student':continue
+                enrollment=next((e for e in data['enrollments'] if e['class_id']==body['p_class'] and e['person_id']==user['id']),None)
+                items.append({'id':user['id'],'full_name':user['full_name'],'email':user['email'],'status':'enrolled' if enrollment and enrollment['active'] else 'inactive' if enrollment else 'available'})
+            return await route.fulfill(status=200,headers=headers,body=json.dumps({'class_id':body['p_class'],'items':items}))
+        if path.endswith('portal_enroll_students'):
+            data['batch_calls'].append(copy.deepcopy(body));data['write_started'].set()
+            if data['write_gate']:await data['write_gate'].wait()
+            if data['write_status']!=200:return await route.fulfill(status=data['write_status'],headers=headers,body=json.dumps({'code':'22023' if data['write_status']==400 else 'XX000','message':'Fixture'}))
+            selected=next(r for r in data['classes'] if r['id']==body['p_class']);added=restored=skipped=0
+            for uid in body['p_students']:
+                user=next(u for u in data['people'] if u['id']==uid)
+                enrollment=next((e for e in data['enrollments'] if e['class_id']==selected['id'] and e['person_id']==uid),None)
+                if enrollment and enrollment['active']:skipped+=1
+                elif enrollment:enrollment['active']=True;restored+=1
+                else:
+                    added+=1;entity=str(uuid.UUID(int=uuid.UUID(EN).int+len(data['enrollments'])))
+                    data['enrollments'].append({'id':entity,'person_id':uid,'class_id':selected['id'],'full_name':user['full_name'],'subject_name':selected['subject_name'],'period_name':selected['period_name'],'active':True})
+            selected['students']+=added+restored
+            return await route.fulfill(status=200,headers=headers,body=json.dumps({'saved':True,'class_id':selected['id'],'selected':len(body['p_students']),'enrolled':added,'reactivated':restored,'already_enrolled':skipped}))
         if path.endswith('portal_course_classes_read'):
             body={'p_resource':'active_classes' if body['p_active_only'] else 'classes','p_search':body['p_search'],'p_offset':body['p_offset'],'p_limit':body['p_limit']}
         if path.endswith(('portal_admin_read','portal_course_classes_read')):
@@ -92,7 +124,7 @@ async def main():
         await expect(page.locator('#managementDialog')).not_to_be_visible();await expect(page.locator('#classDirectoryList')).to_contain_text('Cristología')
         assert data['calls'][-2][0]=='write' or any(c[0]=='write' for c in data['calls'])
         await page.get_by_role('button',name='Asignar profesor',exact=True).click();await expect(page.locator('#managementFields input[name=class_id]')).to_have_value(CL);await select_ready(page,'person_id',P);await page.locator('#managementSave').click();await expect(page.locator('#classDirectoryStatus')).to_contain_text('Profesor asignado');assert data['classes'][0]['professors']==1
-        await page.get_by_role('button',name='Inscribir alumno',exact=True).click();await expect(page.locator('#managementFields input[name=class_id]')).to_have_value(CL);await select_ready(page,'person_id',A);await page.locator('#managementSave').click();await expect(page.locator('#classDirectoryStatus')).to_contain_text('Alumno inscrito');assert data['classes'][0]['students']==1
+        await page.get_by_role('button',name='Inscribir alumnos',exact=True).click();await expect(page.locator('#batchEnrollmentSummary')).to_contain_text('Cristología');await page.locator('#batchEnrollmentList input[value="'+A+'"]').check();await page.locator('#batchEnrollmentSave').click();await expect(page.locator('#classDirectoryStatus')).to_contain_text('1 nuevo');assert data['classes'][0]['students']==1
         await nav(page,'inscripciones');await expect(page.locator('#managementList')).to_contain_text('Alumno de prueba');await page.get_by_role('button',name='Dar de baja',exact=True).click();await page.locator('#managementSave').click();await expect(page.locator('#managementList')).to_contain_text('Inactivo')
         await page.get_by_role('button',name='Reactivar',exact=True).click();await page.locator('#managementSave').click();await expect(page.locator('#managementList')).to_contain_text('Activo')
         await done(context,state,'Control opens a class, assigns a professor, enrolls a student, deactivates and restores enrollment')

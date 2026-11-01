@@ -54,16 +54,14 @@ async def main():
         chosen = data['classes'][129]
         await page.locator('#classDirectorySearch').fill('130')
         await expect(page.locator('#classDirectoryList .class-directory-card')).to_have_count(1)
-        await page.get_by_role('button', name='Inscribir alumno', exact=True).click()
-        await expect(page.locator('.class-selection-summary')).to_contain_text(chosen['name'])
-        await expect(page.locator('#managementFields input[name=class_id]')).to_have_value(chosen['id'])
+        await page.get_by_role('button', name='Inscribir alumnos', exact=True).click()
+        await expect(page.locator('#batchEnrollmentSummary')).to_contain_text(chosen['name'])
         await expect(page.locator('#classPickerPeriod')).to_have_count(0)
-        await w.select_ready(page, 'person_id', w.A)
-        await page.locator('#managementSave').click()
-        await expect(page.locator('#classDirectoryStatus')).to_contain_text('Alumno inscrito')
+        await page.locator('#batchEnrollmentList input[value="'+w.A+'"]').check()
+        await page.locator('#batchEnrollmentSave').click()
+        await expect(page.locator('#classDirectoryStatus')).to_contain_text('1 nuevo')
         assert admin['enrollments'][-1]['class_id'] == chosen['id']
-        writes = [body for action, body in admin['calls'] if action == 'write']
-        assert writes[-1] == {'p_action': 'enroll', 'p_data': {'class_id': chosen['id'], 'person_id': w.A}}
+        assert admin['batch_calls'][-1] == {'p_class': chosen['id'], 'p_students': [w.A]}
         admin['people'].append(w.person(h.UID, 'Control Escolar de prueba', 'control_escolar'))
         await page.get_by_role('button', name='Asignar profesor', exact=True).click()
         await expect(page.locator('#admin-person_id')).to_contain_text('Control Escolar de prueba (Control Escolar)')
@@ -92,12 +90,12 @@ async def main():
             assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             await page.evaluate('scrollTo(0,0)')
             await page.screenshot(path=str(h.ARTIFACTS / f'clases-bloques-{mobile}.png'), full_page=True)
-            await page.get_by_role('button', name='Inscribir alumno', exact=True).first.click()
-            await expect(page.locator('#admin-person_id')).to_be_enabled()
-            assert await page.locator('#managementDialog').evaluate('(d)=>d.scrollWidth<=d.clientWidth && d.getBoundingClientRect().height<=innerHeight')
+            await page.get_by_role('button', name='Inscribir alumnos', exact=True).first.click()
+            await expect(page.locator('#batchEnrollmentSelectAll')).to_be_enabled()
+            assert await page.locator('#batchEnrollmentDialog').evaluate('(d)=>d.scrollWidth<=d.clientWidth && d.getBoundingClientRect().height<=innerHeight')
             await page.screenshot(path=str(h.ARTIFACTS / f'clase-inscribir-{mobile}.png'))
             await page.keyboard.press('Escape')
-            await expect(page.locator('#managementDialog')).not_to_be_visible()
+            await expect(page.locator('#batchEnrollmentDialog')).not_to_be_visible()
             await page.locator('#classDirectoryPeriod').select_option(o.PER2)
             await expect(page.locator('#classDirectoryListTitle')).to_have_text('Elige un curso para ver sus clases')
             await expect(page.locator('#classDirectoryList .class-directory-card')).to_have_count(0)
@@ -113,13 +111,13 @@ async def main():
             await expect(page.locator('#classDirectoryCount')).to_have_text('0 clases')
             await page.locator('#classDirectoryInactive').check()
             await expect(page.locator('#classDirectoryList .class-directory-card')).to_have_count(1)
-            await expect(page.get_by_role('button', name='Inscribir alumno', exact=True)).to_be_disabled()
+            await expect(page.get_by_role('button', name='Inscribir alumnos', exact=True)).to_be_disabled()
             await expect(page.get_by_role('button', name='Asignar profesor', exact=True)).to_be_disabled()
             await page.locator('#classDirectoryList summary').click()
             await page.get_by_role('button', name='Reactivar clase', exact=True).click()
             await page.locator('#managementSave').click()
             await expect(page.locator('#classDirectoryStatus')).to_contain_text('Estado actualizado')
-            await expect(page.get_by_role('button', name='Inscribir alumno', exact=True)).to_be_enabled()
+            await expect(page.get_by_role('button', name='Inscribir alumnos', exact=True)).to_be_enabled()
             assert len([call for call in admin['calls'] if call[0] == 'write']) == 1
             await done(context, state, ('Móvil' if mobile else 'Escritorio') + ': bloques con teclado, periodos separados, búsqueda, diálogo, inactivas y reactivación')
 
@@ -149,15 +147,15 @@ async def main():
         await enter(page)
         await expect(page.locator('#classDirectoryAll')).to_be_enabled()
         await page.locator('#classDirectoryGroups [data-course="CI-1"]').click()
-        await page.get_by_role('button', name='Inscribir alumno', exact=True).first.click()
-        await w.select_ready(page, 'person_id', w.A)
+        await page.get_by_role('button', name='Inscribir alumnos', exact=True).first.click()
+        await page.locator('#batchEnrollmentList input[value="'+w.A+'"]').check()
         admin['write_status'] = 500
-        await page.locator('#managementSave').click()
-        await expect(page.locator('#managementFormMessage')).to_contain_text('No se pudo confirmar')
-        await expect(page.locator('#managementSave')).to_be_disabled()
-        assert len([call for call in admin['calls'] if call[0] == 'write']) == 1
+        await page.locator('#batchEnrollmentSave').click()
+        await expect(page.locator('#batchEnrollmentStatus')).to_contain_text('No se pudo confirmar')
+        await expect(page.locator('#batchEnrollmentSave')).to_be_disabled()
+        assert len(admin['batch_calls']) == 1
         assert not admin['enrollments']
-        await page.locator('#managementCancel').click()
+        await page.locator('#batchEnrollmentCancel').click()
         await expect(page.locator('#classDirectoryList .class-directory-card')).to_have_count(9)
         await done(context, state, 'Respuesta incierta no reenvía la inscripción ni muestra un éxito falso')
 

@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="teaching.css">
     <link rel="stylesheet" href="grade-editor.css">
     <link rel="stylesheet" href="control.css?v=20261022-admin-1">
-    <link rel="stylesheet" href="workspace.css?v=20261027-acceso-3">
+    <link rel="stylesheet" href="workspace.css?v=20261101-lotes-1">
     <link rel="stylesheet" href="learning-files.css?v=20261021-aula-1">
     <link rel="stylesheet" href="report-cards.css?v=20261027-boletas-1">
     <link rel="stylesheet" href="kardex.css?v=20261022-kardex-1">
@@ -27,6 +27,8 @@
     <link rel="stylesheet" href="course-groups.css?v=20261031-cursos-1">
     <link rel="stylesheet" href="course-organizer.css?v=20261101-organizer-1">
     <link rel="stylesheet" href="class-directory.css?v=20261101-clases-1">
+    <link rel="stylesheet" href="enrollment-batch.css?v=20261101-etapas-1">
+    <link rel="stylesheet" href="readability.css?v=20261101-etapas-1" media="screen">
     <link rel="stylesheet" href="local-access.css?v=20261027-acceso-3">
 </head>
 <body class="dashboard-page" data-view="inicio">
@@ -425,6 +427,24 @@
         </form>
     </dialog>
 
+    <dialog id="batchEnrollmentDialog" class="management-dialog batch-enrollment-dialog" aria-labelledby="batchEnrollmentTitle">
+        <div class="dialog-heading"><h2 id="batchEnrollmentTitle">Inscribir alumnos</h2><button id="batchEnrollmentClose" class="dialog-close" type="button" aria-label="Cerrar inscripción">×</button></div>
+        <div id="batchEnrollmentSummary" class="class-selection-summary"></div>
+        <form id="batchEnrollmentForm" aria-busy="false">
+            <div class="batch-enrollment-filters">
+                <div><label for="batchEnrollmentStage">Etapa</label><select id="batchEnrollmentStage" disabled></select></div>
+                <div><label for="batchEnrollmentSemester">Semestre / curso</label><select id="batchEnrollmentSemester" disabled></select></div>
+                <div><label for="batchEnrollmentSearch">Nombre o correo</label><input id="batchEnrollmentSearch" type="search" maxlength="160" autocomplete="off" placeholder="Buscar seminarista"></div>
+            </div>
+            <p class="dialog-help">Cambiar filtros conserva tu selección.</p>
+            <div class="batch-enrollment-tools"><button id="batchEnrollmentSelectAll" type="button" class="back-link">Seleccionar resultados</button><button id="batchEnrollmentAllStages" type="button" class="back-link">Ver todas las etapas</button><button id="batchEnrollmentClear" type="button" class="back-link">Quitar selección</button><button id="batchEnrollmentRefresh" type="button" class="back-link">Actualizar lista</button></div>
+            <p id="batchEnrollmentFormationHelp" class="batch-enrollment-formation-help"></p>
+            <p id="batchEnrollmentCount" role="status" aria-live="polite"></p>
+            <ul id="batchEnrollmentList" class="batch-enrollment-list" aria-label="Seminaristas disponibles"></ul>
+            <p id="batchEnrollmentStatus" class="control-message" role="status" aria-live="polite"></p>
+            <div class="dialog-actions"><button id="batchEnrollmentSave" class="back-link control-create" type="submit" disabled>Inscribir alumnos</button><button id="batchEnrollmentCancel" class="back-link" type="button">Cancelar</button></div>
+        </form>
+    </dialog>
     <dialog id="managementDialog" class="management-dialog" aria-labelledby="managementDialogTitle">
         <div class="dialog-heading"><h2 id="managementDialogTitle"></h2><button id="managementCancel" class="dialog-close" type="button" aria-label="Cerrar formulario">×</button></div>
         <form id="managementForm" method="post"><div id="managementFields"></div><p id="managementFormMessage" class="control-message" role="status" aria-live="polite"></p><div class="dialog-actions"><button id="managementSave" class="back-link control-create" type="submit">Guardar</button><button id="managementCancelBottom" class="back-link" type="button">Cancelar</button></div></form>
@@ -468,7 +488,8 @@
     <script src="grade-scale.js?v=20261027-boletas-1" defer></script>
     <script src="course-groups.js?v=20261101-organizer-1" defer></script>
     <script src="course-organizer.js?v=20261101-clases-1" defer></script>
-    <script src="class-directory.js?v=20261101-clases-1" defer></script>
+    <script src="class-directory.js?v=20261101-lotes-1" defer></script>
+    <script src="enrollment-batch.js?v=20261101-etapas-1" defer></script>
     <script src="subjects.js?v=20261031-cursos-1" defer></script>
     <script src="grade-editor.js?v=20261027-boletas-1" defer></script>
     <script src="teaching.js?v=20261031-cursos-1" defer></script>
@@ -481,12 +502,12 @@
     <script src="report-cards.js?v=20261027-boletas-1" defer></script>
     <script src="kardex.js?v=20261027-boletas-1" defer></script>
     <script src="personal-record.js?v=20261023-etapas-1" defer></script>
-    <script src="management.js?v=20261101-clases-1" defer></script>
+    <script src="management.js?v=20261101-lotes-1" defer></script>
     <script src="control.js?v=20261101-organizer-1" defer></script>
     <script src="learning-files.js?v=20261021-aula-1" defer></script>
     <script src="weighted-grades.js?v=20261027-boletas-1" defer></script>
     <script src="learning.js?v=20261031-cursos-1" defer></script>
-    <script src="workspace.js?v=20261101-clases-1" defer></script>
-    <script src="panel.js?v=20261101-clases-1" defer></script>
+    <script src="workspace.js?v=20261101-etapas-1" defer></script>
+    <script src="panel.js?v=20261101-lotes-1" defer></script>
 </body>
 </html>

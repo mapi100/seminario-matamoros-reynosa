@@ -7,8 +7,8 @@ Actualización de interfaz sobre `dc2d029` (`bloques`). Exclusiva de Control Esc
 1. Abrir **Clases** y elegir el **periodo académico**, por ejemplo AGO-DIC 2026.
 2. Pulsar un bloque: CI-1, CI-2, 1F-1…3F-6 o 1T-1…4T-8. Los bloques se agrupan
    en Introductorio, Filosofía y Teología y muestran sus cantidades de clases activas.
-3. En la tarjeta de una materia, pulsar **Inscribir alumno** o **Asignar profesor**.
-4. Buscar y seleccionar a la persona, y **Guardar**. La clase ya está elegida y
+3. En la tarjeta de una materia, pulsar **Inscribir alumnos** o **Asignar profesor**.
+4. Marcar uno o varios alumnos, o seleccionar al profesor, y guardar. La clase ya está elegida y
    aparece en un resumen: no es necesario volver a buscarla.
 
 Al asignar profesores también aparece el personal de Control Escolar activo.
@@ -51,18 +51,20 @@ como ausencia de clases. Las solicitudes se cancelan al salir y las respuestas
 tardías se descartan. Cerrar sesión o perder el rol limpia la información. Los
 nombres recibidos se representan con `textContent`, sin interpretar HTML.
 
-Las inscripciones y asignaciones usan el existente `portal_admin_write`, con
-`p_action = enroll` o `assign` y solo `class_id`/`person_id`. El identificador de
-clase queda fijo en el formulario. Ante una respuesta de escritura incierta, no
+Las asignaciones usan el existente `portal_admin_write` con `p_action = assign`;
+las inscripciones de las tarjetas usan ahora `portal_enroll_students`, que reúne
+varias altas en una transacción y reutiliza internamente el alta individual.
+La clase queda fija durante la selección. Ante una respuesta de escritura incierta, no
 se reenvía automáticamente ni se muestra un éxito sin confirmar. El historial de
 altas y bajas sigue disponible en Inscripciones y Profesores.
 
 ## Instalar
 
-Esta actualización **no incorpora SQL nuevo**. Requiere la actualización del
-organizador ya instalada (`20261101000000_course_organizer.sql`), que en las
-capturas ya muestra las clases. Si Materias y periodos funciona, no volver a
-ejecutar esa migración ni importar de nuevo alumnos o clases.
+La corrección de lectura requiere el organizador ya instalado
+(`20261101000000_course_organizer.sql`). La inscripción múltiple posterior sí añade
+`20261101010000_batch_enrollment.sql`; consultar las instrucciones de
+[inscripción múltiple](inscripciones-multiples-y-profesores.md). No volver a
+ejecutar migraciones anteriores ni importar de nuevo alumnos o clases.
 
 Copiar los archivos del paquete conservando las carpetas, publicar los cambios en
 GitHub y recargar el portal con Ctrl+F5. No se cambiaron cuentas, claves, datos de

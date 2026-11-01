@@ -52,6 +52,7 @@
     function clearProfile() {
         if (localAccess) localAccess.hidden = true;
         content.hidden = true;
+        window.PortalEnrollmentBatch?.clear();
         window.PortalClassDirectory?.clear();
         window.PortalCourseOrganizer?.clear();
         window.PortalCourseGroups?.clear();
@@ -163,6 +164,7 @@
                 document.title = headings[result.profile.role] + " | Seminario Diocesano San José";
                 content.hidden = false;
                 showMessage("");
+                window.PortalEnrollmentBatch?.show(result.profile, verifyAccess);
                 window.PortalClassDirectory?.show(result.profile, verifyAccess);
                 window.PortalCourseOrganizer?.show(result.profile, verifyAccess);
                 window.PortalCourseGroups?.show(result.profile);

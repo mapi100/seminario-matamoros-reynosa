@@ -1,0 +1,100 @@
+/* Ajustes de lectura del portal. Se carga solo en pantalla; no cambia documentos impresos. */
+.dashboard-page { font-size:16px; line-height:1.6; }
+.dashboard-page .workspace-nav nav a { font-size:15px; }
+.dashboard-page[data-portal-role=student] .workspace-nav nav a,
+.dashboard-page[data-portal-role=professor] .workspace-nav nav a { font-size:17px; padding:16px 18px; }
+.dashboard-page .header-account { font-size:14px; }
+.dashboard-page .header-avatar { font-size:12px; }
+.dashboard-page .dashboard-logout { font-size:13px; }
+.dashboard-page .header-course-name { font-size:21px; }
+.dashboard-page .workspace-breadcrumb { font-size:14px; }
+.dashboard-page .dashboard-heading>p:last-child { font-size:16px; }
+.dashboard-page .dashboard-card>h2,.dashboard-page .management-heading h2,.dashboard-page .campus-widget h2,
+.dashboard-page .campus-widget h3 { font-size:19px; }
+.dashboard-page .dashboard-welcome h2 { font-size:clamp(28px,3vw,38px); line-height:1.3; }
+.dashboard-page .class-directory h2,.dashboard-page .organizer-heading h2 { font-size:25px; }
+.dashboard-page .dashboard-welcome>p:not(.welcome-eyebrow) { font-size:16px; }
+.dashboard-page .welcome-eyebrow { font-size:13px; }
+.dashboard-page .dashboard-welcome .profile-link { font-size:15px; }
+.dashboard-page .subjects-status,.dashboard-page .teaching-status,
+.dashboard-page .control-list-status { font-size:14px; }
+.dashboard-page .course-tools label { font-size:14px; }
+.dashboard-page .course-tools input,.dashboard-page .course-tools select { font-size:15px; min-height:44px; }
+.dashboard-page .course-tools p { font-size:14px; }
+.dashboard-page .period-tabs button { font-size:15px; min-height:44px; }
+.dashboard-page .subject-code,.dashboard-page .teaching-code { font-size:13px; }
+.dashboard-page .subject-name,.dashboard-page .teaching-name,
+.dashboard-page .teaching-card h3 { font-size:20px; }
+.dashboard-page .subject-period,.dashboard-page .subject-dates,
+.dashboard-page .teaching-period,.dashboard-page .teaching-card p { font-size:14px; }
+.dashboard-page .subject-grade { font-size:14px; }
+.dashboard-page .course-enter { font-size:16px; }
+.dashboard-page .teaching-card .teaching-open { font-size:14px; }
+.dashboard-page .task-card p,.dashboard-page .task-link { font-size:15px; }
+.dashboard-page .profile-details dt,.dashboard-page .profile-details dd { font-size:16px; }
+.dashboard-page .back-link { font-size:15px; }
+.dashboard-page .management-heading p,.dashboard-page .management-row p,
+.dashboard-page .management-dialog p,.dashboard-page .lookup-status { font-size:15px; }
+.dashboard-page .management-search label,.dashboard-page .management-dialog label,
+.dashboard-page .control-catalog label { font-size:15px; }
+.dashboard-page .management-row h3,.dashboard-page .management-professor summary h3 { font-size:17px; }
+.dashboard-page .management-professor summary>span,
+.dashboard-page .management-professor-body h4 { font-size:15px; }
+.dashboard-page .management-professor-class strong { font-size:16px; }
+.dashboard-page .status-pill { font-size:13px; }
+.dashboard-page .class-directory-tools label,.dashboard-page .class-directory-card p,
+.dashboard-page .class-directory-enter,.dashboard-page .class-directory-more,
+.dashboard-page .class-directory-actions .back-link { font-size:15px; }
+.dashboard-page .class-directory-tile { font-size:16px; }
+.dashboard-page .class-directory-tile small { font-size:13px; }
+.dashboard-page .organizer-tools label,.dashboard-page .organizer-status,
+.dashboard-page .organizer-scope,.dashboard-page .organizer-heading p,
+.dashboard-page .course-picker label { font-size:15px; }
+.dashboard-page .organizer-subject strong { font-size:16px; }
+.dashboard-page .organizer-subject p,.dashboard-page .organizer-drop small { font-size:13px; }
+.dashboard-page .organizer-subject .back-link { font-size:14px; }
+.dashboard-page .learning-back,.dashboard-page .learning-status,
+.dashboard-page .learning-button,.dashboard-page .learning-quick-links a { font-size:16px; }
+.dashboard-page .learning-course-nav a { font-size:16px; }
+.dashboard-page .learning-course-code,.dashboard-page .learning-course-period { font-size:16px; }
+.dashboard-page .learning-prose { font-size:17px; line-height:1.7; }
+.dashboard-page .learning-meta,.dashboard-page .learning-complete-label,
+.dashboard-page .learning-module-info .learning-meta { font-size:14px; }
+.dashboard-page .learning-section-heading h2,.dashboard-page .learning-widget-heading h2 { font-size:19px; }
+.dashboard-page .learning-module-info h3 { font-size:18px; }
+.dashboard-page .learning-grades-table,.dashboard-page .learning-gradebook { font-size:15px; }
+.dashboard-page .learning-grade-published,.dashboard-page .learning-review-button,
+.dashboard-page .learning-score-input { font-size:14px; }
+.dashboard-page .learning-field label { font-size:15px; }
+.dashboard-page .learning-field input,.dashboard-page .learning-field textarea,
+.dashboard-page .learning-score-input input { font-size:16px; }
+.dashboard-page .learning-button.compact { font-size:14px; }
+.dashboard-page .learning-calendar button { font-size:14px; }
+.dashboard-page .control-message { font-size:15px; }
+.dashboard-page .batch-enrollment-tools .back-link { font-size:14px; }
+.dashboard-page .batch-enrollment-person strong,.dashboard-page .batch-enrollment-group h3 { font-size:15px; }
+.dashboard-page .batch-enrollment-person small { font-size:13px; }
+.dashboard-page .batch-enrollment-dialog #batchEnrollmentCount,
+.dashboard-page .batch-enrollment-dialog .batch-enrollment-formation-help { font-size:14px; }
+.dashboard-page .portal-footer .footer-container,.dashboard-page .portal-footer .footer-right { font-size:12px; }
+@media(max-width:760px) {
+    .dashboard-page .workspace-nav nav a,
+    .dashboard-page[data-portal-role=student] .workspace-nav nav a,
+    .dashboard-page[data-portal-role=professor] .workspace-nav nav a { font-size:16px; padding:14px 20px; }
+    .dashboard-page .dashboard-logout { font-size:10px; }
+    .dashboard-page .header-avatar { font-size:11px; }
+    .dashboard-page .dashboard-welcome>p:not(.welcome-eyebrow) { font-size:15px; }
+    .dashboard-page .dashboard-welcome h2 { font-size:28px; }
+    .dashboard-page .subject-name,.dashboard-page .teaching-card h3 { font-size:18px; }
+    .dashboard-page .learning-prose { font-size:16px; }
+    .dashboard-page .learning-course-nav a { font-size:15px; }
+    .dashboard-page .class-directory-tile { font-size:15px; }
+    .dashboard-page .learning-module-info h3 { font-size:16px; }
+    .dashboard-page .batch-enrollment-dialog { padding:16px; }
+    .dashboard-page .batch-enrollment-dialog>.class-selection-summary { padding:12px; }
+    .dashboard-page .batch-enrollment-dialog label,
+    .dashboard-page .batch-enrollment-dialog .dialog-help,
+    .dashboard-page .batch-enrollment-dialog .batch-enrollment-formation-help { font-size:13px; }
+    .dashboard-page .batch-enrollment-tools .back-link { font-size:13px; padding:8px; }
+    .dashboard-page .batch-enrollment-person small { font-size:12px; }
+}

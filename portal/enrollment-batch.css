@@ -1,0 +1,34 @@
+.batch-enrollment-dialog { width:min(820px,calc(100% - 24px)); padding:22px; max-height:calc(100dvh - 24px); }
+.batch-enrollment-dialog[open] { display:flex; flex-direction:column; }
+.batch-enrollment-dialog>.dialog-heading,.batch-enrollment-dialog>.class-selection-summary { flex-shrink:0; }
+.batch-enrollment-dialog>.class-selection-summary { margin-bottom:12px; }
+#batchEnrollmentForm { display:flex; flex-direction:column; min-height:0; overflow-y:auto; }
+#batchEnrollmentForm>*:not(.batch-enrollment-list) { flex-shrink:0; }
+#batchEnrollmentForm>label { margin-top:0; }
+#batchEnrollmentForm>.dialog-help { margin:8px 0; }
+#batchEnrollmentForm>.dialog-actions { margin-top:12px; position:sticky; bottom:0; background:white; padding-top:8px; z-index:1; }
+#batchEnrollmentStatus { margin:10px 0 0; }
+.batch-enrollment-tools { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:12px 0; }
+.batch-enrollment-tools .back-link { min-height:38px; padding:8px 10px; font-size:13px; }
+#batchEnrollmentCount { color:#536274; font-size:13px; }
+.batch-enrollment-list { flex:1 1 300px; min-height:80px; max-height:340px; overflow:auto; overscroll-behavior:contain; padding:0; margin:0; list-style:none; border:1px solid #dce1e7; border-radius:6px; }
+.batch-enrollment-list li+li { border-top:1px solid #e6ebf0; }
+.management-dialog .batch-enrollment-person { display:flex; align-items:center; gap:12px; padding:12px; margin:0; cursor:pointer; }
+.management-dialog .batch-enrollment-person input { width:19px; min-height:19px; height:19px; flex-shrink:0; margin:0; padding:0; }
+.batch-enrollment-person>span { min-width:0; flex:1; }
+.batch-enrollment-person strong,.batch-enrollment-person small { display:block; overflow-wrap:anywhere; line-height:1.5; }
+.batch-enrollment-person strong { font-size:14px; }
+.batch-enrollment-person small { font-size:12px; color:#647080; font-weight:400; }
+.batch-enrollment-person:has(input:checked) { background:#eef5fc; }
+.batch-enrollment-person:has(input:disabled) { cursor:default; }
+.batch-enrollment-state { max-width:140px; text-align:right; }
+.batch-enrollment-empty { padding:20px; color:#647080; }
+.batch-enrollment-filters { display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:12px; }
+.batch-enrollment-filters>div { min-width:0; }
+.batch-enrollment-filters label { margin-top:0; }
+.batch-enrollment-filters select { text-overflow:ellipsis; }
+.batch-enrollment-group { padding:8px 12px; background:#f3f6f9; }
+.batch-enrollment-group h3 { margin:0; color:#263c52; font-size:14px; }
+.batch-enrollment-formation-help { color:#647080; margin:0 0 8px; font-size:13px; }
+@media(max-width:650px) { .batch-enrollment-filters { grid-template-columns:1fr 1fr; gap:8px; } .batch-enrollment-filters>div:last-child { grid-column:1/-1; } .batch-enrollment-tools { gap:7px; margin:8px 0; } .batch-enrollment-formation-help { font-size:12px; } }
+@media(max-width:600px) { .batch-enrollment-state { max-width:90px; } .management-dialog .batch-enrollment-person { gap:9px; padding:10px; } .batch-enrollment-person small { font-size:11px; } .batch-enrollment-list { max-height:35dvh; } }

@@ -109,10 +109,12 @@
         if (!profile || !opened || busy) return;
         const operation = generation;
         const messages = { enroll: "Alumno inscrito en ", assign: "Profesor asignado a ", class_state: "Estado actualizado de " };
-        window.PortalManagement?.openClassAction(action, { ...row, subject_name: row.name }, () => {
+        const done = result => {
             if (!opened || operation !== generation) return;
-            void load(periodId, messages[action] + row.name + ".");
-        });
+            void load(periodId, result?.notice || messages[action] + row.name + ".");
+        };
+        if (action === "enroll") window.PortalEnrollmentBatch?.open({ ...row, subject_name: row.name }, done);
+        else window.PortalManagement?.openClassAction(action, { ...row, subject_name: row.name }, done);
     }
     function card(row) {
         const item = node("li", undefined, "class-directory-card");
@@ -120,7 +122,7 @@
         item.append(node("p", row.group_code || "Sin curso asignado", "class-directory-course"), node("h4", row.name), node("p", row.period_name));
         item.append(node("span", row.active ? "Activa" : "Inactiva", "status-pill" + (row.active ? "" : " inactive")));
         const actions = node("div", undefined, "class-directory-actions");
-        const enroll = button("Inscribir alumno", () => classAction("enroll", row), "back-link control-create");
+        const enroll = button("Inscribir alumnos", () => classAction("enroll", row), "back-link control-create");
         const assign = button("Asignar profesor", () => classAction("assign", row));
         enroll.disabled = assign.disabled = !row.active;
         actions.append(enroll, assign);
