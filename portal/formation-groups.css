@@ -32,3 +32,16 @@
 .formation-period-tools p { flex:1 1 240px; line-height:1.6; }
 .formation-group-actions .control-create { background:#0074b8; color:white; border-color:#0074b8; }
 @media screen { :root[data-theme-tone=dark] body .formation-group-actions .control-create { background:var(--theme-accent); color:#071521; border-color:var(--theme-accent); } }
+
+.formation-group-danger { border-color:#a12b35; color:#9b2230; background:transparent; }
+.formation-group-danger:hover { background:#fff0f1; color:#861c27; }
+.formation-removal-scope { font-weight:700; }
+.formation-group-remove [hidden] { display:none !important; }
+@media screen {
+    :root[data-theme-tone=dark] body .formation-group-danger { color:var(--theme-error); border-color:var(--theme-error); background:transparent; }
+    :root[data-theme-tone=dark] body .formation-group-danger:hover { background:var(--theme-error-bg); color:var(--theme-error); }
+}
+.formation-group-remove[open] { display:flex; flex-direction:column; overflow:hidden; }
+.formation-removal-scroll { overflow-y:auto; min-height:0; padding:2px 4px; }
+.formation-group-remove .dialog-actions { flex-shrink:0; padding:12px 0 0; margin-top:14px; background:#fff; border-top:1px solid #dce3ec; }
+@media screen { :root[data-theme-tone=dark] body .formation-group-remove .dialog-actions { background:var(--theme-card); border-color:var(--theme-line); } }

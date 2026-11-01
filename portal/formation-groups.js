@@ -44,6 +44,9 @@
         title.append(node('h3',g.code+' · '+g.name),node('p',people.length+' seminaristas · '+classes.length+' materias activas'));
         const actions=node('div',undefined,'formation-group-actions');actions.append(button('Agregar seminaristas',()=>openDialog('assign',g),'back-link control-create'));
         const enroll=button('Inscribir en materias',()=>openDialog('enroll',g));enroll.disabled=!people.length||!classes.length;actions.append(enroll);head.append(title,actions);target.append(head);
+        const corrections=node('div',undefined,'formation-group-actions');
+        const removePeople=button('Quitar seminaristas',()=>openRemove('students',g),'back-link formation-group-danger');removePeople.disabled=!people.length;
+        const removeClasses=button('Quitar materias',()=>openRemove('classes',g),'back-link formation-group-danger');removeClasses.disabled=!classes.length;corrections.append(removePeople,removeClasses);target.append(corrections);
         const list=node('ul',undefined,'formation-group-members');for(const r of people)list.append(node('li',r.full_name));
         if(people.length)target.append(list);else target.append(node('p','Este curso aún no tiene seminaristas. Usa Agregar seminaristas.'));
         if(!classes.length)target.append(node('p','Organiza las materias de este curso y periodo en Materias y periodos para poder inscribir al grupo.'));
@@ -118,6 +121,68 @@
         d.addEventListener('cancel',event=>{event.preventDefault();cancelDialog();});
         search.addEventListener('input',()=>{invalidate();paintPeople();});filter.addEventListener('change',()=>{invalidate();paintPeople();});
         paintPeople();d.showModal();search.focus();
+    }
+    function openRemove(kind,g){
+        if(!snapshot||dialog)return;
+        const rows=kind==='students'?members(g):courses(g);if(!rows.length)return;
+        const gen=generation,data=snapshot,scope=period,periodName=$('formationPeriod').selectedOptions[0]?.textContent||'';
+        const label=kind==='students'?'seminaristas':'materias',chosen=new Set();
+        let refreshOnClose=false;
+        focusBack=document.activeElement;
+        const d=node('dialog',undefined,'management-dialog formation-group-dialog formation-group-remove');dialog=d;
+        d.setAttribute('aria-labelledby','formationGroupRemoveTitle');
+        const title=node('h2','Quitar '+label+' de '+g.code);title.id='formationGroupRemoveTitle';
+        const scopeText=node('p',periodName+' · '+g.code+' · '+g.name);scopeText.className='formation-removal-scope';
+        const help=node('p',kind==='students'?
+            'Se quitará su etapa y semestre solo en este periodo. Sus cuentas, expedientes e inscripciones en materias se conservan.':
+            'Las materias quedarán sin curso asignado en este periodo. Las clases, profesores, tareas, inscripciones y calificaciones se conservan. Podrás volver a organizarlas en Materias y periodos.');
+        const selection=node('div'),filters=node('div',undefined,'formation-group-filters'),searchLabel=node('label','Buscar '+(kind==='students'?'seminarista':'materia')),search=node('input');
+        search.type='search';search.id='formationRemoveSearch';search.placeholder='Buscar por nombre';searchLabel.append(search);filters.append(searchLabel);
+        const list=node('ul',undefined,'formation-group-checklist');list.id='formationRemoveList';const count=node('p');count.id='formationRemoveCount';
+        const controls=node('div',undefined,'formation-group-actions');
+        controls.append(button('Seleccionar resultados',()=>{for(const r of visible())chosen.add(r.id);paintList();}),button('Quitar selección',()=>{chosen.clear();paintList();}));
+        selection.append(filters,controls,count,list);
+        const review=node('div');review.id='formationRemoveReview';review.hidden=true;
+        const confirmation=node('div',undefined,'formation-group-filters');confirmation.hidden=true;
+        const confirmationLabel=node('label','Escribe CONFIRMAR para continuar'),input=node('input');input.id='formationRemoveConfirmation';input.autocomplete='off';input.spellcheck=false;input.setAttribute('autocapitalize','characters');confirmationLabel.append(input);confirmation.append(confirmationLabel);
+        const message=node('p',undefined,'control-message');message.id='formationRemoveStatus';message.setAttribute('role','status');
+        const actions=node('div',undefined,'dialog-actions'),next=button('Revisar selección',prepare,'back-link'),back=button('Volver a la selección',()=>{selection.hidden=false;review.hidden=confirmation.hidden=true;next.hidden=false;back.hidden=confirm.hidden=true;input.value='';message.textContent='';next.focus();}),confirm=button('Confirmar y quitar',()=>void save(),'back-link formation-group-danger'),cancel=button('Cancelar',cancelDialog);
+        next.id='formationRemoveNext';confirm.id='formationRemoveConfirm';cancel.id='formationRemoveCancel';back.hidden=confirm.hidden=true;confirm.disabled=true;
+        actions.append(next,back,confirm,cancel);const scroll=node('div',undefined,'formation-removal-scroll');scroll.append(title,scopeText,help,selection,review,confirmation,message);d.append(scroll,actions);document.body.append(d);
+        function cancelDialog(){if(dialogBusy)return;const v=verify,cb=changed;close();if(refreshOnClose){void show(scope,v,cb);void cb?.();}}
+        function name(r){return kind==='students'?r.full_name:r.name;}
+        function visible(){const needle=norm(search.value);return rows.filter(r=>!needle||norm(name(r)).includes(needle));}
+        function paintList(){list.replaceChildren();const current=visible();for(const r of current){const li=node('li'),label=node('label'),check=node('input');check.type='checkbox';check.value=r.id;check.checked=chosen.has(r.id);check.addEventListener('change',()=>{check.checked?chosen.add(r.id):chosen.delete(r.id);paintList();});label.append(check,node('span',name(r)));li.append(label);list.append(li);}
+            if(!current.length)list.append(node('li','No hay resultados para esta búsqueda.'));
+            const outside=[...chosen].filter(id=>!current.some(r=>r.id===id)).length;
+            count.textContent=chosen.size+' seleccionados · '+current.length+' mostrados'+(outside?' · '+outside+' seleccionados fuera del filtro':'');next.disabled=!chosen.size;
+        }
+        function prepare(){if(!chosen.size)return;
+            if(chosen.size>(kind==='students'?500:100)){message.textContent='Selecciona como máximo '+(kind==='students'?500:100)+' registros por lote.';return;}
+            review.replaceChildren(node('h3','Confirma el periodo y la selección'),node('p',periodName+' · '+g.code+' · Quitar '+chosen.size+' '+label+' de este bloque.'));
+            const ul=node('ul');for(const r of rows.filter(r=>chosen.has(r.id)))ul.append(node('li',name(r)));review.append(ul);
+            if(kind==='students'){
+                const existing=data.enrollments.filter(e=>chosen.has(e.student_id)&&e.active).length;
+                if(existing)review.append(node('p',(existing===1?'Hay 1 inscripción activa de estos seminaristas en el periodo. Seguirá activa;':'Hay '+existing+' inscripciones activas de estos seminaristas en el periodo. Seguirán activas;')+' si también fueron un error, revísalas en Clases o Inscripciones.'));
+            }
+            review.append(node('p','Los demás periodos conservarán sus asignaciones.'));
+            selection.hidden=true;review.hidden=confirmation.hidden=false;next.hidden=true;back.hidden=confirm.hidden=false;input.value='';confirm.disabled=true;message.textContent='';input.focus();
+        }
+        async function save(){if(dialogBusy||review.hidden||input.value.trim().toUpperCase()!=='CONFIRMAR'||dialog!==d||gen!==generation)return;
+            dialogBusy=true;for(const c of d.querySelectorAll('button,input'))c.disabled=true;d.setAttribute('aria-busy','true');message.textContent='Quitando asignaciones del grupo…';
+            try{const result=await rpc('portal_formation_group_remove',{p_kind:kind,p_period:scope,p_stage:g.stage,p_semester:g.semester,p_ids:[...chosen].sort(),p_token:data.token,p_confirmation:input.value.trim()});
+                if(gen!==generation||dialog!==d)return;if(result?.saved!==true||result.kind!==kind||result.period_id!==scope||result.group_code!==g.code||result.removed!==chosen.size)throw new Error('Corrección sin confirmar');
+                const v=verify,cb=changed;dialogBusy=false;close();await show(scope,v,cb);if(gen+1!==generation)return;
+                status(result.removed+' '+label+' retirados de '+g.code+' en '+periodName+'. Las demás asignaciones se conservan.');if(kind==='classes')void window.PortalCourseGroups?.reload();void cb?.();
+            }catch(e){if(gen!==generation||dialog!==d)return;if(denied(e))return;
+                message.textContent=['PGRST202','42883'].includes(e?.code)?'Falta instalar el SQL para quitar asignaciones de los grupos.':
+                    ['22023','PT409'].includes(e?.code)?e.message:'No se pudo confirmar la corrección. Cierra y actualiza para comprobar el resultado antes de repetir.';
+                dialogBusy=false;refreshOnClose=true;cancel.disabled=false;cancel.textContent='Cerrar y actualizar';
+            }finally{if(dialog===d)d.setAttribute('aria-busy','false');}
+        }
+        input.addEventListener('input',()=>{confirm.disabled=input.value.trim().toUpperCase()!=='CONFIRMAR';});
+        search.addEventListener('input',paintList);d.addEventListener('cancel',event=>{event.preventDefault();cancelDialog();});
+        paintList();d.showModal();search.focus();
     }
     window.PortalFormationGroups=Object.freeze({show,clear});
 })();
