@@ -21,9 +21,11 @@
         {title:"Formación previa",help:"Esta información ayuda a Control Escolar a completar tu expediente. Las materias, programas y calificaciones oficiales se administran por separado.",fields:[
             ["home_diocese","Diócesis de origen",160], ["home_parish","Parroquia de origen",160], ["previous_school","Escuela de procedencia",200],
             ["previous_level","Último nivel de estudios",80], ["previous_qualification","Certificado / título obtenido (si corresponde)",160], ["previous_graduation_year","Año de egreso (si corresponde)",4]]},
-        {title:"Datos escolares",help:"Estos datos se consultan desde tus inscripciones y el kardex. Control Escolar administra la matrícula, el ingreso, el egreso y la clasificación de las materias.",fields:[]}
+        {title:"Datos escolares",help:"Estos datos se consultan desde tus inscripciones y el kardex. Control Escolar administra la matrícula, el ingreso, el egreso y la clasificación de las materias.",fields:[]},
+        {title:"Archivos",help:"Guarda tus boletas de sacramentos, certificados de formación previa y seguro médico como PDF privados.",fields:[],files:true}
     ];
     let profile, recheck, opened=false, generation=0, operation=0, currentRoute, target, record, tab=0, offset=0, pendingTarget;
+    let filesHost;
     let dirty=false, saving=false, uncertain=false, staleDraft=false, baseline, resume;
     const controllers = new Set(), inputs = new Map(), panels = [], tabs = [];
     const create = (tag,text,className) => {const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=String(text);if(className)n.className=className;return n;};
@@ -45,6 +47,7 @@
         resume={user:profile.id,role:profile.role,target,route:currentRoute,tab,token:record.token,values:dirty?payload():null};
     }
     function leave(preserve=false) {
+        window.PortalPersonalFiles?.clear();filesHost=undefined;
         if (preserve) remember(); else resume=undefined;
         generation++;operation++;for(const c of controllers)c.abort();controllers.clear();
         opened=false;target=undefined;record=undefined;dirty=false;saving=false;uncertain=false;staleDraft=false;baseline=undefined;
@@ -72,13 +75,14 @@
         return data?.student?.id===id&&uuid.test(id)&&typeof data.student.full_name==="string"&&typeof data.student.active==="boolean"&&data.identity&&data.details&&typeof data.details==="object"&&!Array.isArray(data.details)&&data.school&&Array.isArray(data.school.programs)&&/^[a-f0-9]{32}$/.test(data.token)&&Number.isSafeInteger(data.revision)&&data.revision>=0&&typeof data.review?.reviewed==="boolean"&&typeof data.can_review==="boolean"&&Array.isArray(data.completion?.missing)&&Number.isInteger(data.completion.completed)&&data.completion.total===9;
     }
     function acceptDiscard() {
-        if(saving){note("Espera a que termine el guardado.");return false;}
+        if(saving||window.PortalPersonalFiles?.isBusy()){note("Espera a que termine el guardado.");return false;}
         return !dirty||confirm("Tienes cambios sin guardar en el expediente. ¿Deseas descartarlos?");
     }
     function sync() {
-        const locked=saving||uncertain||staleDraft;
+        const fileBusy=window.PortalPersonalFiles?.isBusy();
+        const locked=saving||fileBusy||uncertain||staleDraft;
         $("personalSave").disabled=locked||!record;$("personalSave").textContent=saving?"Guardando…":control()?"Guardar expediente":"Guardar mis datos";
-        $("personalReload").disabled=saving;$("personalChooseOther").disabled=saving;$("personalMarkReviewed").disabled=saving||dirty||uncertain||staleDraft||!record||record.review.reviewed;
+        $("personalReload").disabled=saving||fileBusy;$("personalChooseOther").disabled=saving||fileBusy;$("personalMarkReviewed").disabled=saving||fileBusy||dirty||uncertain||staleDraft||!record||record.review.reviewed;
         $("personalDirty").textContent=uncertain?"Guardado sin confirmar":dirty?"Cambios sin guardar":"Datos guardados";
         for(const input of inputs.values())input.disabled=saving;
         form.setAttribute("aria-busy",String(saving));
@@ -94,6 +98,9 @@
         tab=Math.max(0,Math.min(groups.length-1,index));
         for(let i=0;i<tabs.length;i++){const selected=i===tab;tabs[i].setAttribute("aria-selected",String(selected));tabs[i].tabIndex=selected?0:-1;panels[i].hidden=!selected;}
         $("personalPrevious").hidden=tab===0;$("personalNext").hidden=tab===groups.length-1;
+        $("personalSave").hidden=Boolean(groups[tab]?.files);
+        $("personalSaveHelp").textContent=groups[tab]?.files?"Los PDF se guardan con Subir PDF. Los datos de otras secciones se guardan por separado.":"Puedes completar la información poco a poco.";
+        if(groups[tab]?.files&&filesHost)window.PortalPersonalFiles?.mount(filesHost,{studentId:target,onBusy:sync,onForbidden:()=>forbidden({code:"42501"})});
         if(focus)tabs[tab]?.focus();
     }
     function addField(container,definition) {
@@ -112,6 +119,7 @@
         const group=create("div",undefined,"personal-field");group.append(create("span",label));const out=create("output",value||"Sin registrar");if(id)out.id=id;group.append(out);container.append(group);return out;
     }
     function render() {
+        window.PortalPersonalFiles?.clear();filesHost=undefined;
         inputs.clear();panels.length=0;tabs.length=0;$("personalTabs").replaceChildren();$("personalGroups").replaceChildren();
         $("personalStudentName").textContent=record.student.full_name;$("personalAccount").textContent=(record.student.active?"Alumno activo":"Alumno inactivo · expediente conservado")+" · "+(record.school.student_number||"Matrícula pendiente");
         $("personalReviewState").textContent=record.review.reviewed?"Revisado por Control Escolar"+(record.review.reviewer?" · "+record.review.reviewer:"")+" · "+fmtDate(record.review.reviewed_at):record.updated_at?"Pendiente de revisión por Control Escolar":"Por completar";
@@ -122,6 +130,7 @@
             t.id="personalTab"+i;t.setAttribute("role","tab");t.setAttribute("aria-controls","personalPanel"+i);
             panel.id="personalPanel"+i;panel.setAttribute("role","tabpanel");panel.setAttribute("aria-labelledby",t.id);panel.append(create("legend",group.title),create("p",group.help,"personal-group-help"),fields);
             for(const field of group.fields)addField(fields,field);
+            if(group.files){filesHost=create("div",undefined,"personal-files-host");fields.append(filesHost);}
             if(i===0)readonly(fields,"Edad calculada",null,"personalAge");
             if(i===1)readonly(fields,"Correo de acceso · no se modifica aquí",record.student.login_email);
             if(i===5){readonly(fields,"Matrícula",record.school.student_number);readonly(fields,"Fecha de ingreso",fmtDate(record.school.entered_on));readonly(fields,"Fecha de egreso",fmtDate(record.school.completed_on));readonly(fields,"Inscripciones en el historial",String(record.school.enrollments));
@@ -133,7 +142,7 @@
         baseline=JSON.stringify(payload());dirty=false;uncertain=false;staleDraft=false;$("personalReviewTools").hidden=!control();$("personalEditor").hidden=false;$("personalLookup").hidden=true;$("personalChooseOther").hidden=!control();age();selectTab(tab);sync();
     }
     async function load(id,restore) {
-        if(!profile||!opened||!uuid.test(id))return;const g=generation,op=++operation;target=id;record=undefined;dirty=false;uncertain=false;staleDraft=false;inputs.clear();panels.length=0;tabs.length=0;$("personalGroups").replaceChildren();$("personalTabs").replaceChildren();$("personalEditor").hidden=true;note("Consultando expediente…");sync();
+        if(!profile||!opened||!uuid.test(id))return;window.PortalPersonalFiles?.clear();filesHost=undefined;const g=generation,op=++operation;target=id;record=undefined;dirty=false;uncertain=false;staleDraft=false;inputs.clear();panels.length=0;tabs.length=0;$("personalGroups").replaceChildren();$("personalTabs").replaceChildren();$("personalEditor").hidden=true;note("Consultando expediente…");sync();
         try {const data=await rpc("portal_student_record_read",{p_resource:"record",p_student:id});if(!profile||!opened||g!==generation||op!==operation)return;if(!valid(data,id)||data.can_review!==control())throw new Error("Expediente inválido");record=data;render();
             if(restore?.values){for(const [key,input] of inputs)input.value=Object.hasOwn(restore.values,key)?restore.values[key]:restore.values.details[key]||"";dirty=JSON.stringify(payload())!==baseline;staleDraft=dirty&&restore.token!==record.token;tab=restore.tab;selectTab(tab);age();sync();note(staleDraft?"Tu borrador se conservó, pero el expediente cambió. Copia los cambios que necesites y actualiza antes de guardar.":dirty?"Se conservaron tus cambios sin guardar al volver al portal.":"El expediente ya contiene los datos de tu borrador.",staleDraft?"error":"");}
             else note("Expediente actualizado.","success");resume=undefined;
@@ -152,7 +161,7 @@
         return true;
     }
     async function mutate(review=false) {
-        if(!profile||!opened||!record||saving||uncertain||staleDraft||review&&!control()||!review&&!validation())return;
+        if(!profile||!opened||!record||saving||window.PortalPersonalFiles?.isBusy()||uncertain||staleDraft||review&&!control()||!review&&!validation())return;
         if(review&&dirty){note("Guarda tus cambios antes de marcar el expediente como revisado.","error");return;}
         const g=generation,op=operation,id=target;const args={p_student:id,p_token:record.token};if(!review)args.p_data=payload();saving=true;sync();note(review?"Registrando revisión…":"Guardando datos…");
         try {const data=await rpc(review?"portal_student_record_review":"portal_student_record_save",args);if(!profile||!opened||g!==generation||op!==operation)return;if(data.saved!==true||!valid(data,id)||data.can_review!==control())throw new Error("Guardado sin confirmar");record=data;render();
@@ -176,7 +185,7 @@
     $("personalTabs").addEventListener("keydown",event=>{if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;event.preventDefault();selectTab(event.key==="Home"?0:event.key==="End"?groups.length-1:tab+(event.key==="ArrowRight"?1:-1),true);});
     $("personalSearchForm").addEventListener("submit",event=>{event.preventDefault();void search();});$("personalMore").addEventListener("click",()=>void search(false));
     $("personalReload").addEventListener("click",()=>{if(!acceptDiscard())return;resume=undefined;if(target)void load(target);else void search();});
-    $("personalChooseOther").addEventListener("click",()=>{if(!acceptDiscard())return;operation++;record=undefined;target=undefined;dirty=false;inputs.clear();$("personalGroups").replaceChildren();$("personalEditor").hidden=true;$("personalLookup").hidden=false;$("personalChooseOther").hidden=true;void search();});
-    window.addEventListener("beforeunload",event=>{if(opened&&(dirty||saving)){event.preventDefault();event.returnValue="";}});
+    $("personalChooseOther").addEventListener("click",()=>{if(!acceptDiscard())return;window.PortalPersonalFiles?.clear();filesHost=undefined;operation++;record=undefined;target=undefined;dirty=false;inputs.clear();$("personalGroups").replaceChildren();$("personalEditor").hidden=true;$("personalLookup").hidden=false;$("personalChooseOther").hidden=true;void search();});
+    window.addEventListener("beforeunload",event=>{if(opened&&(dirty||saving||window.PortalPersonalFiles?.isBusy())){event.preventDefault();event.returnValue="";}});
     window.PortalPersonalRecord=Object.freeze({clear,navigate,discardDraft(){resume=undefined;},canNavigate(route){return !opened||route===currentRoute||acceptDiscard();},show(value,verify){clear();if(resume&&(resume.user!==value.id||resume.role!==value.role))resume=undefined;profile=["student","control_escolar"].includes(value.role)?value:undefined;recheck=verify;$("personalProfileLink").textContent=value.role==="student"?"Completar mis datos personales":"Ver mi perfil";if(!profile)resume=undefined;},requestStudent(id){if(!control()||!uuid.test(id)||!acceptDiscard())return;if(opened){tab=0;void load(id);}else{pendingTarget=id;location.hash="expedientes";}}});
 })();

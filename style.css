@@ -147,6 +147,17 @@ img {
     color: var(--red-dark);
 }
 
+.main-nav .nav-boletin {
+    padding-left: 14px;
+    padding-right: 14px;
+    background-color: var(--gold);
+    color: var(--blue-dark);
+}
+.main-nav .nav-boletin:hover {
+    background-color: var(--gold-light);
+    color: var(--blue-dark);
+}
+
 .main-nav .nav-portal {
     margin-left: 6px;
     padding-left: 14px;
@@ -207,6 +218,7 @@ img {
     }
 
     .main-nav .nav-portal {
+        grid-column: 1 / -1;
         margin-left: 0;
         padding-left: 6px;
         padding-right: 6px;

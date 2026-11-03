@@ -1,0 +1,24 @@
+.personal-files-host { grid-column:1 / -1; min-width:0; }
+.personal-files-help { line-height:1.7; color:#586f84; margin:8px 0 16px; }
+.personal-files-count { font-weight:700; }
+.personal-files-upload { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin:20px 0; }
+.personal-files-upload label { display:grid; gap:8px; min-width:0; font-weight:650; }
+.personal-files-upload input,.personal-files-upload select { width:100%; min-width:0; padding:10px; min-height:46px; background:white; color:#263e56; border:1px solid #acbfd2; border-radius:5px; font:inherit; }
+.personal-files-groups { display:grid; gap:18px; margin-top:24px; }
+.personal-files-group { border:1px solid #dce4ed; border-radius:8px; padding:20px; }
+.personal-files-group h3 { margin:0 0 12px; font-size:19px; }
+.personal-files-group ul { list-style:none; margin:0; padding:0; }
+.personal-files-group li { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:16px 0; }
+.personal-files-group li+li { border-top:1px solid #dce4ed; }
+.personal-files-group li>div:first-child { min-width:0; overflow-wrap:anywhere; }
+.personal-files-group li p { margin:6px 0; }
+.personal-files-group .personal-actions { flex-shrink:0; }
+.personal-files-pending { color:#775014; }
+.personal-files-remove { border-color:#a12b35; color:#9b2230; }
+@media(max-width:760px){.personal-files-upload{grid-template-columns:1fr}.personal-files-group{padding:16px}.personal-files-group li{align-items:stretch;flex-direction:column}.personal-files-group .personal-actions{flex-wrap:wrap}}
+@media screen {
+    :root[data-theme-tone=dark] body :is(.personal-files-group,.personal-files-group li+li) { border-color:var(--theme-line); }
+    :root[data-theme-tone=dark] body .personal-files-help { color:var(--theme-muted); }
+    :root[data-theme-tone=dark] body .personal-files-pending { color:var(--theme-warning); }
+    :root[data-theme-tone=dark] body .personal-files-host .personal-files-remove { color:var(--theme-error); border-color:var(--theme-error); }
+}

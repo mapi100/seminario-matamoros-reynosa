@@ -17,6 +17,10 @@ async def fixture(browser,role='student',mobile=False):
         missing=[label for key,label in required if not (r['identity'].get(key) if key in ('birth_date','curp') else r['details'].get(key))];r['completion']={'completed':9-len(missing),'total':9,'missing':missing};return r
     async def route_api(route):
         req=route.request
+        if req.url.endswith('/portal_student_files'):
+            return await route.fulfill(status=404,content_type='application/json',body=json.dumps({'code':'PGRST202','message':'Archivos fuera de esta prueba de datos básicos'}))
+        if req.url.endswith('/portal_report_card_read'):
+            return await route.fulfill(status=404,content_type='application/json',body=json.dumps({'code':'PGRST202','message':'Boletas fuera de esta prueba de expediente'}))
         if '/rpc/portal_student_record_' not in req.url and not req.url.endswith(('/portal_admin_read','/portal_kardex_read')):return await route.fallback()
         body=req.post_data_json;name=req.url.rsplit('/',1)[-1];data['calls'].append((name,copy.deepcopy(body)));headers={'Access-Control-Allow-Origin':'*','Content-Type':'application/json'}
         async def reply(status,body):return await route.fulfill(status=status,headers=headers,body=json.dumps(body))
@@ -71,8 +75,8 @@ async def visibility(page,hidden):
 async def main():
     async with async_playwright() as p:
         browser=await p.chromium.launch(executable_path=shutil.which('chromium'),headless=True)
-        c,page,state,data=await fixture(browser);await expect(page.locator('#panelContent')).to_be_visible();assert not data['calls'];await expect(page.locator('#personalProfileLink')).to_contain_text('Completar mis datos');await open_record(page);await expect(page.locator('#personalTabs [role=tab]')).to_have_count(6);await expect(page.locator('#personalAge')).to_contain_text('Se calcula');await expect(page.locator('#personalReviewTools')).to_be_hidden()
-        await done(c,state,data,'student has an intuitive six-section private form, loaded only when opened')
+        c,page,state,data=await fixture(browser);await expect(page.locator('#panelContent')).to_be_visible();assert not data['calls'];await expect(page.locator('#personalProfileLink')).to_contain_text('Completar mis datos');await open_record(page);await expect(page.locator('#personalTabs [role=tab]')).to_have_count(7);await expect(page.locator('#personalAge')).to_contain_text('Se calcula');await expect(page.locator('#personalReviewTools')).to_be_hidden()
+        await done(c,state,data,'student has an intuitive seven-section private form, loaded only when opened')
 
         c,page,state,data=await fixture(browser);await open_record(page);await page.locator('#personal-full_name').fill('Nombre completo de prueba');await page.locator('#personal-birth_date').fill('2004-01-27');await page.locator('#personal-curp').fill('xexx040127htsxxx01');await expect(page.locator('#personal-curp')).to_have_value('XEXX040127HTSXXX01');await expect(page.locator('#personalAge')).to_contain_text('22 años');await page.locator('#personalSave').click();await expect(page.locator('#personalStatus')).to_contain_text('Datos guardados y vinculados');await expect(page.locator('#workspaceUserName')).to_have_text('Nombre completo de prueba');await expect(page.locator('#profileName')).to_have_text('Nombre completo de prueba');assert data['row']['identity']['birth_date']=='2004-01-27';assert data['row']['school']['student_number']=='MR-001'
         await done(c,state,data,'name updates in campus header, CURP is normalized and age is calculated without writable academic fields')
@@ -125,7 +129,7 @@ async def main():
         c,page,state,data=await fixture(browser);await open_record(page);data['gate']=asyncio.Event();data['started'].clear();await page.locator('#personalReload').click();await data['started'].wait();await page.evaluate('location.hash="inicio"');data['gate'].set();await page.wait_for_timeout(100);await expect(page.locator('#personalGroups input')).to_have_count(0)
         await done(c,state,data,'late reads cannot restore personal data after leaving')
 
-        c,page,state,data=await fixture(browser);await open_record(page);await page.get_by_role('tab',name='Contacto',exact=True).focus();await page.keyboard.press('End');await expect(page.get_by_role('tab',name='Datos escolares',exact=True)).to_be_focused();await page.keyboard.press('Home');await expect(page.get_by_role('tab',name='Identificación',exact=True)).to_be_focused()
+        c,page,state,data=await fixture(browser);await open_record(page);await page.get_by_role('tab',name='Contacto',exact=True).focus();await page.keyboard.press('End');await expect(page.get_by_role('tab',name='Archivos',exact=True)).to_be_focused();await page.keyboard.press('Home');await expect(page.get_by_role('tab',name='Identificación',exact=True)).to_be_focused()
         await done(c,state,data,'keyboard users can move between section tabs with arrows, Home and End')
 
         c,page,state,data=await fixture(browser);await open_record(page);data['row']['student']['full_name']='<img src=x onerror=alert(1)>';await page.locator('#personalReload').click();await expect(page.locator('#personalStudentName')).to_have_text('<img src=x onerror=alert(1)>');await expect(page.locator('#personalRecordSection img')).to_have_count(0)

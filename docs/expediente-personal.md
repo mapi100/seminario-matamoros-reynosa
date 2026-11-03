@@ -2,7 +2,8 @@
 
 Cada alumno puede completar sus datos desde **Mi perfil → Mis datos personales**.
 El inicio ofrece también **Completar mis datos personales**. La captura se divide
-en seis secciones con botones Anterior, Siguiente sección y Guardar mis datos.
+en siete secciones con botones Anterior y Siguiente sección. Los datos se guardan
+con Guardar mis datos; los PDF de Archivos se guardan con Subir PDF.
 Se puede guardar por partes; no es necesario conocer todos los datos para empezar.
 
 ## Datos disponibles
@@ -15,6 +16,7 @@ Se puede guardar por partes; no es necesario conocer todos los datos para empeza
 | Familia y emergencias | Persona de contacto, relación y teléfono; nombres y teléfonos de madre y padre opcionales |
 | Formación previa | Diócesis y parroquia de origen, escuela de procedencia, nivel, certificado o título y año de egreso |
 | Datos escolares | Matrícula, ingreso, egreso, número de inscripciones y programas/planes vinculados; se consultan sin editarlos |
+| Archivos | PDF privados de sacramentos, formación previa y seguro médico; alumno y Control Escolar pueden subir y descargar |
 
 Solo el nombre es obligatorio para guardar; ya viene del perfil existente. Los
 demás campos pueden quedar pendientes. La barra de avance muestra nueve datos
@@ -134,3 +136,6 @@ Usan identidades ficticias: PostgreSQL desechable sin red mediante Docker y
 Chromium con Playwright y una API simulada. No usan credenciales ni registros
 del proyecto de producción. Comprueban permisos, validaciones, sincronización,
 revisiones, edad, borradores, concurrencia y navegación en escritorio y celular.
+
+Los documentos PDF del expediente se administran en la nueva sección
+[Archivos: sacramentos, formación previa y seguro médico](archivos-personales-y-boletin.md).
