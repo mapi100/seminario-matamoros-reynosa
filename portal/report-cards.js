@@ -38,7 +38,7 @@
     function valid(d) { return d?.version === 1 && d.scale === 10 && d.decimals === 1 && d.pass_mark === 7 && uuid.test(d.student?.id) && typeof d.student.full_name === "string" && uuid.test(d.period?.id) && typeof d.cycle === "string" && Array.isArray(d.reasons) && typeof d.ready === "boolean" && Array.isArray(d.rows) && d.rows.length <= 10000 && d.rows.every(r => typeof r.name === "string" && (r.score === null || typeof r.score === "number" && Number.isFinite(r.score) && r.score >= 0 && r.score <= 10)); }
     function fallback() {
         const period = source.periods.find(p => p.id === $("reportPeriod").value), form = source.formation_history?.find(f => f.period_id === period.id);
-        const rows = source.rows.filter(r => r.period_id === period.id).map(r => ({ ...r, source_score: r.score, score: r.score === null ? null : Number(window.PortalGradeScale.format(r.score)) }));
+        const rows = source.rows.filter(r => r.period_id === period.id && r.enrollment_active === true).map(r => ({ ...r, source_score: r.score, score: r.score === null ? null : Number(window.PortalGradeScale.format(r.score)) }));
         const reasons = [];
         if (!rows.length) reasons.push("No hay materias inscritas en este periodo.");
         if (!source.student.student_number) reasons.push("Registra la matrícula en Datos del alumno.");

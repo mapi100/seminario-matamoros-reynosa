@@ -1,0 +1,5 @@
+Cambios públicos: copiar estos archivos sobre el repositorio conservando sus rutas.
+La migración nueva es repetible y contiene el mismo SQL que 00_boletas_inscripciones_vigentes.sql del paquete privado: si ya lo ejecutaste, no es necesario repetirlo.
+Publicar portal/report-cards.js actualiza también el borrador del navegador.
+No copiar al repositorio el paquete nominal privado ni sus archivos de revisión.
+Consulta docs/boletas-inscripciones-vigentes.md.
