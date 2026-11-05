@@ -3,7 +3,7 @@
 
     const $ = id => document.getElementById(id);
     const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const tabs = { inicio: "Inicio del curso", programa: "Programa", contenido: "Contenido", tareas: "Tareas", anuncios: "Anuncios", calificaciones: "Calificaciones", "mis-notas": "Mis calificaciones", participantes: "Participantes", calendario: "Calendario" };
+    const tabs = { inicio: "Inicio del curso", programa: "Programa", contenido: "Contenido", tareas: "Tareas", anuncios: "Anuncios", calificaciones: "Calificaciones", finales: "Calificación final", "mis-notas": "Mis calificaciones", participantes: "Participantes", calendario: "Calendario" };
     const dateTime = new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeStyle: "short" });
     const shortDate = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short" });
     const number = new Intl.NumberFormat("es-MX", { maximumFractionDigits: 2 });
@@ -96,6 +96,7 @@
     function validCourse(value) { return value && uuid.test(value.id) && [value.code, value.name, value.period_name].every(item => typeof item === "string" && item.length < 400); }
     function clear() {
         window.PortalWeightedGrades?.clear();
+        window.PortalSchoolFinals?.clear();
         active = false; profile = undefined; recheck = undefined;
         generation++; courseVersion++; dashboardVersion++; routeKey = undefined;
         for (const controller of controllers) controller.abort();
@@ -236,7 +237,7 @@
         if (!root) return null;
         root.hidden = false;
         root.replaceChildren();
-        const back = link("← Todos mis cursos", "#inicio", "learning-back");
+        const back = link("← Todos mis cursos", profile?.role === "control_escolar" ? "#materias-asignadas" : "#inicio", "learning-back");
         const banner = node("header", undefined, "learning-course-banner");
         const bannerInfo = node("div");
         const code = node("p", "Aula virtual", "learning-course-code"); code.id = "learningCourseCode";
@@ -260,6 +261,7 @@
         window.PortalWorkspace?.setCourseTitle?.(course.course.name, course.course.period_name);
         const nav = $("learningCourseNav"); nav.replaceChildren();
         for (const key of Object.keys(tabs)) {
+            if (key === "finales" && profile.role !== "control_escolar") continue;
             if (key === "mis-notas" && profile.role !== "student" || ["calificaciones", "participantes"].includes(key) && !canManage()) continue;
             const item = link(tabs[key], coursePath(courseId, key));
             if (key === tab) item.setAttribute("aria-current", "page");
@@ -295,6 +297,7 @@
         const shortcuts = node("section", undefined, "learning-card"); toolbar(shortcuts, "Accesos del curso");
         const links = node("div", undefined, "learning-quick-links");
         for (const [label, section] of [["Programa del curso", "programa"], ["Tareas y entregas", "tareas"], [profile.role === "student" ? "Mis calificaciones" : "Libro de calificaciones", profile.role === "student" ? "mis-notas" : "calificaciones"], ["Calendario", "calendario"]]) links.append(link(label + " →", coursePath(courseId, section)));
+        if (profile.role === "control_escolar") links.append(link("Capturar calificación final →", coursePath(courseId, "finales")));
         shortcuts.append(links); left.append(shortcuts);
         const announcements = node("section", undefined, "learning-card"); toolbar(announcements, "Anuncios", canManage() ? [button("Nuevo anuncio", () => announcementDialog())] : []); renderAnnouncements(announcements, course.announcements.slice(0, 4)); right.append(announcements);
         const work = node("section", undefined, "learning-card"); toolbar(work, "Próximas entregas");
@@ -640,6 +643,7 @@
     }
     function renderTab(selectedItem) {
         window.PortalWeightedGrades?.clear();
+        window.PortalSchoolFinals?.clear();
         if (!active || !course || !$("learningContent")) return;
         window.PortalLearningFiles?.clear();
         window.PortalContentFiles?.clear();
@@ -652,6 +656,7 @@
         else if (tab === "mis-notas") renderOwnGrades(target);
         else if (tab === "calendario") renderCourseCalendar(target);
         else if (tab === "participantes" && canManage()) void renderParticipants(target);
+        else if (tab === "finales" && profile.role === "control_escolar") void window.PortalSchoolFinals?.render(target, {courseId, onUnauthorized: unauthorized});
         else if (tab === "calificaciones" && canManage()) void renderGradebook(target, pageOffset);
     }
     async function loadCourse(id, selectedTab, selectedItem) {
@@ -664,6 +669,7 @@
             if (!active || current !== generation || operation !== courseVersion || courseId !== id) return;
             if (!validCourse(data.course) || data.course.id !== id || !validCollection(data.announcements, 200) || !validCollection(data.modules, 100) || !data.modules.every(item => validCollection(item.topics, 500)) || !validCollection(data.assignments, 100) || !validCollection(data.events, 200)) throw new Error("Curso inválido");
             course = data; tab = selectedTab;
+            if (tab === "finales" && profile.role !== "control_escolar") { location.hash = coursePath(id, profile.role === "student" ? "mis-notas" : "calificaciones"); return; }
             if (profile.role === "student" && ["calificaciones", "participantes"].includes(tab)) { location.hash = coursePath(id, "mis-notas"); return; }
             if (profile.role !== "student" && tab === "mis-notas") { location.hash = coursePath(id, "calificaciones"); return; }
             renderTab(selectedItem);
@@ -678,6 +684,7 @@
         const pieces = location.hash.slice(1).split("/");
         if (pieces[0] !== "curso") {
             window.PortalWeightedGrades?.clear();
+            window.PortalSchoolFinals?.clear();
             courseVersion++; routeKey = undefined; course = undefined; courseId = undefined; gradebook = undefined; closeModal(true); window.PortalLearningFiles?.clear(); window.PortalContentFiles?.clear();
             if ($("learningRoot")) { $("learningRoot").hidden = true; $("learningRoot").replaceChildren(); }
             return;
@@ -690,6 +697,7 @@
         if ($("learningRoot")) $("learningRoot").hidden = false;
         if (!force && courseId === id && course) {
             courseVersion++; tab = selectedTab;
+            if (tab === "finales" && profile.role !== "control_escolar") { location.hash = coursePath(id, profile.role === "student" ? "mis-notas" : "calificaciones"); return; }
             if (profile.role === "student" && ["calificaciones", "participantes"].includes(tab)) { location.hash = coursePath(id, "mis-notas"); return; }
             if (profile.role !== "student" && tab === "mis-notas") { location.hash = coursePath(id, "calificaciones"); return; }
             renderTab(item);

@@ -337,7 +337,7 @@ async def main():
         await done(context, state, data, 'Student submits a text response and valid link for the selected assignment')
 
         context, page, state, data = await fixture(browser, route=f'curso/{COURSE}/mis-notas')
-        await expect(page.locator('#learningContent')).to_contain_text('100')
+        await expect(page.locator('#learningContent')).to_contain_text('10.0 / 10')
         await expect(page.locator('#learningContent')).to_contain_text('Buen trabajo de prueba.')
         await expect(page.locator('#learningContent')).not_to_contain_text('Borrador privado del profesor.')
         assert await page.locator('#learningContent input[type=number]').count() == 0
@@ -402,7 +402,7 @@ async def main():
         await expect(page.locator('.weighted-table')).to_contain_text('Seminarista de prueba')
         await page.get_by_role('button', name='Captura rápida', exact=True).click()
         score = page.locator(f'.weighted-table input[data-enrollment="{ENROLLMENT}"][data-assignment="{ASSIGNMENT}"]')
-        await score.fill('95')
+        await score.fill('9.5')
         await page.get_by_role('button', name='Guardar borradores', exact=True).click()
         await page.locator('.weighted-dialog').get_by_role('button', name='Guardar borradores', exact=True).click()
         await expect(page.locator('.weighted-dialog')).to_have_count(0)
@@ -422,7 +422,7 @@ async def main():
         data['write_status'] = 409
         await page.get_by_role('button', name='Captura rápida', exact=True).click()
         score = page.locator(f'.weighted-table input[data-enrollment="{ENROLLMENT}"][data-assignment="{ASSIGNMENT}"]')
-        await score.fill('90')
+        await score.fill('9.0')
         await page.get_by_role('button', name='Guardar borradores', exact=True).click()
         await page.locator('.weighted-dialog').get_by_role('button', name='Guardar borradores', exact=True).click()
         await expect(page.locator('.weighted-dialog')).to_contain_text(re.compile('cambi|actualiz|conflic', re.I))

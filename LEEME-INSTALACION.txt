@@ -1,0 +1,21 @@
+ACTUALIZACIÓN DEL PORTAL · CONTROL ESCOLAR · 5 DE NOVIEMBRE DE 2026
+
+1. Ejecuta completo en Supabase → SQL Editor:
+   supabase/migrations/20261105010000_control_school_workflow.sql
+   Solo este archivo nuevo. Instalarlo no cambia notas ni emite documentos.
+
+2. Copia las carpetas y archivos de este ZIP sobre tu repositorio local,
+   conservando el resto. Publica los cambios en GitHub como de costumbre.
+   Incluye todos los archivos nuevos de portal/vendor/jspdf/.
+
+3. Recarga el portal e inicia sesión como Control Escolar.
+   Mis cursos → periodo → bloque → Capturar finales.
+   Mis cursos / Clases → periodo → bloque → Boletas del curso (ZIP).
+   También: Etapas y semestres → bloque → Boletas del curso (ZIP).
+
+Consulta docs/control-escolar-finales-y-zip.md para el uso detallado.
+No necesitas Python ni nuevas claves para instalar esta actualización.
+
+Paquete preparado sobre origin/main ff0ad38. No modifica producción hasta
+que ejecutes el SQL y publiques los archivos. No contiene datos personales,
+contraseñas ni cambios de infraestructura/migración de servidor.

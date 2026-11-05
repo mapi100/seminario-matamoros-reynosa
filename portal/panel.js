@@ -58,6 +58,8 @@
         window.PortalCourseGroups?.clear();
         window.PortalSubjects?.clear();
         window.PortalTeaching?.clear();
+        window.PortalReportBatch?.clear();
+        window.PortalSchoolFinals?.clear();
         window.PortalControl?.clear();
         window.PortalManagement?.clear();
         window.PortalDeletion?.clear();
@@ -76,7 +78,7 @@
     }
 
     window.addEventListener("portal-academic-deleted", function () {
-        window.PortalTeaching?.show(verifyAccess);
+        if (document.body.dataset.portalRole === "professor") window.PortalTeaching?.show(verifyAccess);
     });
 
     function goToLogin(reason) {
@@ -193,13 +195,14 @@
                         window.PortalManagement?.show(verifyAccess);
                         window.PortalDeletion?.show(verifyAccess);
                         window.PortalKardex?.show(verifyAccess);
-                        window.PortalTeaching?.show(verifyAccess);
+                        document.getElementById("teachingLink").hidden = false;
                     } else {
                         document.getElementById("controlSection").hidden = false;
                         document.getElementById("periodListStatus").textContent =
                             "No fue posible cargar los catálogos. Recarga la página para reintentar.";
                     }
                 }
+                window.PortalReportBatch?.show(result.profile, verifyAccess);
                 window.PortalLearning?.show(result.profile, verifyAccess);
                 window.PortalPersonalRecord?.show(result.profile, verifyAccess);
                 window.PortalFormation?.show(result.profile, verifyAccess);

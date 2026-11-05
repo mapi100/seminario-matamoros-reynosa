@@ -1,0 +1,25 @@
+.school-final-heading { display:flex;align-items:start;justify-content:space-between;gap:16px;flex-wrap:wrap; }
+.school-final-scroll { margin:20px 0; }
+.school-final-scroll input { width:110px;min-height:44px;padding:8px; }
+.school-final-dialog,.report-batch-dialog { width:min(900px,94vw);max-height:90vh;overflow:auto; }
+.school-final-review { max-height:45vh;overflow:auto;padding-left:24px;line-height:1.7; }
+.school-confirm { display:flex;gap:12px;align-items:start;margin:18px 0; }
+.school-confirm input { flex:none;width:20px;height:20px;min-height:20px;margin-top:3px; }
+.school-final-dialog>div:last-child,.report-batch-actions { display:flex;gap:12px;flex-wrap:wrap;margin-top:18px; }
+.report-batch-list { list-style:none;padding:0;max-height:48vh;overflow:auto;border:1px solid var(--theme-line,#d8e1e9);border-radius:6px; }
+.report-batch-list li { padding:12px 16px; }
+.report-batch-list li+li { border-top:1px solid var(--theme-line,#d8e1e9); }
+.report-batch-list strong,.report-batch-list small { display:block; }
+.report-batch-list small { margin-top:5px;line-height:1.5; }
+.report-batch-dialog progress { width:100%;height:12px; }
+.school-final-dialog textarea { width:100%; }
+@media(max-width:600px){.school-final-dialog,.report-batch-dialog{padding:16px}.school-final-scroll{font-size:14px}.school-final-scroll input{width:90px}.report-batch-actions>*{flex:1}}
+
+#learningContent.school-finals { color:var(--theme-ink,#243447); }
+#learningContent.school-finals h2 { color:var(--theme-ink,#243447); }
+#learningContent.school-finals>p:not(.control-message),#learningContent.school-finals .school-final-heading p { color:var(--theme-muted,#52657a); }
+#learningContent.school-finals .school-final-status:not(.error) { color:var(--theme-ink,#243447); }
+.school-final-form { display:grid;gap:16px; }
+.school-final-form>label { display:grid;gap:8px; }
+.school-final-form textarea { width:100%;box-sizing:border-box;min-height:80px;border:1px solid var(--theme-line,#bccbdc);border-radius:6px;padding:10px;font:inherit; }
+.school-final-form>button { justify-self:start; }

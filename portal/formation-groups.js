@@ -43,7 +43,7 @@
         const people=members(g),classes=courses(g),head=node('div',undefined,'formation-group-heading'),title=node('div');
         title.append(node('h3',g.code+' · '+g.name),node('p',people.length+' seminaristas · '+classes.length+' materias activas'));
         const actions=node('div',undefined,'formation-group-actions');actions.append(button('Agregar seminaristas',()=>openDialog('assign',g),'back-link control-create'));
-        const enroll=button('Inscribir en materias',()=>openDialog('enroll',g));enroll.disabled=!people.length||!classes.length;actions.append(enroll);head.append(title,actions);target.append(head);
+        const enroll=button('Inscribir en materias',()=>openDialog('enroll',g));enroll.disabled=!people.length||!classes.length;actions.append(enroll,button('Boletas del curso (ZIP)',()=>window.PortalReportBatch?.open({period,group:g.code})));head.append(title,actions);target.append(head);
         const corrections=node('div',undefined,'formation-group-actions');
         const removePeople=button('Quitar seminaristas',()=>openRemove('students',g),'back-link formation-group-danger');removePeople.disabled=!people.length;
         const removeClasses=button('Quitar materias',()=>openRemove('classes',g),'back-link formation-group-danger');removeClasses.disabled=!classes.length;corrections.append(removePeople,removeClasses);target.append(corrections);

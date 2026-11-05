@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="control.css?v=20261022-admin-1">
     <link rel="stylesheet" href="workspace.css?v=20261101-lotes-1">
     <link rel="stylesheet" href="learning-files.css?v=20261021-aula-1">
+    <link rel="stylesheet" href="school-workflow.css?v=20261105-control-1">
     <link rel="stylesheet" href="report-cards.css?v=20261105-hoja-1">
     <link rel="stylesheet" href="kardex.css?v=20261022-kardex-1">
     <link rel="stylesheet" href="formation.css?v=20261101-grupos-1">
@@ -138,7 +139,7 @@
                 <p id="workspaceWelcome">Tu formación, tus cursos y tu comunidad, en un mismo lugar.</p>
                 <a id="personalProfileLink" class="profile-link" href="#mi-perfil">Ver mi perfil</a>
                 <a id="subjectsLink" class="profile-link" href="#mis-materias" hidden>Ver mis materias</a>
-                <a id="teachingLink" class="profile-link" href="#materias-asignadas" hidden>Ver materias asignadas</a>
+                <a id="teachingLink" class="profile-link" href="#materias-asignadas" hidden>Ver mis cursos</a>
                 <a id="controlLink" class="profile-link" href="#catalogos-academicos" hidden>Administrar catálogos</a>
             </section>
 
@@ -349,7 +350,7 @@
                 <a href="#kardex" class="task-card kardex-home-card"><span class="task-mark">05</span><h2>Boletas y kardex</h2><p>Prepara la boleta semestral o consulta el historial por etapa. Emite y reimprime documentos.</p><span class="task-link">Consultar documentos →</span></a>
             </section>
             <section id="kardexSection" class="dashboard-card kardex-section" data-screen="kardex" hidden aria-labelledby="kardexTitle">
-                <div class="kardex-heading"><div><p class="kardex-eyebrow">CONTROL ESCOLAR</p><h2 id="kardexTitle">Boletas y kardex</h2><p>Busca al seminarista, revisa sus calificaciones y genera su documento.</p></div><div class="kardex-actions"><button id="kardexInstitution" class="back-link" type="button">Datos del plantel</button><button id="kardexPrograms" class="back-link" type="button">Programas y planes</button></div></div>
+                <div class="kardex-heading"><div><p class="kardex-eyebrow">CONTROL ESCOLAR</p><h2 id="kardexTitle">Boletas y kardex</h2><p>Busca al seminarista, revisa sus calificaciones y genera su documento.</p></div><div class="kardex-actions"><a class="back-link" href="#etapas">Boletas por curso (ZIP)</a><button id="kardexInstitution" class="back-link" type="button">Datos del plantel</button><button id="kardexPrograms" class="back-link" type="button">Programas y planes</button></div></div>
                 <ol class="kardex-steps" aria-label="Pasos para generar un kardex"><li>1. Buscar alumno</li><li>2. Revisar historial</li><li>3. Emitir y guardar PDF</li></ol>
                 <p id="kardexStatus" class="control-message" role="status" aria-live="polite"></p>
                 <div id="kardexLookup">
@@ -384,10 +385,10 @@
                     <section class="kardex-issued" aria-labelledby="kardexIssuedTitle"><h3 id="kardexIssuedTitle">Kardex emitidos</h3><p>Cada emisión conserva su contenido original y su folio interno.</p><ul id="kardexIssues" class="kardex-students"></ul><button id="kardexIssuesMore" class="back-link" type="button" hidden>Más documentos</button></section>
                 </div>
             </section>
-            <section id="classDirectory" class="dashboard-card class-directory" data-screen="clases" hidden aria-labelledby="classDirectoryTitle" aria-busy="false">
+            <section id="classDirectory" class="dashboard-card class-directory" data-screen="clases materias-asignadas" hidden aria-labelledby="classDirectoryTitle" aria-busy="false">
                 <div class="class-directory-heading">
-                    <div><h2 id="classDirectoryTitle">Clases por curso</h2><p>Elige el periodo académico, abre un curso e inscribe alumnos o asigna profesores a sus clases.</p></div>
-                    <div><button id="classDirectoryCreate" class="back-link control-create" type="button" disabled>Abrir clase</button><a class="back-link" href="#catalogos-academicos">Organizar materias</a></div>
+                    <div><h2 id="classDirectoryTitle">Clases por curso</h2><p id="classDirectoryIntro">Elige el periodo académico, abre un curso e inscribe alumnos o asigna profesores a sus clases.</p></div>
+                    <div id="classDirectoryManage"><button id="classDirectoryCreate" class="back-link control-create" type="button" disabled>Abrir clase</button><a class="back-link" href="#catalogos-academicos">Organizar materias</a></div>
                 </div>
                 <div class="class-directory-tools">
                     <div><label for="classDirectoryPeriod">1. Periodo académico</label><select id="classDirectoryPeriod" disabled></select></div>
@@ -399,7 +400,7 @@
                 <div class="class-directory-results-heading"><h3>2. Selecciona el curso</h3><button id="classDirectoryAll" class="back-link" type="button" aria-pressed="false" disabled>Ver todas las clases</button></div>
                 <div id="classDirectoryGroups" class="class-directory-groups" aria-label="Cursos por etapa"></div>
                 <div id="classDirectoryResults" class="class-directory-results">
-                    <div class="class-directory-results-heading"><h3 id="classDirectoryListTitle" tabindex="-1">Elige un curso para ver sus clases</h3><span id="classDirectoryCount"></span></div>
+                    <div class="class-directory-results-heading"><h3 id="classDirectoryListTitle" tabindex="-1">Elige un curso para ver sus clases</h3><span id="classDirectoryCount"></span><button id="classDirectoryReports" type="button" class="back-link" hidden>Boletas del curso (ZIP)</button></div>
                     <ul id="classDirectoryList" class="class-directory-list" aria-labelledby="classDirectoryListTitle"></ul>
                 </div>
             </section>
@@ -499,7 +500,7 @@
     <script src="grade-scale.js?v=20261027-boletas-1" defer></script>
     <script src="course-groups.js?v=20261101-organizer-1" defer></script>
     <script src="course-organizer.js?v=20261101-clases-1" defer></script>
-    <script src="class-directory.js?v=20261101-lotes-1" defer></script>
+    <script src="class-directory.js?v=20261105-control-1" defer></script>
     <script src="enrollment-batch.js?v=20261101-etapas-1" defer></script>
     <script src="subjects.js?v=20261031-cursos-1" defer></script>
     <script src="grade-editor.js?v=20261027-boletas-1" defer></script>
@@ -509,8 +510,11 @@
     <script src="pdf-preview.js?v=20261027-local-2" defer></script>
     <script src="content-files.js?v=20261027-lector-1" defer></script>
     <script src="deletion.js?v=20261022-admin-1" defer></script>
-    <script src="formation-groups.js?v=20261101-quitar-1" defer></script>
+    <script src="formation-groups.js?v=20261105-control-1" defer></script>
     <script src="formation.js?v=20261101-grupos-1" defer></script>
+    <script src="report-pdf.js?v=20261105-control-1" defer></script>
+    <script src="report-batch.js?v=20261105-control-1" defer></script>
+    <script src="school-finals.js?v=20261105-control-1" defer></script>
     <script src="report-cards.js?v=20261105-hoja-1" defer></script>
     <script src="kardex.js?v=20261027-boletas-1" defer></script>
     <script src="personal-files.js?v=20261103-archivos-1" defer></script>
@@ -519,8 +523,8 @@
     <script src="control.js?v=20261101-organizer-1" defer></script>
     <script src="learning-files.js?v=20261021-aula-1" defer></script>
     <script src="weighted-grades.js?v=20261027-boletas-1" defer></script>
-    <script src="learning.js?v=20261031-cursos-1" defer></script>
-    <script src="workspace.js?v=20261101-etapas-1" defer></script>
-    <script src="panel.js?v=20261101-lotes-1" defer></script>
+    <script src="learning.js?v=20261105-control-1" defer></script>
+    <script src="workspace.js?v=20261105-control-1" defer></script>
+    <script src="panel.js?v=20261105-control-1" defer></script>
 </body>
 </html>

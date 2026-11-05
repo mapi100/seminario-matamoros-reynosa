@@ -108,7 +108,7 @@
         }
         if (Object.hasOwn(adminRoutes, route)) window.PortalManagement?.openResource(adminRoutes[route]);
         else window.PortalManagement?.leave();
-        if (route === "clases") window.PortalClassDirectory?.openRoute();
+        if (route === "clases" || route === "materias-asignadas" && profile.role === "control_escolar") window.PortalClassDirectory?.openRoute(route);
         else window.PortalClassDirectory?.leave();
         if (route === "kardex") window.PortalKardex?.openRoute();
         else window.PortalKardex?.leave();
@@ -139,7 +139,7 @@
         document.getElementById("workspaceAvatar").textContent = initials.toLocaleUpperCase("es");
         document.getElementById("controlHome").hidden = profile.role !== "control_escolar";
         document.getElementById("workspaceCoursesLink").href = {
-            student: "#mis-materias", professor: "#materias-asignadas", control_escolar: "#clases"
+            student: "#mis-materias", professor: "#materias-asignadas", control_escolar: "#materias-asignadas"
         }[profile.role] || "#inicio";
         navigate();
     }

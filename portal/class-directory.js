@@ -7,7 +7,7 @@
         { name: "Teología", courses: ["1T-1", "1T-2", "2T-3", "2T-4", "3T-5", "3T-6", "4T-7", "4T-8"] }
     ];
     const normalize = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es");
-    let profile, verify, opened = false, generation = 0, controller, snapshot, periodId = null, selected = null, busy = false;
+    let profile, verify, opened = false, generation = 0, controller, snapshot, periodId = null, selected = null, busy = false, mode = "clases";
 
     function node(tag, text, className) {
         const element = document.createElement(tag);
@@ -27,7 +27,7 @@
     }
     function sync() {
         $("classDirectory").setAttribute("aria-busy", String(busy));
-        for (const id of ["classDirectoryPeriod", "classDirectorySearch", "classDirectoryInactive", "classDirectoryAll", "classDirectoryCreate"])
+        for (const id of ["classDirectoryPeriod", "classDirectorySearch", "classDirectoryInactive", "classDirectoryAll", "classDirectoryCreate", "classDirectoryReports"])
             $(id).disabled = busy || !snapshot?.period_id;
         $("classDirectoryRefresh").disabled = busy;
     }
@@ -73,7 +73,7 @@
             $("classDirectoryPeriod").replaceChildren(...data.periods.map(p => new Option(p.name, p.id)));
             $("classDirectoryPeriod").value = periodId || "";
             render();
-            status(notice || (periodId ? "Elige un curso y después la clase. Desde ahí puedes inscribir alumnos o asignar profesores." : "Todavía no hay periodos académicos. Agrega uno en Materias y periodos."));
+            status(notice || (periodId && mode === "materias-asignadas" ? "Elige un bloque. Puedes entrar a todas las clases y capturar sus calificaciones finales." : periodId ? "Elige un curso y después la clase. Desde ahí puedes inscribir alumnos o asignar profesores." : "Todavía no hay periodos académicos. Agrega uno en Materias y periodos."));
             if (notice) $("classDirectoryListTitle").focus({ preventScroll: true });
         } catch (error) {
             if (!opened || operation !== generation) return;
@@ -122,6 +122,15 @@
         item.append(node("p", row.group_code || "Sin curso asignado", "class-directory-course"), node("h4", row.name), node("p", row.period_name));
         item.append(node("span", row.active ? "Activa" : "Inactiva", "status-pill" + (row.active ? "" : " inactive")));
         const actions = node("div", undefined, "class-directory-actions");
+        if (mode === "materias-asignadas") {
+            for (const [label, tab] of [["Entrar al curso", "inicio"], ["Capturar finales", "finales"]]) {
+                const enter = node("a", label, "back-link" + (tab === "finales" ? " control-create" : ""));
+                if (row.active) enter.href = "#curso/" + row.id + "/" + tab;
+                else enter.setAttribute("aria-disabled", "true");
+                actions.append(enter);
+            }
+            item.append(actions); return item;
+        }
         const enroll = button("Inscribir alumnos", () => classAction("enroll", row), "back-link control-create");
         const assign = button("Asignar profesor", () => classAction("assign", row));
         enroll.disabled = assign.disabled = !row.active;
@@ -143,6 +152,7 @@
         return item;
     }
     function render() {
+        $("classDirectoryReports").hidden = !snapshot || !selected || ["all", "none"].includes(selected);
         if (!snapshot) return;
         const rows = snapshot.classes.filter(row => row.active || $("classDirectoryInactive").checked);
         const groups = $("classDirectoryGroups");
@@ -168,6 +178,7 @@
         list.append(...matches.map(card));
         if (!matches.length) list.append(node("li", needle ? "No hay clases que coincidan con esta búsqueda en el curso seleccionado." : "Este curso todavía no tiene clases activas en el periodo seleccionado. Puedes organizarlas en Materias y periodos o incluir las inactivas.", "class-directory-empty"));
     }
+    $("classDirectoryReports").addEventListener("click", () => { if (snapshot && periodId && selected) window.PortalReportBatch?.open({ period: periodId, group: selected }); });
     $("classDirectoryPeriod").addEventListener("change", () => {
         selected = null;
         $("classDirectorySearch").value = "";
@@ -190,6 +201,10 @@
     window.PortalClassDirectory = Object.freeze({
         clear, leave,
         show(value, check) { clear(); if (value.role === "control_escolar") { profile = value; verify = check; } },
-        openRoute() { if (!profile || opened) return; opened = true; $("classDirectory").hidden = false; void load(periodId); }
+        openRoute(view = "clases") { if (!profile || opened && mode === view) return; if (opened) leave(); mode = view;
+            $("classDirectoryTitle").textContent = mode === "materias-asignadas" ? "Mis cursos" : "Clases por curso";
+            $("classDirectoryIntro").textContent = mode === "materias-asignadas" ? "Control Escolar tiene acceso a todas las materias. Elige un periodo y un bloque para entrar o capturar finales." : "Elige el periodo académico, abre un curso e inscribe alumnos o asigna profesores a sus clases.";
+            $("classDirectoryManage").hidden = mode === "materias-asignadas";
+            opened = true; $("classDirectory").hidden = false; void load(periodId); }
     });
 })();
