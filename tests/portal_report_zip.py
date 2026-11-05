@@ -21,6 +21,7 @@ async def main():
    assert not any('/jspdf/' in x or 'report-pdf-assets' in x for x in requests)
    docs=[p.issued('CI-1',9),p.issued('4T-7',10,stress=True),p.issued('4T-7',20,stress=True)]
    for n,d in enumerate(docs):d['id']=f'20000000-0000-4000-8000-{n+200:012d}';d['folio']=f'BOL-2026-TEST-{n}';d['snapshot']['student']['full_name']='José Ángel Peña Ñúñez' if n==0 else d['snapshot']['student']['full_name']
+   for row,score in zip(docs[0]['snapshot']['rows'],[10,10,7,5,6.9,10,10,10,10]):row['score']=score
    async with page.expect_download() as download:
     await page.evaluate('''async docs=>{
       const files=[];
@@ -44,6 +45,15 @@ async def main():
      assert text.count(data['folio'])==1 and 'Emitida' in text and 'Mínima aprobatoria 7.0' in text,(name,text[-700:])
      bbox=subprocess.run(['pdftotext','-bbox',str(pdf),'-'],text=True,capture_output=True,check=True).stdout
      assert 'http' not in text
+     formation=data['snapshot']['formation'];semester=formation['semester']
+     code=('CI' if formation['stage_code']=='introductorio' else str((semester+1)//2)+('F' if formation['stage_code']=='filosofia' else 'T'))+'-'+str(semester)
+     assert code in text and 'PROMEDIO SEMESTRAL' in text,text
+     if data is docs[0]:
+      assert '8.8' in text,text
+      subprocess.run(['pdftoppm','-scale-to','1100','-png','-singlefile',str(pdf),str(folder/'colores')],check=True,capture_output=True)
+      from PIL import Image
+      image=Image.open(folder/'colores.png').convert('RGB');red=[(x,y) for y in range(image.height) for x in range(image.width) if (lambda rgb:rgb[0]>240 and rgb[1]<20 and rgb[2]<20)(image.getpixel((x,y)))]
+      assert len(red)>5000 and min(x for x,y in red)>image.width*.69,('celda de nota roja',len(red))
     print('PASS ZIP abierto y CRC comprobado con zipfile; 3 PDF de una hoja, todos los textos y acentos, pie/folio íntegros')
     print('PASS recursos PDF solo se solicitan al exportar; tamaño ZIP:',(folder/'prueba.zip').stat().st_size)
    await context.close();await browser.close()

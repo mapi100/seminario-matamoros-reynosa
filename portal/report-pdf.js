@@ -17,7 +17,11 @@
     }
     const months = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
     const ordinals = ["","PRIMERO","SEGUNDO","TERCERO","CUARTO","QUINTO","SEXTO","SÉPTIMO","OCTAVO"];
-    const stageNames = {introductorio:"CI",filosofia:"FILOSOFÍA",teologia:"TEOLOGÍA"};
+    function courseCode(formation) {
+        const semester=formation?.semester,stage=formation?.stage_code;
+        if(!Number.isInteger(semester)||semester<1||!['introductorio','filosofia','teologia'].includes(stage))return 'PENDIENTE';
+        return (stage==='introductorio'?'CI':Math.ceil(semester/2)+(stage==='filosofia'?'F':'T'))+'-'+semester;
+    }
     function period(value) {
         const a=value.starts_on.split("-"),b=value.ends_on.split("-");
         return months[Number(a[1])-1]+(a[0]===b[0]?" A ":" "+a[0]+" A ")+months[Number(b[1])-1]+" "+b[0];
@@ -25,6 +29,8 @@
     async function pdf(issue) {
         const d=issue?.snapshot;
         if (!d || d.version!==1 || d.scale!==10 || !Array.isArray(d.rows) || !d.rows.length || d.rows.some(r=>typeof r.name!=="string"||typeof r.score!=="number"||!Number.isFinite(r.score)||r.score<0||r.score>10)) throw new Error("Boleta emitida inválida");
+        const average=Math.round(d.rows.reduce((total,r)=>total+Math.round(r.score*10),0)/d.rows.length)/10;
+        const printedRows=[...d.rows,{name:'PROMEDIO SEMESTRAL',score:average,summary:true}];
         await load();
         const doc=new window.jspdf.jsPDF({orientation:"portrait",unit:"pt",format:"letter",compress:true,putOnlyUsedFonts:true});
         const assets=window.PortalReportPDFAssets;
@@ -42,7 +48,7 @@
             const name=split(d.student.full_name,size,235),number=split(d.student.student_number,size,148);
             const infoY=34+(220-34)*scale,infoHeight=(Math.max(name.length,number.length)+1)*13*scale;
             const tableY=infoY+infoHeight+18*scale;
-            const rows=d.rows.map(r=>{const lines=split(r.name,size,352);return {row:r,lines,height:lines.length*13*scale+padding*2};});
+            const rows=printedRows.map(r=>{const lines=split(r.name,size,352,Boolean(r.summary));return {row:r,lines,height:lines.length*13*scale+padding*2};});
             return {scale,size,padding,name,number,infoY,infoHeight,tableY,rows,bottom:tableY+23*scale+rows.reduce((a,r)=>a+r.height,0)};
         }
         let scale=1,plan=layout(scale);
@@ -58,7 +64,7 @@
         text(period(d.period),306,y(188),9*scale,false,"center");
         text("NOMBRE:",42,plan.infoY,plan.size,true);text(plan.name,100,plan.infoY,plan.size);
         const groupY=plan.infoY+Math.max(plan.name.length,1)*13*scale+3*scale;
-        text("GRUPO:",42,groupY,plan.size,true);text(stageNames[d.formation?.stage_code]||"",100,groupY,plan.size);
+        text("GRUPO:",42,groupY,plan.size,true);text(courseCode(d.formation),100,groupY,plan.size);
         text("MATRÍCULA:",345,plan.infoY,plan.size,true);text(plan.number,422,plan.infoY,plan.size);
         text("SEMESTRE:",345,plan.infoY+Math.max(1,plan.number.length)*13*scale+3*scale,plan.size,true);text(ordinals[d.formation?.semester]||"",422,plan.infoY+Math.max(1,plan.number.length)*13*scale+3*scale,plan.size);
         const x=64,width=484,divider=432,header=23*scale;
@@ -67,8 +73,9 @@
         text("CALIFICACIÓN",(divider+x+width)/2,plan.tableY+15*scale,plan.size,true,"center");
         let rowY=plan.tableY+header;
         for(const row of plan.rows){
+            if(row.row.score<=6.9){doc.setFillColor(255,0,0);doc.rect(divider,rowY,x+width-divider,row.height,'F');}
             doc.rect(x,rowY,width,row.height);doc.line(divider,rowY,divider,rowY+row.height);
-            text(row.lines,x+8,rowY+plan.padding+plan.size,plan.size);
+            text(row.lines,x+8,rowY+plan.padding+plan.size,plan.size,Boolean(row.row.summary));
             text(row.row.score.toFixed(1),(divider+x+width)/2,rowY+row.height/2+plan.size*.35,plan.size,true,"center");rowY+=row.height;
         }
         for(let i=0;i<2;i++){

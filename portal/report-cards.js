@@ -78,6 +78,20 @@
     }
     function datum(target, label, value) { const p = el("p"); p.append(el("strong", label + ":"), el("span", value || "PENDIENTE")); target.append(p); }
     function periodText(p) { const a = p.starts_on?.split("-"), b = p.ends_on?.split("-"); if (!a || !b) return p.name; return months[Number(a[1])-1] + (a[0] === b[0] ? " A " : " " + a[0] + " A ") + months[Number(b[1])-1] + " " + b[0]; }
+    function courseCode(formation) {
+        const semester=formation?.semester,stage=formation?.stage_code;
+        if (!Number.isInteger(semester)||semester<1||!Object.hasOwn(groups,stage)) return null;
+        return (stage==='introductorio'?'CI':Math.ceil(semester/2)+(stage==='filosofia'?'F':'T'))+'-'+semester;
+    }
+    function average(rows) {
+        if (!rows.length||rows.some(r=>r.score===null)) return null;
+        return Math.round(rows.reduce((total,r)=>total+Math.round(r.score*10),0)/rows.length)/10;
+    }
+    function scoreCell(score) {
+        const cell=el('td',score===null?'PENDIENTE':score.toFixed(1));
+        if(score!==null&&score<=6.9) cell.className='report-score-failed';
+        return cell;
+    }
     function paper(d, issued) {
         const doc = el("article", null, "report-paper"), main = el("div", null, "report-main"), content = el("div", null, "report-main-content"), header = el("header"), crest = el("img"); crest.src = "../images/escudo_seminario_nuevo-Photoroom.png"; crest.alt = "Escudo del Seminario"; crest.width = 70; crest.height = 86;
         header.append(crest, el("h2", d.institution.name));
@@ -86,12 +100,12 @@
         content.append(header);
         if (!issued) content.append(el("p", "VISTA PREVIA · SIN EMITIR", "report-draft"));
         const info = el("div", null, "report-student"), left = el("div"), right = el("div");
-        datum(left, "NOMBRE", d.student.full_name); datum(left, "GRUPO", groups[d.formation?.stage_code]);
+        datum(left, "NOMBRE", d.student.full_name); datum(left, "GRUPO", courseCode(d.formation));
         datum(right, "MATRÍCULA", d.student.student_number); datum(right, "SEMESTRE", ordinals[d.formation?.semester]); info.append(left, right); content.append(info);
         const table = el("table"), head = el("thead"), tr = el("tr"), body = el("tbody");
         for (const text of ["MATERIAS", "CALIFICACIÓN"]) { const th = el("th", text); th.scope = "col"; tr.append(th); } head.append(tr); table.append(head);
-        for (const r of d.rows) { const row = el("tr"), subject = el("th", r.name); subject.scope = "row"; row.append(subject, el("td", r.score === null ? "PENDIENTE" : r.score.toFixed(1))); body.append(row); }
-        table.append(body); content.append(table); main.append(content); doc.append(main);
+        for (const r of d.rows) { const row = el("tr"), subject = el("th", r.name); subject.scope = "row"; row.append(subject, scoreCell(r.score)); body.append(row); }
+        const foot=el("tfoot"),summary=el("tr"),label=el("th","PROMEDIO SEMESTRAL");label.scope="row";summary.append(label,scoreCell(average(d.rows)));foot.append(summary);table.append(body,foot); content.append(table); main.append(content); doc.append(main);
         const signatures = el("div", null, "report-signatures");
         for (const [name, role] of [[d.rector_name, "Rector"], [d.prefect_name, "Prefecto de Estudios"]]) { const box = el("div"); box.append(el("p", name || "Nombre y firma"), el("p", role)); signatures.append(box); } doc.append(signatures);
         doc.append(el("footer", issued ? issued.folio + " · Emitida " + new Date(issued.issued_at).toLocaleDateString("es-MX") + " · Escala 0–10 · Mínima aprobatoria 7.0" : "Escala 0–10 · Un decimal · Mínima aprobatoria 7.0"));

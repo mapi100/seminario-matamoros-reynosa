@@ -76,6 +76,16 @@ async def render(browser,data,path,*,mobile=False):
     footerBottom:footer.getBoundingClientRect().bottom,paperBottom:paper.getBoundingClientRect().bottom,
     scale:Number(content.style.getPropertyValue('--report-content-scale')||1),rows:paper.querySelectorAll('tbody tr').length};
  })''')
+ form=data['snapshot']['formation'];sem=form['semester'];stage=form['stage_code']
+ code=('CI' if stage=='introductorio' else str((sem+1)//2)+('F' if stage=='filosofia' else 'T'))+'-'+str(sem)
+ await expect(page.locator('#reportPrintRoot .report-student')).to_contain_text(code)
+ average=round(sum(round(r['score']*10) for r in data['snapshot']['rows'])/len(data['snapshot']['rows'])+1e-8)/10
+ await expect(page.locator('#reportPrintRoot tfoot')).to_contain_text(f'{average:.1f}')
+ for i,row in enumerate(data['snapshot']['rows']):
+  cell=page.locator('#reportPrintRoot tbody tr').nth(i).locator('td')
+  background=await cell.evaluate('e=>getComputedStyle(e).backgroundColor')
+  assert (background=='rgb(255, 0, 0)')==(row['score']<=6.9),(row,background)
+  assert await page.locator('#reportPrintRoot tbody tr').nth(i).locator('th').evaluate('e=>getComputedStyle(e).backgroundColor')!='rgb(255, 0, 0)'
  await page.pdf(path=str(path),prefer_css_page_size=True,display_header_footer=True,print_background=True)
  layout=await page.evaluate('window.__layout')
  assert layout and layout['contentBottom']<=layout['mainBottom']+1,layout
@@ -97,6 +107,7 @@ async def render(browser,data,path,*,mobile=False):
  for row in data['snapshot']['rows']:assert ''.join(row['name'].split()) in normalized,(row['name'],text)
  for label in [data['snapshot']['student']['full_name'],data['snapshot']['student']['student_number'],data['snapshot']['rector_name'],data['snapshot']['prefect_name']]:assert ''.join(label.split()) in normalized,label
  assert text.count(data['folio'])==1,text
+ assert code in text and 'PROMEDIO SEMESTRAL' in text,text
  assert all(s in text for s in ['Emitida','Escala 0','Mínima aprobatoria 7.0']),text
  assert 'https://' not in text and 'http://' not in text and not re.search(r'\d{1,2}/\d{1,2}/\d{2},\s*\d{1,2}:\d{2}',text),text
  bbox=subprocess.run(['pdftotext','-bbox',str(path),'-'],text=True,capture_output=True,check=True).stdout
@@ -117,11 +128,16 @@ async def main():
   for n in [10,20]:
    layout=await render(browser,issued('4T-7',n,stress=True),OUT/('nombres-largos-'+str(n)+'.pdf'),mobile=True)
    print('PASS',n,'materias con nombres de 160 caracteres; vista móvil/OLED; escala',round(layout['scale'],3),flush=True)
+  for code in ['CI-1','1F-1','4T-7']:
+   data=issued(code,5)
+   for row,score in zip(data['snapshot']['rows'],[10,10,7,5,6.9]):row['score']=score
+   await render(browser,data,OUT/('rojas-'+code+'.pdf'))
+   print('PASS',code,'promedio 7.8; rojo solo en 5 y 6.9; 7 aprobatoria; una hoja',flush=True)
   context,page,errors=await setup(browser,issued(),deny_print=True)
   await expect(page.locator('#reportCards')).to_be_hidden()
   assert await page.evaluate('window.__printRequested')==0
   assert not await page.locator('#reportPrintRoot').count();assert not errors,errors
   await context.close();print('PASS se revalidan permisos antes de imprimir; ninguna impresión si se revocaron')
   await browser.close()
- print('TOTAL 18 escenarios de impresión. PDFs:',OUT)
+ print('TOTAL 21 escenarios de impresión. PDFs:',OUT)
 if __name__=='__main__':asyncio.run(main())

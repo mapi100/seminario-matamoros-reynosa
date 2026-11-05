@@ -74,3 +74,6 @@
     #reportPrintRoot tr,#reportPrintRoot header { break-inside: avoid; }
     #reportPrintRoot thead { display: table-header-group; }
 }
+
+.report-paper tfoot th { text-align:left;font-weight:700; }
+.report-paper .report-score-failed { background:#ff0000 !important;color:#000 !important;print-color-adjust:exact;-webkit-print-color-adjust:exact; }

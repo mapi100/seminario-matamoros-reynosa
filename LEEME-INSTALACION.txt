@@ -1,21 +1,16 @@
-ACTUALIZACIÓN DEL PORTAL · CONTROL ESCOLAR · 5 DE NOVIEMBRE DE 2026
+BOLETAS: CURSO, PROMEDIO SEMESTRAL Y NOTAS EN ROJO
 
-1. Ejecuta completo en Supabase → SQL Editor:
-   supabase/migrations/20261105010000_control_school_workflow.sql
-   Solo este archivo nuevo. Instalarlo no cambia notas ni emite documentos.
+1. Copia la carpeta portal/ de este ZIP sobre portal/ en tu repositorio.
+   Conserva los demás archivos. Esta actualización complementa la anterior
+   de Control Escolar y descarga de boletas en ZIP.
+2. Publica los cambios en GitHub como de costumbre.
+3. Recarga el portal y vuelve a descargar/imprimir las boletas.
 
-2. Copia las carpetas y archivos de este ZIP sobre tu repositorio local,
-   conservando el resto. Publica los cambios en GitHub como de costumbre.
-   Incluye todos los archivos nuevos de portal/vendor/jspdf/.
+NO REQUIERE EJECUTAR SQL.
 
-3. Recarga el portal e inicia sesión como Control Escolar.
-   Mis cursos → periodo → bloque → Capturar finales.
-   Mis cursos / Clases → periodo → bloque → Boletas del curso (ZIP).
-   También: Etapas y semestres → bloque → Boletas del curso (ZIP).
+Incluye curso exacto (CI-1, 1F-1, etc.), promedio semestral con un decimal y
+fondo rojo únicamente en la celda de calificaciones de 6.9 o menos.
+Sigue en una página, con firmas y pie completo, en impresión y PDF de ZIP.
+Los archivos PDF ya descargados no cambian; vuelve a descargarlos.
 
-Consulta docs/control-escolar-finales-y-zip.md para el uso detallado.
-No necesitas Python ni nuevas claves para instalar esta actualización.
-
-Paquete preparado sobre origin/main ff0ad38. No modifica producción hasta
-que ejecutes el SQL y publiques los archivos. No contiene datos personales,
-contraseñas ni cambios de infraestructura/migración de servidor.
+Uso y verificación: docs/boletas-curso-promedio.md.
