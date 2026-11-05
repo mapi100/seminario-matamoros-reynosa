@@ -2,7 +2,7 @@
 
 Cada alumno puede completar sus datos desde **Mi perfil → Mis datos personales**.
 El inicio ofrece también **Completar mis datos personales**. La captura se divide
-en siete secciones con botones Anterior y Siguiente sección. Los datos se guardan
+en ocho secciones con botones Anterior y Siguiente sección. Los datos se guardan
 con Guardar mis datos; los PDF de Archivos se guardan con Subir PDF.
 Se puede guardar por partes; no es necesario conocer todos los datos para empezar.
 
@@ -15,7 +15,8 @@ Se puede guardar por partes; no es necesario conocer todos los datos para empeza
 | Domicilio | Calle, números exterior e interior, colonia, código postal, municipio, estado y país |
 | Familia y emergencias | Persona de contacto, relación y teléfono; nombres y teléfonos de madre y padre opcionales |
 | Formación previa | Diócesis y parroquia de origen, escuela de procedencia, nivel, certificado o título y año de egreso |
-| Datos escolares | Matrícula, ingreso, egreso, número de inscripciones y programas/planes vinculados; se consultan sin editarlos |
+| Datos escolares | Matrícula, ingreso, egreso, inscripciones y programas; Control Escolar puede usar Editar matrícula y el alumno solo consulta |
+| Seguro médico | Cobertura e institución declaradas; los PDF se conservan en Archivos |
 | Archivos | PDF privados de sacramentos, formación previa y seguro médico; alumno y Control Escolar pueden subir y descargar |
 
 Solo el nombre es obligatorio para guardar; ya viene del perfil existente. Los

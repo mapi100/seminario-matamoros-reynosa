@@ -6,22 +6,23 @@
     const groups = [
         {title:"Identificación",help:"Usa el nombre que aparece en tus documentos. La CURP y el nacimiento se comparten con tu kardex; no se validan ante RENAPO desde el portal.",fields:[
             ["full_name","Nombre completo",160,"text","name"], ["curp","CURP",18,"text","off"], ["birth_date","Fecha de nacimiento",10,"date","bday"],
-            ["birth_country","País de nacimiento",100], ["birth_state","Estado de nacimiento",100], ["birth_city","Municipio / ciudad de nacimiento",100],
+            ["birth_place","Lugar de nacimiento (como aparece en la ficha)",160], ["birth_country","País de nacimiento",100], ["birth_state","Estado de nacimiento",100], ["birth_city","Municipio / ciudad de nacimiento",100],
             ["nationality","Nacionalidad",100]]},
         {title:"Contacto",help:"El correo de acceso identifica tu cuenta y se muestra como referencia. Un correo de contacto adicional no cambia tu cuenta ni tu contraseña.",fields:[
-            ["phone","Teléfono personal con lada",40,"tel","tel"], ["alternate_phone","Teléfono alternativo (opcional)",40,"tel"], ["contact_email","Correo de contacto adicional (opcional)",320,"email"]]},
+            ["home_phone","Teléfono de casa",80], ["social_profiles","Facebook y otras redes sociales",500], ["phone","Teléfono personal con lada",40,"tel","tel"], ["alternate_phone","Teléfono alternativo (opcional)",40,"tel"], ["contact_email","Correo de contacto adicional (opcional)",320,"email"]]},
         {title:"Domicilio",help:"Registra el domicilio donde pueden localizar a tu familia o a ti fuera del Seminario.",fields:[
             ["street","Calle",180,"text","address-line1"], ["exterior_number","Número exterior",20], ["interior_number","Número interior (opcional)",20],
             ["neighborhood","Colonia / localidad",100,"text","address-line2"], ["postal_code","Código postal",16,"text","postal-code"],
             ["city","Municipio / ciudad",100,"text","address-level2"], ["state","Estado / provincia",100,"text","address-level1"], ["country","País",100,"text","country-name"]]},
         {title:"Familia y emergencias",help:"Indica a quién debemos contactar en caso de emergencia. Los datos de madre y padre son opcionales; el contacto de emergencia puede ser otra persona de confianza.",fields:[
             ["emergency_name","Nombre del contacto de emergencia",160], ["emergency_relationship","Parentesco / relación",80], ["emergency_phone","Teléfono de emergencia con lada",40,"tel"],
-            ["mother_name","Nombre de la madre (opcional)",160], ["mother_phone","Teléfono de la madre (opcional)",40,"tel"],
-            ["father_name","Nombre del padre (opcional)",160], ["father_phone","Teléfono del padre (opcional)",40,"tel"]]},
+            ["mother_name","Nombre de la madre o tutora (opcional)",160], ["mother_phone","Teléfono de la madre (opcional)",40,"tel"],
+            ["father_name","Nombre del padre o tutor (opcional)",160], ["father_phone","Teléfono del padre (opcional)",40,"tel"]]},
         {title:"Formación previa",help:"Esta información ayuda a Control Escolar a completar tu expediente. Las materias, programas y calificaciones oficiales se administran por separado.",fields:[
-            ["home_diocese","Diócesis de origen",160], ["home_parish","Parroquia de origen",160], ["previous_school","Escuela de procedencia",200],
+            ["registration_course","Curso indicado en la ficha de inscripción",80], ["home_zone","Zona pastoral",160], ["home_deanery","Decanato indicado en la ficha",200], ["home_diocese","Diócesis de origen",160], ["home_parish","Parroquia de origen",160], ["previous_school","Escuela de procedencia",200],
             ["previous_level","Último nivel de estudios",80], ["previous_qualification","Certificado / título obtenido (si corresponde)",160], ["previous_graduation_year","Año de egreso (si corresponde)",4]]},
         {title:"Datos escolares",help:"Estos datos se consultan desde tus inscripciones y el kardex. Control Escolar administra la matrícula, el ingreso, el egreso y la clasificación de las materias.",fields:[]},
+        {title:"Seguro médico",help:"Información de cobertura. Puedes adjuntar la constancia en Archivos.",fields:[["medical_coverage","¿Cuentas con seguridad médica?",80],["medical_provider","Tipo de seguro o institución",160]]},
         {title:"Archivos",help:"Guarda tus boletas de sacramentos, certificados de formación previa y seguro médico como PDF privados.",fields:[],files:true}
     ];
     let profile, recheck, opened=false, generation=0, operation=0, currentRoute, target, record, tab=0, offset=0, pendingTarget;
@@ -133,7 +134,7 @@
             if(group.files){filesHost=create("div",undefined,"personal-files-host");fields.append(filesHost);}
             if(i===0)readonly(fields,"Edad calculada",null,"personalAge");
             if(i===1)readonly(fields,"Correo de acceso · no se modifica aquí",record.student.login_email);
-            if(i===5){readonly(fields,"Matrícula",record.school.student_number);readonly(fields,"Fecha de ingreso",fmtDate(record.school.entered_on));readonly(fields,"Fecha de egreso",fmtDate(record.school.completed_on));readonly(fields,"Inscripciones en el historial",String(record.school.enrollments));
+            if(group.title==="Datos escolares"){readonly(fields,"Matrícula",record.school.student_number);if(control())fields.append(button("Editar matrícula",()=>void editNumber()));readonly(fields,"Fecha de ingreso",fmtDate(record.school.entered_on));readonly(fields,"Fecha de egreso",fmtDate(record.school.completed_on));readonly(fields,"Inscripciones en el historial",String(record.school.enrollments));
                 const trajectory=create("div",undefined,"personal-readonly");trajectory.append(create("strong","Etapas y semestres por periodo"));for(const r of record.school.formation_history||[])trajectory.append(create("p",r.period_name+" · "+r.stage_name+" · Semestre "+r.semester+" de "+r.semesters));if(!record.school.formation_history?.length)trajectory.append(create("p","Control Escolar todavía no ha asignado tu etapa y semestre."));fields.append(trajectory);
                 const programs=create("div",undefined,"personal-readonly");programs.append(create("strong","Programas vinculados"));for(const p of record.school.programs)programs.append(create("p",p.name+" · "+p.plan_name));if(!record.school.programs.length)programs.append(create("p","Control Escolar todavía no ha clasificado tus inscripciones por programa."));fields.append(programs);
                 if(control())fields.append(button("Abrir kardex de este alumno",()=>window.PortalKardex?.requestStudent(target)));else fields.append(button("Ver mis cursos",()=>{location.hash="mis-materias";}));}
@@ -159,6 +160,16 @@
     function validation() {
         for(const [key,input] of inputs)if(!input.checkValidity()){selectTab(groups.findIndex(group=>group.fields.some(field=>field[0]===key)));input.reportValidity();return false;}
         return true;
+    }
+    async function editNumber() {
+        if(!control()||!record||!acceptDiscard())return;
+        const number=prompt("Matrícula de "+record.student.full_name+". Deja vacío si está pendiente.",record.school.student_number||"");
+        if(number===null)return;if(number.trim().length>40){note("La matrícula admite hasta 40 caracteres.","error");return;}
+        const g=generation,op=operation,id=target;saving=true;sync();note("Guardando matrícula…");
+        try {const data=await rpc("portal_student_number_save",{p_student:id,p_token:record.token,p_number:number.trim()});
+            if(!profile||g!==generation||op!==operation)return;if(data.saved!==true||!valid(data,id)||data.can_review!==true)throw new Error("Guardado sin confirmar");record=data;render();note("Matrícula guardada y vinculada al kardex.","success");
+        }catch(error){if(profile&&g===generation&&op===operation&&!forbidden(error)){uncertain=true;note(["22023","PT409"].includes(error?.code)?error.message:"No se confirmó el cambio. Actualiza para comprobar la matrícula antes de repetir.","error");}}
+        finally{if(g===generation&&op===operation){saving=false;sync();}}
     }
     async function mutate(review=false) {
         if(!profile||!opened||!record||saving||window.PortalPersonalFiles?.isBusy()||uncertain||staleDraft||review&&!control()||!review&&!validation())return;
