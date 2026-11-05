@@ -20,7 +20,7 @@
     }
     function read(resource, args = {}) { return rpc("portal_report_card_read", { p_resource: resource, p_student: student, p_period: $("reportPeriod").value || null, p_options: options(), p_issue: null, p_offset: 0, ...args }); }
     function options() { return { cycle: $("reportCycle").value.trim(), rector_name: $("reportRector").value.trim(), prefect_name: $("reportPrefect").value.trim() }; }
-    function cleanupPrint() { $("reportPrintRoot")?.remove(); document.body.classList.remove("report-printing"); if (title !== undefined) document.title = title; title = undefined; }
+    function cleanupPrint() { $("reportPrintRoot")?.remove(); $("reportPageStyle")?.remove(); document.body.classList.remove("report-printing"); document.documentElement.classList.remove("report-printing"); if (title !== undefined) document.title = title; title = undefined; }
     function clear() {
         generation++; revision++; clearTimeout(timer); controllers.forEach(c => c.abort()); controllers.clear(); cleanupPrint();
         student = source = preview = verify = pending = undefined; busy = false; root.hidden = true;
@@ -79,19 +79,19 @@
     function datum(target, label, value) { const p = el("p"); p.append(el("strong", label + ":"), el("span", value || "PENDIENTE")); target.append(p); }
     function periodText(p) { const a = p.starts_on?.split("-"), b = p.ends_on?.split("-"); if (!a || !b) return p.name; return months[Number(a[1])-1] + (a[0] === b[0] ? " A " : " " + a[0] + " A ") + months[Number(b[1])-1] + " " + b[0]; }
     function paper(d, issued) {
-        const doc = el("article", null, "report-paper"), header = el("header"), crest = el("img"); crest.src = "../images/escudo_seminario_nuevo-Photoroom.png"; crest.alt = "Escudo del Seminario"; crest.width = 70; crest.height = 86;
+        const doc = el("article", null, "report-paper"), main = el("div", null, "report-main"), content = el("div", null, "report-main-content"), header = el("header"), crest = el("img"); crest.src = "../images/escudo_seminario_nuevo-Photoroom.png"; crest.alt = "Escudo del Seminario"; crest.width = 70; crest.height = 86;
         header.append(crest, el("h2", d.institution.name));
         const stage = [d.formation?.stage_name, d.formation?.ecclesial_name].filter(Boolean).join(" - ");
         header.append(el("h3", stage || "ETAPA PENDIENTE"), el("h3", "BOLETA DE CALIFICACIONES"), el("h3", "CICLO " + d.cycle), el("p", periodText(d.period)));
-        doc.append(header);
-        if (!issued) doc.append(el("p", "VISTA PREVIA · SIN EMITIR", "report-draft"));
+        content.append(header);
+        if (!issued) content.append(el("p", "VISTA PREVIA · SIN EMITIR", "report-draft"));
         const info = el("div", null, "report-student"), left = el("div"), right = el("div");
         datum(left, "NOMBRE", d.student.full_name); datum(left, "GRUPO", groups[d.formation?.stage_code]);
-        datum(right, "MATRÍCULA", d.student.student_number); datum(right, "SEMESTRE", ordinals[d.formation?.semester]); info.append(left, right); doc.append(info);
+        datum(right, "MATRÍCULA", d.student.student_number); datum(right, "SEMESTRE", ordinals[d.formation?.semester]); info.append(left, right); content.append(info);
         const table = el("table"), head = el("thead"), tr = el("tr"), body = el("tbody");
         for (const text of ["MATERIAS", "CALIFICACIÓN"]) { const th = el("th", text); th.scope = "col"; tr.append(th); } head.append(tr); table.append(head);
         for (const r of d.rows) { const row = el("tr"), subject = el("th", r.name); subject.scope = "row"; row.append(subject, el("td", r.score === null ? "PENDIENTE" : r.score.toFixed(1))); body.append(row); }
-        table.append(body); doc.append(table);
+        table.append(body); content.append(table); main.append(content); doc.append(main);
         const signatures = el("div", null, "report-signatures");
         for (const [name, role] of [[d.rector_name, "Rector"], [d.prefect_name, "Prefecto de Estudios"]]) { const box = el("div"); box.append(el("p", name || "Nombre y firma"), el("p", role)); signatures.append(box); } doc.append(signatures);
         doc.append(el("footer", issued ? issued.folio + " · Emitida " + new Date(issued.issued_at).toLocaleDateString("es-MX") + " · Escala 0–10 · Mínima aprobatoria 7.0" : "Escala 0–10 · Un decimal · Mínima aprobatoria 7.0"));
@@ -128,19 +128,41 @@
             const previewArea = $("reportPreview"); previewArea.replaceChildren(paper(d.snapshot, d), button("Imprimir / Guardar PDF", () => print(d))); previewArea.scrollIntoView({ block: "start", behavior: "smooth" });
         } catch (error) { if (g === generation && !denied(error)) note(errorText(error), true); }
     }
+    function fitPrint() {
+        const main = $("reportPrintRoot")?.querySelector(".report-main"), content = main?.firstElementChild;
+        if (!content || !window.matchMedia("print").matches) return;
+        content.style.removeProperty("--report-content-scale");
+        // Mantener las firmas y el pie fuera del ajuste: siempre legibles, dentro
+        // de la hoja. Se mide el contenido real, incluidos nombres largos.
+        const available = main.getBoundingClientRect().height;
+        if (available <= 0) return;
+        let scale = 1;
+        for (let i = 0; i < 4; i++) {
+            const height = content.getBoundingClientRect().height;
+            if (height <= available) break;
+            scale *= Math.min(0.99, available / height * 0.995);
+            content.style.setProperty("--report-content-scale", String(scale));
+        }
+    }
     async function print(d) {
         const g = generation;
         try { // Revalidar permisos y recuperar la copia guardada antes de imprimir.
             const fresh = await read("issue", { p_issue: d.id }); if (g !== generation) return;
             if (fresh?.id !== d.id || fresh.student_id !== student || !valid(fresh.snapshot)) throw new Error("Documento inválido");
-            cleanupPrint(); const printRoot = el("div"); printRoot.id = "reportPrintRoot"; printRoot.append(paper(fresh.snapshot, fresh)); document.body.append(printRoot); document.body.classList.add("report-printing"); title = document.title; document.title = fresh.folio;
-            await Promise.all([...printRoot.querySelectorAll("img")].map(i => i.decode().catch(() => {}))); if (g !== generation) return; window.print();
+            cleanupPrint(); const pageStyle = el("style", "@page { size: letter; margin: 0 !important; }"); pageStyle.id = "reportPageStyle"; document.head.append(pageStyle); const printRoot = el("div"); printRoot.id = "reportPrintRoot"; printRoot.append(paper(fresh.snapshot, fresh)); document.body.append(printRoot); document.body.classList.add("report-printing"); document.documentElement.classList.add("report-printing"); title = document.title; document.title = fresh.folio;
+            await Promise.all([...printRoot.querySelectorAll("img")].map(i => i.decode().catch(() => {}))); if (g !== generation) return; fitPrint(); window.print();
         } catch (error) { cleanupPrint(); if (g === generation && !denied(error)) note(errorText(error), true); }
     }
     $("reportPeriod").addEventListener("change", () => { const p = source?.periods.find(p => p.id === $("reportPeriod").value); if (p) $("reportCycle").value = cycle(p); void refresh(); });
     for (const id of ["reportCycle", "reportRector", "reportPrefect"]) $(id).addEventListener("input", () => { revision++; preview = undefined; $("reportReviewed").checked = false; sync(); clearTimeout(timer); timer = setTimeout(() => void refresh(), 350); });
     $("reportRefresh").addEventListener("click", () => { void refresh(); void loadIssues(); });
     $("reportReviewed").addEventListener("change", sync); $("reportIssue").addEventListener("click", () => void issue()); $("reportMore").addEventListener("click", () => void loadIssues(true));
-    window.addEventListener("afterprint", cleanupPrint);
+    window.addEventListener("beforeprint", fitPrint);
+    window.addEventListener("afterprint", () => {
+        const printed = $("reportPrintRoot");
+        // Dejar terminar la composición del PDF antes de restaurar @page.
+        // Un cierre anterior no debe limpiar una impresión nueva.
+        if (printed) setTimeout(() => { if ($("reportPrintRoot") === printed) cleanupPrint(); }, 0);
+    });
     window.PortalReportCards = Object.freeze({ mount, clear });
 }());

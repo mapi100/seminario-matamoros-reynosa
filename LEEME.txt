@@ -1,0 +1,19 @@
+BOLETAS EN UNA SOLA PÁGINA — CAMBIO DEL PORTAL
+
+1. Copiar portal/panel.html, portal/report-cards.css y portal/report-cards.js
+   sobre las mismas rutas del repositorio, usando los tres juntos.
+2. Publicar los cambios en GitHub y esperar el despliegue del sitio.
+3. Recargar el portal con Ctrl+F5, abrir una boleta emitida y usar
+   Imprimir / Guardar PDF. La vista previa debe indicar una página, tamaño Carta.
+
+No es necesario ejecutar SQL, volver a inscribir alumnos ni emitir otra boleta.
+Se conserva la copia emitida: el cambio se aplica al imprimirla nuevamente.
+Las firmas y el pie oficial permanecen al final de la misma página; se retiran
+los encabezados y pies automáticos del navegador.
+
+Verificado con PDFs reales: todos los cursos actuales (7 a 10 materias), nombres
+largos, vista móvil/OLED y permisos de impresión. Se incluye documentación y la
+prueba reproducible en tests/portal_report_print.py.
+
+Este ZIP contiene solo código y datos ficticios de prueba; puede ir al repositorio.
+El PDF personal de ejemplo se entrega APARTE y no debe subirse a GitHub.
