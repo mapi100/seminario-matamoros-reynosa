@@ -120,7 +120,7 @@ async def fixture(browser, role='student', *, mobile=False, route='inicio', data
                     result={'summary':summary,'final_score':data['course']['course']['final_score'],'categories':[],
                             'assignments':[{**a,'score':a.get('published_score'),'feedback':a.get('published_feedback'),'submitted':bool(a.get('submission'))} for a in data['course']['assignments']]}
                 else:
-                    result=copy.deepcopy(data['gradebook']);result.update(revision=0,draft=None,published=None,errors=[])
+                    result=copy.deepcopy(data['gradebook']);activity_scheme={'categories':[{'code':c,'weight':100 if c=='tasks' else 0,'mode':'equal'} for c in ['tasks','exams','projects','participation']],'items':[{'id':a['id'],'category':'tasks','share':1} for a in result['assignments']]};result.update(revision=1,draft=activity_scheme,published=activity_scheme,errors=[])
                     for student in result['students']:student.update(summary=summary,draft_summary=summary,exemptions=[])
                 return await route.fulfill(status=200,headers=headers,body=json.dumps(result))
             if path.endswith('/portal_gradebook_write'):

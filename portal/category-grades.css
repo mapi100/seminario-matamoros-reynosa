@@ -1,0 +1,21 @@
+.category-weight-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:22px 0; }
+.category-weight-grid label,.category-dialog label:not(.category-confirm) { display:grid;gap:8px; }
+.category-dialog { width:min(1000px,94vw);max-height:90vh;overflow:auto; }
+.category-dialog input[type=number] { width:100%;min-height:44px;padding:10px;box-sizing:border-box; }
+.category-dialog textarea { width:100%;min-height:75px;padding:10px;box-sizing:border-box;font:inherit; }
+.category-dialog input,.category-dialog textarea { border:1px solid var(--theme-line,#bccbdc);border-radius:5px; }
+.category-actions { display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:20px 0; }
+.category-confirm { display:flex;align-items:start;gap:12px;margin:18px 0; }
+.category-confirm input { width:20px;min-height:20px;flex:none;margin-top:3px; }
+.category-table input { width:92px;min-height:44px;box-sizing:border-box;padding:8px;font:inherit;border:1px solid var(--theme-line,#bccbdc);border-radius:4px; }
+.category-table .category-calculated { font-weight:700; }
+.category-review-list { max-height:45vh;overflow:auto; }
+.category-review-row { border-bottom:1px solid var(--theme-line,#bccbdc);padding:10px 0;display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;align-items:center; }
+.category-review-row .category-confirm { grid-column:1/-1;font-weight:700; }
+@media(max-width:600px){.category-weight-grid{grid-template-columns:1fr 1fr}.category-dialog{padding:16px}.category-review-row{grid-template-columns:1fr}.category-review-row .category-confirm{grid-column:auto}}
+#learningContent:has(.category-table),#learningContent:has(.category-weight-grid) { color:var(--theme-ink,#243447); }
+#learningContent .category-actions p,#learningContent:has(.category-table)>p { color:var(--theme-muted,#52657a); }
+
+#learningContent.category-book { color:var(--theme-ink,#243447); }
+#learningContent.category-book h2 { color:var(--theme-ink,#243447); }
+#learningContent.category-book>p { color:var(--theme-muted,#52657a); }

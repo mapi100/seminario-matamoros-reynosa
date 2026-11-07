@@ -17,6 +17,7 @@ Documentación del proyecto:
 
 - [Portadas automáticas al subir fotos a GitHub](docs/portadas-cursos.md)
 - [Promedios automáticos y ponderaciones por clase](docs/promedios-ponderados.md)
+- [Captura por categorías sin crear actividades y ajuste de final](docs/calificaciones-por-categoria.md)
 - [Control Escolar: todos los cursos, captura de finales y boletas en ZIP](docs/control-escolar-finales-y-zip.md)
 - [Campus autónomo: navegación, clases, personas e invitaciones](docs/campus-autonomo.md)
 - [Aula virtual: anuncios, contenido, tareas, entregas y libro de calificaciones](docs/aula-virtual.md)

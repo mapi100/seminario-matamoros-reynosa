@@ -1,16 +1,26 @@
-BOLETAS: CURSO, PROMEDIO SEMESTRAL Y NOTAS EN ROJO
+CAPTURA POR CATEGORÍAS SIN CREAR ACTIVIDADES · 7 NOVIEMBRE 2026
 
-1. Copia la carpeta portal/ de este ZIP sobre portal/ en tu repositorio.
-   Conserva los demás archivos. Esta actualización complementa la anterior
-   de Control Escolar y descarga de boletas en ZIP.
-2. Publica los cambios en GitHub como de costumbre.
-3. Recarga el portal y vuelve a descargar/imprimir las boletas.
+1. Ejecuta completo en Supabase → SQL Editor:
+   supabase/migrations/20261107000000_category_grade_entry.sql
+   Solo este SQL nuevo. Instalarlo no modifica notas, profesores ni boletas.
 
-NO REQUIERE EJECUTAR SQL.
+2. Copia las carpetas y archivos del ZIP sobre las mismas rutas de tu
+   repositorio local, conservando los demás archivos. Publica en GitHub.
 
-Incluye curso exacto (CI-1, 1F-1, etc.), promedio semestral con un decimal y
-fondo rojo únicamente en la celda de calificaciones de 6.9 o menos.
-Sigue en una página, con firmas y pie completo, en impresión y PDF de ZIP.
-Los archivos PDF ya descargados no cambian; vuelve a descargarlos.
+3. Recarga el portal. Profesor → Mis cursos → materia → Calificaciones.
+   Configurar evaluación → porcentajes que sumen 100 % → confirmar.
+   Escribe las notas por alumno; las categorías en 0 % no cuentan.
+   La final calculada aparece al completar las categorías con peso.
+   Revisar y publicar finales → ajuste opcional y motivo → confirmar.
 
-Uso y verificación: docs/boletas-curso-promedio.md.
+En los cursos ya configurados por actividades, usa Una nota por categoría
+para cambiar de método. Las actividades y sus notas se conservan.
+
+Los ajustes conservan el cálculo original y quedan registrados con su motivo.
+Las boletas y kardex usan la final publicada. Los borradores no los modifican.
+
+No necesitas Python ni claves nuevas para instalarlo.
+Instrucciones detalladas: docs/calificaciones-por-categoria.md.
+
+Preparado sobre origin/main 8f6099a. No está ejecutado ni publicado en producción.
+No contiene credenciales, contraseñas ni datos personales reales.

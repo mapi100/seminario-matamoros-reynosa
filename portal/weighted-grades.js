@@ -25,7 +25,7 @@
         if (dialog) { window.PortalLearningFiles?.clear(dialog); if (dialog.open) dialog.close(); dialog.remove(); dialog = undefined; }
         if (!force && restoreFocus?.isConnected) restoreFocus.focus(); restoreFocus = undefined;
     }
-    function clear() { version++; close(true); writing = false; current = undefined; for (const c of controllers) c.abort(); controllers.clear(); }
+    function clear() { window.PortalCategoryGrades?.clear(); version++; close(true); writing = false; current = undefined; for (const c of controllers) c.abort(); controllers.clear(); }
     async function rpc(name, args, write = false) {
         const controller = new AbortController(); controllers.add(controller);
         const timeout = setTimeout(() => controller.abort(), 25000);
@@ -100,10 +100,12 @@
             card.append(el("h3", labels[code]), text(c?.weight === 0 ? "No cuenta" : score(c?.average), "weighted-category-score"), text(c ? "Vale " + num(c.weight) + " % del curso" : "Sin ponderación")); categories.append(card);
         }
         target.append(categories);
-        target.append(text("El promedio actual usa solo el peso de las actividades calificadas y publicadas. Las pendientes no son cero; las prácticas no cuentan."));
+        target.append(text(summary.entry_mode === "categories" ? "La final calculada requiere todas las categorías con peso. Las categorías en 0 % no cuentan." : "El promedio actual usa solo el peso de las actividades calificadas y publicadas. Las pendientes no son cero; las prácticas no cuentan."));
     }
+    function categoryContext() { return { ...current.ctx, offset:current.offset, refresh:reload, configureActivities:configure, exportCSV }; }
     function own(target, data) {
         target.append(el("h2", "Mis calificaciones")); publishedSummary(target, data.summary, data.final_score);
+        if(data.entry_mode==="categories") { target.append(text("Tu profesor registra una nota por categoría. Las categorías en 0 % no cuentan; no necesitas entregar actividades en el portal.")); return; }
         const card = el("section", null, "learning-card"); card.append(el("h3", "Mis actividades"));
         const body = table(card, ["Actividad", "Categoría", "Peso en la clase", "Estado", "Calificación", "Comentarios"]);
         for (const a of data.assignments) {
@@ -115,7 +117,7 @@
         if (!data.assignments.length) card.append(text("Todavía no hay actividades publicadas.")); target.append(card);
     }
     function staff(target, data) {
-        const bar = el("div", null, "weighted-toolbar"); bar.append(el("h2", "Libro de calificaciones"), btn("Configurar evaluación", configure, false), btn("Nueva actividad", newActivity), btn("Revisar y publicar finales", finals)); target.append(bar);
+        const bar = el("div", null, "weighted-toolbar"); bar.append(el("h2", "Libro de calificaciones"), btn("Configurar evaluación", configure, false), btn("Una nota por categoría", () => window.PortalCategoryGrades.configureExisting(target, data, categoryContext())), btn("Nueva actividad", newActivity), btn("Revisar y publicar finales", finals)); target.append(bar);
         const overview = el("section", null, "learning-card weighted-overview");
         overview.append(el("h3", data.published ? "Criterios publicados" : "Configura cómo se evalúa esta clase"));
         overview.append(text(data.published ? data.published.categories.map(c => labels[c.code] + ": " + num(c.weight) + " %").join(" · ") : "Reparte el 100 % entre tareas, exámenes, proyectos y participación. Después clasifica las actividades y publica tus criterios."));
@@ -158,7 +160,7 @@
             if (!Array.isArray(data.assignments) || data.assignments.length > 100 || !data.assignments.every(a => uuid.test(a.id) && typeof a.title === "string")) throw new Error("Actividades inválidas");
             if (ctx.canManage && (!Array.isArray(data.students) || data.students.length > 30 || !data.students.every(s => uuid.test(s.enrollment_id) && Array.isArray(s.grades) && Array.isArray(s.exemptions) && s.summary && s.draft_summary))) throw new Error("Alumnos inválidos");
             if (!ctx.canManage && !data.summary) throw new Error("Promedio inválido");
-            current.data = data; target.replaceChildren(); if (ctx.canManage) staff(target, data); else own(target, data);
+            current.data = data; target.replaceChildren(); if (ctx.canManage && (data.published?.entry_mode === "categories" || !data.published)) window.PortalCategoryGrades.render(target,data,categoryContext()); else if (ctx.canManage) staff(target, data); else own(target, data);
         } catch (error) {
             if (token !== version || ctx.onUnauthorized(error)) return;
             message(status, errorText(error), true); target.append(btn("Reintentar", reload));
@@ -185,6 +187,7 @@
     }
     function configure() {
         const data = current.data, source = structuredClone(data.draft || data.published || { categories: codes.map((code, i) => ({ code, weight: [30,50,20,0][i], mode: "equal" })), items: [] });
+        delete source.entry_mode;
         source.items = data.assignments.map(a => source.items.find(i => i.id === a.id) || { id: a.id, category: a.grading_category || "", share: 1 });
         const form = modal("Configurar evaluación", "Guardar borrador", async () => ({ ...await write("scheme_save", { schema: source, revision: data.revision }), reopen: true }));
         form.d.classList.add("weighted-configuration");
