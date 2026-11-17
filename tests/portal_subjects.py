@@ -224,10 +224,13 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
             elif path=='/rest/v1/teaching_assignments':
                 assert request.method=='GET',request.method
                 assert query.get('select')==['id,subjects(code,name),academic_periods(name,starts_on,ends_on)'],query
+                assert query.get('professor_id')==['eq.'+UID],query
+                assert query.get('active')==['eq.true'],query
                 state['teaching_requests'].append({'query':query,'headers':request.headers})
                 state['teaching_started'].set()
                 status=state['teaching_status']
                 rows=copy.deepcopy(state['teaching'])
+                rows=[row for row in rows if row.get('professor_id',UID)==UID and row.get('active',True)]
                 gate=state['teaching_gate']
                 if gate: await gate.wait()
                 offset=int(query.get('offset',['0'])[0]);limit=int(query.get('limit',[str(len(rows))])[0])

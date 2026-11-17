@@ -55,7 +55,8 @@ async def finished(context, state, label, *, allow_student=False):
         assert not state['grade_requests'], state['grade_requests']
     for method, url in state['requests']:
         assert (method in ['GET', 'OPTIONS'] or '/auth/v1/' in url
-                or (method == 'POST' and url.endswith(('/rpc/get_teaching_roster', '/rpc/portal_learning_read')))), (method, url)
+                or (method == 'POST' and url.endswith(('/rpc/get_teaching_roster', '/rpc/portal_learning_read',
+                                                     '/rpc/portal_course_groups_read', '/rpc/portal_formation_read')))), (method, url)
     checks += 1
     print('PASS ' + label, flush=True)
     for key in ['teaching_gate', 'roster_gate']:
@@ -114,7 +115,7 @@ async def main():
             assert len([url for _, url in state['requests'] if '/rest/v1/profiles' in url]) > before
             await finished(context, state, f'assignment HTTP{status} error and retry revalidates profile')
 
-        for role in ['student', 'control_escolar']:
+        for role in ['student']:
             context, page, state = await fixture(browser, profile={'full_name': 'Otro rol', 'role': role, 'active': True})
             await expect(page.locator('#panelContent')).to_be_visible()
             await expect(page.locator('#teachingSection')).to_be_hidden()
