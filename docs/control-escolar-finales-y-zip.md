@@ -20,6 +20,8 @@ La autorización procede del perfil en la base de datos. No se crean asignacione
 
 Si la persona de Control Escolar también imparte clases, debajo del directorio aparece **Mis cursos como profesor** con sus asignaciones docentes activas. Puede usar **Entrar al curso** para contenidos y calificaciones, y filtrar sus tarjetas por periodo. Esta sección personal no incluye las materias de otros profesores por el mero acceso administrativo; tampoco cambia su rol ni limita el acceso general de los bloques superiores.
 
+El contenido de **Inicio** también puede limitarse a su docencia personal, conservando los avisos institucionales. La actualización de base de datos y sus pasos de instalación están en [Inicio personal de Control Escolar](inicio-personal-control-escolar.md).
+
 ## Capturar finales por el profesor
 
 1. En una materia de **Mis cursos**, pulsa **Capturar finales**.
