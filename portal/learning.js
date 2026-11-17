@@ -287,6 +287,11 @@
         card.append(picture, info); return card;
     }
     function renderHome(target) {
+        if (window.PortalCourseInstructors) {
+            const instructors = window.PortalCourseInstructors.render(course.instructors);
+            instructors.id = "learningCourseInstructors";
+            target.append(instructors);
+        }
         const grid = node("div", undefined, "learning-course-columns");
         const left = node("div", undefined, "learning-course-primary"), right = node("aside", undefined, "learning-course-secondary");
         const modules = node("section", undefined, "learning-card");

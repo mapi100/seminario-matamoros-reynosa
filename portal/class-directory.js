@@ -120,6 +120,7 @@
         const item = node("li", undefined, "class-directory-card");
         item.dataset.classId = row.id;
         item.append(node("p", row.group_code || "Sin curso asignado", "class-directory-course"), node("h4", row.name), node("p", row.period_name));
+        if (window.PortalCourseInstructors) item.append(window.PortalCourseInstructors.render(row.instructors, true));
         item.append(node("span", row.active ? "Activa" : "Inactiva", "status-pill" + (row.active ? "" : " inactive")));
         const actions = node("div", undefined, "class-directory-actions");
         if (mode === "materias-asignadas") {
