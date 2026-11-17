@@ -1,0 +1,12 @@
+.course-instructors { min-width:0; overflow-wrap:anywhere; color:var(--theme-ink,#243447); }
+.course-instructors.learning-card { border:1px solid var(--theme-line,#bccbdc); border-inline-start:4px solid var(--theme-accent,#006fba); background:var(--theme-card,#fff); }
+#learningCourseInstructors { border-inline-start-color:var(--theme-accent,#006fba); }
+.course-instructors .course-instructors-label { display:block; margin:0 0 8px; color:var(--theme-muted,#52657a); font-size:15px; font-weight:600; line-height:1.4; }
+.course-instructors .course-instructors-names { display:grid; gap:6px; list-style:none; margin:0; padding:0; }
+.course-instructors .course-instructors-names li { color:var(--theme-ink,#243447); font-size:22px; font-weight:600; line-height:1.45; }
+.course-instructors .course-instructors-empty { margin:0; font-size:16px; line-height:1.5; color:var(--theme-muted,#52657a); }
+.class-directory-card .course-instructors { margin:13px 0 16px; }
+.course-instructors.compact .course-instructors-label { margin-bottom:4px; font-size:13px; }
+.course-instructors.compact .course-instructors-names li { font-size:18px; }
+.course-instructors.compact .course-instructors-empty { font-size:14px; }
+@media(max-width:600px) { .course-instructors .course-instructors-names li { font-size:20px; } .course-instructors.compact .course-instructors-names li { font-size:17px; } }
