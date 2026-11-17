@@ -78,7 +78,7 @@
     }
 
     window.addEventListener("portal-academic-deleted", function () {
-        if (document.body.dataset.portalRole === "professor") window.PortalTeaching?.show(verifyAccess);
+        if (["professor", "control_escolar"].includes(document.body.dataset.portalRole)) void verifyAccess();
     });
 
     function goToLogin(reason) {
@@ -182,7 +182,7 @@
                 } else if (result.profile.role === "professor") {
                     subtitle.textContent = "Consulta tus materias asignadas y sus alumnos.";
                     if (window.PortalTeaching) {
-                        window.PortalTeaching.show(verifyAccess);
+                        window.PortalTeaching.show(verifyAccess, result.profile);
                     } else {
                         document.getElementById("teachingSection").hidden = false;
                         document.getElementById("teachingStatus").textContent =
@@ -190,6 +190,7 @@
                     }
                 } else if (result.profile.role === "control_escolar") {
                     subtitle.textContent = "Organiza las personas, clases e inscripciones del Seminario.";
+                    window.PortalTeaching?.show(verifyAccess, result.profile);
                     if (window.PortalControl) {
                         window.PortalControl.show(verifyAccess);
                         window.PortalManagement?.show(verifyAccess);

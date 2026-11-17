@@ -2,6 +2,8 @@
     "use strict";
 
     const section = document.getElementById("teachingSection");
+    const position = document.createComment("Cursos docentes");
+    section.before(position);
     const link = document.getElementById("teachingLink");
     const status = document.getElementById("teachingStatus");
     const list = document.getElementById("teachingList");
@@ -27,6 +29,7 @@
     let activeCourse;
     let activeButton;
     let recheckAccess;
+    let professorId;
     const shownStudents = new Set();
 
     function clearRoster() {
@@ -60,7 +63,12 @@
         loading = false;
         offset = 0;
         recheckAccess = undefined;
+        professorId = undefined;
         clearRoster();
+        position.after(section);
+        section.dataset.screen = "inicio materias-asignadas";
+        document.getElementById("teachingTitle").textContent = "Mis cursos";
+        document.getElementById("teachingIntro").textContent = "Organiza los contenidos, las tareas y el seguimiento de tus alumnos.";
         section.hidden = true;
         link.hidden = true;
         section.setAttribute("aria-busy", "false");
@@ -139,6 +147,10 @@
             const { data, error } = await window.PortalAuth.getClient()
                 .from("teaching_assignments")
                 .select("id, subjects(code, name), academic_periods(name, starts_on, ends_on)")
+                // La consulta personal también debe filtrar al titular cuando
+                // la cuenta tiene acceso administrativo a otras materias.
+                .eq("professor_id", professorId)
+                .eq("active", true)
                 .order("created_at", { ascending: false })
                 .order("id", { ascending: true })
                 .range(offset, offset + pageSize)
@@ -259,9 +271,18 @@
         }
     }
 
-    function show(verifyAccess) {
+    function show(verifyAccess, profile) {
         clear();
+        if (!profile || !uuid.test(profile.id || "") || !["professor", "control_escolar"].includes(profile.role)) return;
         recheckAccess = verifyAccess;
+        professorId = profile.id;
+        if (profile.role === "control_escolar") {
+            // Debajo del directorio general, en el mismo orden visual y de teclado.
+            document.getElementById("classDirectory").after(section);
+            section.dataset.screen = "materias-asignadas";
+            document.getElementById("teachingTitle").textContent = "Mis cursos como profesor";
+            document.getElementById("teachingIntro").textContent = "Estas son las materias que impartes. Entra para agregar materiales, capturar calificaciones o consultar a tus alumnos.";
+        }
         section.hidden = false;
         link.hidden = false;
         void loadCourses();

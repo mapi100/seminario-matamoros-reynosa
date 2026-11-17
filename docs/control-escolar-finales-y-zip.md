@@ -18,6 +18,8 @@ El rol activo de Control Escolar permite administrar todas las clases activas, i
 
 La autorización procede del perfil en la base de datos. No se crean asignaciones docentes para cada persona de Control Escolar: los profesores reales siguen siendo los titulares. Los alumnos y profesores conservan sus vistas y permisos habituales. Las clases inactivas se pueden consultar en el listado, pero deben reactivarse para administrarlas.
 
+Si la persona de Control Escolar también imparte clases, debajo del directorio aparece **Mis cursos como profesor** con sus asignaciones docentes activas. Puede usar **Entrar al curso** para contenidos y calificaciones, y filtrar sus tarjetas por periodo. Esta sección personal no incluye las materias de otros profesores por el mero acceso administrativo; tampoco cambia su rol ni limita el acceso general de los bloques superiores.
+
 ## Capturar finales por el profesor
 
 1. En una materia de **Mis cursos**, pulsa **Capturar finales**.
@@ -61,6 +63,7 @@ Comandos de verificación:
 ```sh
 python3 supabase/tests/run_school_workflow_local.py
 python3 tests/portal_school_workflow.py
+python3 tests/portal_staff_teaching.py
 python3 tests/portal_report_zip.py
 python3 tests/portal_class_directory.py
 python3 tests/portal_report_print.py

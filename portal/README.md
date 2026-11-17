@@ -91,13 +91,15 @@ que verifica su ocultación.
 
 ## Materias y alumnos del profesor
 
-`teaching.js` consulta las asignaciones de `teaching_assignments` con sus materias
-y periodos. RLS solo devuelve asignaciones del profesor autenticado activo. Las
+`teaching.js` consulta las asignaciones activas de `teaching_assignments` con sus
+materias y periodos, filtrando expresamente `professor_id` por el usuario verificado.
+RLS vuelve a comprobar el acceso del profesor autenticado activo. Las
 políticas de los catálogos permiten leer únicamente los asociados con esas
 asignaciones; los permisos de perfiles, inscripciones y notas siguen cerrados.
 
 **Ver alumnos** llama a `get_teaching_roster`, una función PostgreSQL de lectura.
-En cada llamada comprueba `auth.uid()`, el perfil activo con rol `professor` y la
+En cada llamada comprueba `auth.uid()`, el perfil activo con rol `professor` o
+`control_escolar` y la
 asignación concreta de materia y periodo. Devuelve únicamente el ID de inscripción
 y el nombre del alumno activo. El frontend presenta solo el nombre: no consulta
 correos, datos personales privados ni notas. La autorización ocurre en PostgreSQL,
@@ -115,6 +117,15 @@ vacío se distingue de un fallo de consulta. La captura de notas se abre desde
 **Calificar**, como se explica a continuación; la edición de inscripciones sigue
 cerrada. Si varios profesores están asignados a la misma materia y periodo,
 comparten la lista de alumnos y la captura de sus notas. No hay grupos separados.
+
+Las cuentas de Control Escolar que también imparten clases tienen **Mis cursos
+como profesor** debajo del directorio general de **Mis cursos**. Las tarjetas,
+búsqueda y filtro por periodo funcionan como en la cuenta docente. La sección
+personal muestra sus asignaciones activas; el directorio superior conserva el
+acceso administrativo a todas las clases por rol. Mostrar esta sección no crea
+titularidades ni modifica perfiles, inscripciones o notas. No requiere SQL nuevo
+si ya están instaladas las capacidades de docencia de Control Escolar y sus
+asignaciones son correctas.
 
 Para crear una cuenta de profesor de prueba y asignarle las materias DEMO, sigue
 [Instalar el panel de profesor](../docs/profesores.md). La cuenta de alumno
