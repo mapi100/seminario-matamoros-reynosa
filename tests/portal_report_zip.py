@@ -17,15 +17,26 @@ async def main():
     elif path.name=='test.html':await route.fulfill(body='<html><head><meta charset="utf-8"><title>Prueba PDF ZIP</title></head><body></body></html>',content_type='text/html')
     else:await route.abort()
    await context.route('**/*',lambda route:route.abort());await context.route('https://seminario.test/**',local)
-   await page.goto('https://seminario.test/test.html');await page.add_script_tag(url='https://seminario.test/portal/report-pdf.js')
+   await page.goto('https://seminario.test/test.html')
+   await page.add_script_tag(url='https://seminario.test/portal/report-period.js')
+   await page.add_script_tag(url='https://seminario.test/portal/report-pdf.js')
    assert not any('/jspdf/' in x or 'report-pdf-assets' in x for x in requests)
    docs=[p.issued('CI-1',9),p.issued('4T-7',10,stress=True),p.issued('4T-7',20,stress=True)]
+   docs[0]['snapshot']['period']['ends_on']='2026-11-30'
+   other_period=docs[2]['snapshot']['period']
+   other_period.update(id='20000000-0000-4000-8000-000000000031',name='AGO-NOV 2026',ends_on='2026-11-30')
+   docs[2]['snapshot']['formation']['period_id']=other_period['id']
+   headings=[p.FALL_HEADING,p.FALL_HEADING,'AGOSTO A NOVIEMBRE 2026']
    for n,d in enumerate(docs):d['id']=f'20000000-0000-4000-8000-{n+200:012d}';d['folio']=f'BOL-2026-TEST-{n}';d['snapshot']['student']['full_name']='José Ángel Peña Ñúñez' if n==0 else d['snapshot']['student']['full_name']
    for row,score in zip(docs[0]['snapshot']['rows'],[10,10,7,5,6.9,10,10,10,10]):row['score']=score
    async with page.expect_download() as download:
     await page.evaluate('''async docs=>{
       const files=[];
-      for(const d of docs){const bytes=await PortalReportPDF.pdf(d);files.push({name:PortalReportPDF.filename(d),bytes});}
+      for(const d of docs){
+        const original=JSON.stringify(d),bytes=await PortalReportPDF.pdf(d);
+        if(JSON.stringify(d)!==original)throw Error('La exportación modificó la boleta');
+        files.push({name:PortalReportPDF.filename(d),bytes});
+      }
       files.push({name:'LEEME_DEL_LOTE.txt',bytes:new TextEncoder().encode('Lote de prueba · pendientes: ninguna.')});
       const blob=PortalReportPDF.zip(files),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='prueba.zip';document.body.append(a);a.click();a.remove();
     }''',docs)
@@ -35,7 +46,7 @@ async def main():
     assert archive.testzip() is None and len(archive.namelist())==4
     pdfs=[n for n in archive.namelist() if n.endswith('.pdf')]
     assert len(pdfs)==3 and len(set(pdfs))==3
-    for name,data in zip(pdfs,docs):
+    for name,data,heading in zip(pdfs,docs,headings):
      pdf=folder/name;pdf.write_bytes(archive.read(name));meta=subprocess.run(['pdfinfo',str(pdf)],text=True,capture_output=True,check=True).stdout
      assert re.search(r'Pages:\s+1\b',meta),meta
      text=subprocess.run(['pdftotext','-raw',str(pdf),'-'],text=True,capture_output=True,check=True).stdout
@@ -43,6 +54,7 @@ async def main():
      for row in data['snapshot']['rows']:assert ''.join(row['name'].split()) in normal,(row['name'],text)
      assert ''.join(data['snapshot']['student']['full_name'].split()) in normal,text
      assert text.count(data['folio'])==1 and 'Emitida' in text and 'Mínima aprobatoria 7.0' in text,(name,text[-700:])
+     assert heading in text,text
      bbox=subprocess.run(['pdftotext','-bbox',str(pdf),'-'],text=True,capture_output=True,check=True).stdout
      assert 'http' not in text
      formation=data['snapshot']['formation'];semester=formation['semester']
