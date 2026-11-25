@@ -15,16 +15,11 @@
         resources ||= Promise.all([script("vendor/jspdf/jspdf.umd.min.js", () => Boolean(window.jspdf?.jsPDF)), script("report-pdf-assets.js", () => Boolean(window.PortalReportPDFAssets))]).catch(error => { resources = undefined; throw error; });
         return resources;
     }
-    const months = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
     const ordinals = ["","PRIMERO","SEGUNDO","TERCERO","CUARTO","QUINTO","SEXTO","SÉPTIMO","OCTAVO"];
     function courseCode(formation) {
         const semester=formation?.semester,stage=formation?.stage_code;
         if(!Number.isInteger(semester)||semester<1||!['introductorio','filosofia','teologia'].includes(stage))return 'PENDIENTE';
         return (stage==='introductorio'?'CI':Math.ceil(semester/2)+(stage==='filosofia'?'F':'T'))+'-'+semester;
-    }
-    function period(value) {
-        const a=value.starts_on.split("-"),b=value.ends_on.split("-");
-        return months[Number(a[1])-1]+(a[0]===b[0]?" A ":" "+a[0]+" A ")+months[Number(b[1])-1]+" "+b[0];
     }
     async function pdf(issue) {
         const d=issue?.snapshot;
@@ -61,7 +56,7 @@
         text([d.formation?.stage_name,d.formation?.ecclesial_name].filter(Boolean).join(" - ").toLocaleUpperCase("es"),306,y(144),10.5*scale,true,"center");
         text("BOLETA DE CALIFICACIONES",306,y(158),10.5*scale,true,"center");
         text("CICLO "+d.cycle,306,y(172),10.5*scale,true,"center");
-        text(period(d.period),306,y(188),9*scale,false,"center");
+        text(window.PortalReportPeriod.format(d.period),306,y(188),9*scale,false,"center");
         text("NOMBRE:",42,plan.infoY,plan.size,true);text(plan.name,100,plan.infoY,plan.size);
         const groupY=plan.infoY+Math.max(plan.name.length,1)*13*scale+3*scale;
         text("GRUPO:",42,groupY,plan.size,true);text(courseCode(d.formation),100,groupY,plan.size);

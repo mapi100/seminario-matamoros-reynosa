@@ -2,7 +2,6 @@
     "use strict";
     const $ = id => document.getElementById(id), root = $("reportCards");
     const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const months = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
     const ordinals = ["", "PRIMERO", "SEGUNDO", "TERCERO", "CUARTO", "QUINTO", "SEXTO", "SÉPTIMO", "OCTAVO"];
     const groups = { introductorio: "CI", filosofia: "FILOSOFÍA", teologia: "TEOLOGÍA" };
     let generation = 0, revision = 0, student, source, preview, verify, pending, busy = false, timer, offset = 0, title;
@@ -77,7 +76,6 @@
         } catch (error) { if (g === generation && !denied(error)) note(errorText(error), true); }
     }
     function datum(target, label, value) { const p = el("p"); p.append(el("strong", label + ":"), el("span", value || "PENDIENTE")); target.append(p); }
-    function periodText(p) { const a = p.starts_on?.split("-"), b = p.ends_on?.split("-"); if (!a || !b) return p.name; return months[Number(a[1])-1] + (a[0] === b[0] ? " A " : " " + a[0] + " A ") + months[Number(b[1])-1] + " " + b[0]; }
     function courseCode(formation) {
         const semester=formation?.semester,stage=formation?.stage_code;
         if (!Number.isInteger(semester)||semester<1||!Object.hasOwn(groups,stage)) return null;
@@ -96,7 +94,7 @@
         const doc = el("article", null, "report-paper"), main = el("div", null, "report-main"), content = el("div", null, "report-main-content"), header = el("header"), crest = el("img"); crest.src = "../images/escudo_seminario_nuevo-Photoroom.png"; crest.alt = "Escudo del Seminario"; crest.width = 70; crest.height = 86;
         header.append(crest, el("h2", d.institution.name));
         const stage = [d.formation?.stage_name, d.formation?.ecclesial_name].filter(Boolean).join(" - ");
-        header.append(el("h3", stage || "ETAPA PENDIENTE"), el("h3", "BOLETA DE CALIFICACIONES"), el("h3", "CICLO " + d.cycle), el("p", periodText(d.period)));
+        header.append(el("h3", stage || "ETAPA PENDIENTE"), el("h3", "BOLETA DE CALIFICACIONES"), el("h3", "CICLO " + d.cycle), el("p", window.PortalReportPeriod.format(d.period)));
         content.append(header);
         if (!issued) content.append(el("p", "VISTA PREVIA · SIN EMITIR", "report-draft"));
         const info = el("div", null, "report-student"), left = el("div"), right = el("div");

@@ -13,6 +13,8 @@ Copia las carpetas del ZIP sobre tu repositorio y publica los cambios como de co
 
 Este paquete complementa la actualización anterior de acceso de Control Escolar y descarga por ZIP; requiere que aquella ya esté instalada.
 
+Las boletas del periodo **AGO-DIC 2026** muestran **AGOSTO A DICIEMBRE 2026** en la vista previa, la impresión individual y el PDF del ZIP. Al volver a imprimir una boleta emitida se conservan su folio, fecha de emisión y calificaciones. El ajuste solo cambia el encabezado al generar el documento y no requiere SQL ni una nueva emisión.
+
 ## Verificación
 
 Se prueban PDF reales con datos ficticios y API simulada, sin acceder a producción. Se comprueban los cursos de CI, Filosofía y Teología, el cálculo del promedio, notas de 5, 6.9 y 7.0, color limitado a las celdas numéricas, títulos largos y conservación de todos los datos en una sola hoja.

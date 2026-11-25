@@ -3,13 +3,15 @@
 Datos ficticios, RPC simulada y archivos locales; no accede a Supabase.
 Requiere Playwright, Chromium y Poppler. PDFs de prueba en /tmp por defecto.
 """
-import argparse,asyncio,copy,json,re,shutil,subprocess
+import argparse,asyncio,copy,re,shutil,subprocess
 from pathlib import Path
 from lxml import html
 from playwright.async_api import async_playwright,expect
 ROOT=Path(__file__).resolve().parents[1]
 OUT=Path('/tmp/seminario-report-print-checks')
 ID='20000000-0000-4000-8000-000000000001';PERIOD='20000000-0000-4000-8000-000000000030';ISSUE='20000000-0000-4000-8000-000000000099'
+FALL_HEADING='AGOSTO A DICIEMBRE 2026'
+SPRING_HEADING='ENERO A MAYO 2027'
 SUBJECTS=['Catecismo I','Introducción a la Biblia','Comunicación Integral I','Inglés I','Documentos de Formación Sacerdotal','Historia de la Iglesia (Temas Selectos)','Introducción y Espiritualidad en la Liturgia','Latín I','Formación Humana I','Administración Parroquial Canónica']
 COURSES=[('CI-1',9),('1F-1',9),('2F-3',9),('3F-5',10),('1T-1',9),('2T-3',9),('3T-5',9),('4T-7',10),('CI-2',8),('1F-2',8),('2F-4',9),('3F-6',7),('1T-2',9),('2T-4',10),('4T-8',10)]
 
@@ -24,7 +26,7 @@ def issued(code='CI-1',n=9,stress=False):
  snapshot={'version':1,'scale':10,'decimals':1,'pass_mark':7,'institution':{'name':'SEMINARIO DE MATAMOROS-REYNOSA'},'student':{'id':ID,'full_name':name,'student_number':'TEST-2026-001'},'period':{'id':PERIOD,'name':'ENE-MAY 2027' if spring else 'AGO-DIC 2026','starts_on':'2027-01-01' if spring else '2026-08-01','ends_on':'2027-05-31' if spring else '2026-12-31'},'formation':{'period_id':PERIOD,'stage_code':stage,'semester':semester,'stage_name':{'introductorio':'Curso Introductorio','filosofia':'Filosofía','teologia':'Teología'}[stage],'ecclesial_name':{'introductorio':'Etapa propedéutica','filosofia':'Etapa discipular','teologia':'Etapa configuradora'}[stage]},'cycle':'2026-2027','rector_name':'Rector de prueba','prefect_name':'Prefecto de Estudios de prueba','rows':[{'name':name,'score':round(7+i%4,1)} for i,name in enumerate(subjects)],'ready':True,'reasons':[],'token':'a'*32}
  return {'id':ISSUE,'student_id':ID,'folio':'BOL-2026-PRUEBA','issued_at':'2026-11-05T20:00:00Z','snapshot':snapshot}
 
-async def setup(browser,data,*,mobile=False,deny_print=False):
+async def setup(browser,data,heading,*,mobile=False,deny_print=False):
  context=await browser.new_context(viewport={'width':390,'height':844} if mobile else {'width':1440,'height':1100})
  page=await context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
  async def files(route):
@@ -40,8 +42,9 @@ async def setup(browser,data,*,mobile=False,deny_print=False):
   if path.is_file():styles.append('<style media="'+link.get('media','all')+'">'+path.read_text()+'</style>')
  await page.set_content('<html lang="es" data-theme="oled" data-theme-tone="dark"><head><base href="https://seminario.test/portal/"><title>Panel de prueba</title>'+''.join(styles)+'</head><body class="dashboard-page" data-view="kardex"><div>'+report+'</div></body></html>')
  source=copy.deepcopy(data['snapshot']);source.update(institution=dict(data['snapshot']['institution'],rector_name=data['snapshot']['rector_name'],prefect_name=data['snapshot']['prefect_name']),formation_history=[data['snapshot']['formation']])
- source['formation_history'][0]=dict(source['formation_history'][0],period_name=source['period']['name'],starts_on=source['period']['starts_on'],ends_on=source['period']['ends_on'])
- source['rows']=[dict(row,period_id=PERIOD,period_name=source['period']['name'],starts_on=source['period']['starts_on'],ends_on=source['period']['ends_on'],enrollment_active=True) for row in source['rows']]
+ period=source['period']
+ source['formation_history'][0]=dict(source['formation_history'][0],period_id=period['id'],period_name=period['name'],starts_on=period['starts_on'],ends_on=period['ends_on'])
+ source['rows']=[dict(row,period_id=period['id'],period_name=period['name'],starts_on=period['starts_on'],ends_on=period['ends_on'],enrollment_active=True) for row in source['rows']]
  await page.evaluate('''args => {
   window.__issue=args.issue;window.__record=args.source;window.__calls=[];window.__issueReads=0;window.__printRequested=0;
   window.print=()=>{window.__printRequested++};
@@ -58,15 +61,19 @@ async def setup(browser,data,*,mobile=False,deny_print=False):
     }};
   }})};
  }''',{'issue':data,'source':source,'deny':deny_print})
+ await page.add_script_tag(path=str(ROOT/'portal/report-period.js'))
  await page.add_script_tag(path=str(ROOT/'portal/report-cards.js'))
  await page.evaluate('window.PortalReportCards.mount(window.__record,async()=>{})')
+ await expect(page.locator('#reportPreview .report-paper header p')).to_have_text(heading)
  await page.locator('#reportIssues').get_by_role('button',name='Ver / imprimir boleta').click()
+ await expect(page.locator('#reportPreview .report-paper header p')).to_have_text(heading)
  await page.locator('#reportPreview').get_by_role('button',name='Imprimir / Guardar PDF').click()
  return context,page,errors
 
 async def render(browser,data,path,*,mobile=False):
- original=json.dumps(data,ensure_ascii=False,sort_keys=True)
- context,page,errors=await setup(browser,data,mobile=mobile)
+ semester=data['snapshot']['formation']['semester']
+ heading=FALL_HEADING if semester%2 else SPRING_HEADING
+ context,page,errors=await setup(browser,data,heading,mobile=mobile)
  await page.wait_for_function('window.__printRequested===1')
  await page.emulate_media(media='print')
  await page.evaluate('''() => window.addEventListener('beforeprint',()=>{
@@ -97,7 +104,7 @@ async def render(browser,data,path,*,mobile=False):
  assert await page.evaluate('document.title')=='Panel de prueba'
  assert not await page.locator('#reportPrintRoot').count()
  assert await page.evaluate('!document.documentElement.classList.contains("report-printing")')
- assert json.dumps(data,ensure_ascii=False,sort_keys=True)==original
+ assert await page.evaluate('window.__issue')==data
  await context.close()
  meta=subprocess.run(['pdfinfo',str(path)],text=True,capture_output=True,check=True).stdout
  assert re.search(r'Pages:\s+1\b',meta),meta
@@ -107,6 +114,7 @@ async def render(browser,data,path,*,mobile=False):
  for row in data['snapshot']['rows']:assert ''.join(row['name'].split()) in normalized,(row['name'],text)
  for label in [data['snapshot']['student']['full_name'],data['snapshot']['student']['student_number'],data['snapshot']['rector_name'],data['snapshot']['prefect_name']]:assert ''.join(label.split()) in normalized,label
  assert text.count(data['folio'])==1,text
+ assert heading in text,text
  assert code in text and 'PROMEDIO SEMESTRAL' in text,text
  assert all(s in text for s in ['Emitida','Escala 0','Mínima aprobatoria 7.0']),text
  assert 'https://' not in text and 'http://' not in text and not re.search(r'\d{1,2}/\d{1,2}/\d{2},\s*\d{1,2}:\d{2}',text),text
@@ -133,11 +141,16 @@ async def main():
    for row,score in zip(data['snapshot']['rows'],[10,10,7,5,6.9]):row['score']=score
    await render(browser,data,OUT/('rojas-'+code+'.pdf'))
    print('PASS',code,'promedio 7.8; rojo solo en 5 y 6.9; 7 aprobatoria; una hoja',flush=True)
-  context,page,errors=await setup(browser,issued(),deny_print=True)
+  archived=issued()
+  archived['snapshot']['period'].update(id='e81223f1-e12d-4b0a-95fc-6e27f7df4b05',name='Semestre 2026',ends_on='2026-11-30')
+  archived['snapshot']['formation']['period_id']=archived['snapshot']['period']['id']
+  await render(browser,archived,OUT/'boleta-emitida-ago-dic.pdf')
+  print('PASS copia con cierre en noviembre: encabezado de diciembre, mismo folio y datos guardados',flush=True)
+  context,page,errors=await setup(browser,issued(),FALL_HEADING,deny_print=True)
   await expect(page.locator('#reportCards')).to_be_hidden()
   assert await page.evaluate('window.__printRequested')==0
   assert not await page.locator('#reportPrintRoot').count();assert not errors,errors
   await context.close();print('PASS se revalidan permisos antes de imprimir; ninguna impresión si se revocaron')
   await browser.close()
- print('TOTAL 21 escenarios de impresión. PDFs:',OUT)
+ print('TOTAL 22 escenarios de impresión. PDFs:',OUT)
 if __name__=='__main__':asyncio.run(main())

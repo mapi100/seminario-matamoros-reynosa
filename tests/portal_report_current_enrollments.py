@@ -14,19 +14,21 @@ async def main():
    window.PortalGradeScale={format:n=>(n/10).toFixed(1)};
    window.PortalAuth={getClient:()=>({rpc:()=>({retry(){return this},abortSignal:async()=>({error:{code:'PGRST202'}})})})};
   }""")
+  await page.add_script_tag(path=str(ROOT/'portal/report-period.js'))
   await page.add_script_tag(path=str(ROOT/'portal/report-cards.js'))
   await page.evaluate("""async () => {
    const pid='20000000-0000-4000-8000-000000000030';
    await window.PortalReportCards.mount({student:{id:'20000000-0000-4000-8000-000000000001',full_name:'Alumno ficticio',student_number:'TEST-001'},
-    institution:{rector_name:'Rector ficticio',prefect_name:'Prefecto ficticio'},formation_history:[{period_id:pid,period_name:'AGO-DIC 2026',starts_on:'2026-08-01',ends_on:'2026-12-31',stage_code:'introductorio',semester:1}],
-    rows:[{period_id:pid,period_name:'AGO-DIC 2026',starts_on:'2026-08-01',ends_on:'2026-12-31',name:'Materia vigente',score:80,enrollment_active:true},
+    institution:{rector_name:'Rector ficticio',prefect_name:'Prefecto ficticio'},formation_history:[{period_id:pid,period_name:'AGO-DIC 2026',starts_on:'2026-08-01',ends_on:'2026-11-30',stage_code:'introductorio',semester:1}],
+    rows:[{period_id:pid,period_name:'AGO-DIC 2026',starts_on:'2026-08-01',ends_on:'2026-11-30',name:'Materia vigente',score:80,enrollment_active:true},
      {period_id:pid,name:'Materia retirada',score:90,enrollment_active:false}]},async()=>{});
   }""")
   await expect(page.locator('#reportPreview tbody tr')).to_have_count(1)
+  await expect(page.locator('#reportPreview .report-paper header p')).to_have_text('AGOSTO A DICIEMBRE 2026')
   await expect(page.locator('#reportPreview')).to_contain_text('Materia vigente')
   await expect(page.locator('#reportPreview')).not_to_contain_text('Materia retirada')
   await expect(page.locator('#reportPreview')).to_contain_text('8.0')
   await expect(page.locator('#reportIssue')).to_be_disabled()
-  print('PASS borrador excluye bajas, conserva escala y no permite emitir sin servidor')
+  print('PASS borrador muestra AGO-DIC, excluye bajas, conserva escala y no permite emitir sin servidor')
   await browser.close()
 if __name__=='__main__':asyncio.run(main())
