@@ -14,6 +14,7 @@ async def main():
    window.PortalGradeScale={format:n=>(n/10).toFixed(1)};
    window.PortalAuth={getClient:()=>({rpc:()=>({retry(){return this},abortSignal:async()=>({error:{code:'PGRST202'}})})})};
   }""")
+  await page.add_script_tag(path=str(ROOT/'portal/portal-terms.js'))
   await page.add_script_tag(path=str(ROOT/'portal/report-period.js'))
   await page.add_script_tag(path=str(ROOT/'portal/report-cards.js'))
   await page.evaluate("""async () => {

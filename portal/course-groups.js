@@ -57,7 +57,7 @@
         }
         select.value = current?.group_code || ""; status.setAttribute("role","status");
         const info = document.createElement("p");
-        info.textContent = "Clasifica esta clase sin cambiar las inscripciones, notas ni el semestre registrado de los alumnos.";
+        info.textContent = "Clasifica esta clase sin cambiar las inscripciones, notas ni el semestre registrado de los seminaristas.";
         if (current?.planned_professor) { const p = document.createElement("p"); p.textContent = "Docente previsto en el Excel: "+current.planned_professor; form.append(p); }
         const save = document.createElement("button"), cancel = document.createElement("button");
         save.type = "submit"; save.textContent = "Guardar curso"; save.className = "learning-button";
@@ -77,7 +77,7 @@
                 busy = false; close(); await reload(); if (g === generation) changed?.();
             } catch(error) {
                 if (g !== generation || dialog !== d) return;
-                status.textContent = ["22023","PT409","42501"].includes(error?.code) ? error.message : "No se confirmó la respuesta. Cierra y actualiza antes de volver a guardar.";
+                status.textContent = ["22023","PT409","42501"].includes(error?.code) ? window.PortalTerms.seminarian(error.message) : "No se confirmó la respuesta. Cierra y actualiza antes de volver a guardar.";
                 busy = false; cancel.disabled = false; // Una operación incierta no se reenvía desde el mismo diálogo.
             }
         });

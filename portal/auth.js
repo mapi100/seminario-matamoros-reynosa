@@ -2,7 +2,7 @@
     "use strict";
 
     const roleLabels = Object.freeze({
-        student: "Alumno",
+        student: "Seminarista",
         professor: "Profesor",
         control_escolar: "Control Escolar"
     });

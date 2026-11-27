@@ -42,7 +42,7 @@
         if(!snapshot)return;const term=snapshot.periods.find(p=>p.id===snapshot.period_id);
         $("organizerLibrary").textContent=library?"Volver a clases del periodo":"Agregar desde catálogo";
         $("organizerListTitle").textContent=library?"Materias para abrir en este periodo":selected==="all"?"Todas las clases del periodo":selected==="none"?"Clases sin curso asignado":"Materias de "+selected;
-        $("organizerScope").textContent=term?"Periodo: "+term.name+". Organizar una clase conserva sus alumnos, tareas y calificaciones.":"Selecciona un periodo académico.";
+        $("organizerScope").textContent=term?"Periodo: "+term.name+". Organizar una clase conserva sus seminaristas, tareas y calificaciones.":"Selecciona un periodo académico.";
         const used=new Set(snapshot.classes.map(c=>c.subject_id));
         let rows=library?snapshot.subjects.filter(s=>!used.has(s.id)).map(s=>({...s,subject_id:s.id,id:null,group_code:null,revision:0,period_id:snapshot.period_id})):snapshot.classes.filter(c=>selected==="all"||(selected==="none"?c.group_code===null:c.group_code===selected));
         const needle=normalize($("organizerSearch").value.trim());rows=rows.filter(c=>normalize(c.name+" "+(c.group_code||"")).includes(needle));
@@ -85,7 +85,7 @@
             busy=false;render();status(row.name+" ahora está en "+(group||"Sin curso asignado")+".");window.PortalCourseGroups?.reload();
             $("organizerGroups").querySelector('[data-group="'+(group||"none")+'"]')?.focus({preventScroll:true});
         }catch(error){if(g!==generation)return;if(isDenied(error)){const callback=verify;clear();callback?.();return;}
-            uncertain=true;status(["PT409","22023"].includes(error?.code)?error.message+" Pulsa Actualizar.":"No se confirmó el cambio. Pulsa Actualizar para comprobar dónde quedó la materia antes de repetir.",true);
+            uncertain=true;status(["PT409","22023"].includes(error?.code)?window.PortalTerms.seminarian(error.message)+" Pulsa Actualizar.":"No se confirmó el cambio. Pulsa Actualizar para comprobar dónde quedó la materia antes de repetir.",true);
         }finally{if(g===generation){busy=false;sync();}}
     }
     async function pickerData(period,signal){

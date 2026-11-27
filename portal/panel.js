@@ -20,7 +20,7 @@
     const localToggle = document.getElementById("localTogglePassword");
     const localForgot = document.getElementById("localForgotPassword");
     const headings = {
-        student: "Panel de alumno",
+        student: "Panel de seminarista",
         professor: "Panel de profesor",
         control_escolar: "Panel de Control Escolar"
     };
@@ -180,7 +180,7 @@
                             "No fue posible cargar tus materias. Recarga la página para reintentar.";
                     }
                 } else if (result.profile.role === "professor") {
-                    subtitle.textContent = "Consulta tus materias asignadas y sus alumnos.";
+                    subtitle.textContent = "Consulta tus materias asignadas y sus seminaristas.";
                     if (window.PortalTeaching) {
                         window.PortalTeaching.show(verifyAccess, result.profile);
                     } else {

@@ -80,7 +80,7 @@
             const link = nav.querySelector('[data-route="' + (known ? route : "inicio") + '"]');
             if (!known || !link || link.hidden) route = "inicio";
         }
-        if (window.PortalPersonalRecord?.canNavigate(route) === false) {
+        if (window.PortalPersonalRecord?.canNavigate(route) === false || window.PortalKardex?.canNavigate?.(route) === false) {
             history.replaceState(null, "", "#" + document.body.dataset.view);
             return;
         }

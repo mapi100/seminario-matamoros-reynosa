@@ -127,7 +127,7 @@
             }
             upload.hidden = state.options.canManage || !state.canUpload;
             if (!state.items.length) note(state.options.canManage && !state.options.enrollmentId
-                ? "Selecciona un alumno para consultar sus archivos."
+                ? "Selecciona un seminarista para consultar sus archivos."
                 : "Todavía no hay archivos adjuntos. También puedes entregar texto o un enlace.");
             else note(state.items.length + (state.items.length === 1 ? " archivo adjunto." : " archivos adjuntos."));
         }
@@ -160,7 +160,7 @@
                 const { data, error } = await window.PortalAuth.getClient().storage.from(bucket).download(row.object_path);
                 if (!live(operation)) return;
                 if (error || !(data instanceof Blob) || data.size > maxSize) throw error || new Error("Descarga inválida");
-                // Forzar descarga; nunca abrir contenido de alumnos dentro del portal.
+                // Forzar descarga; nunca abrir contenido de seminaristas dentro del portal.
                 const url = URL.createObjectURL(new Blob([data], { type: "application/octet-stream" }));
                 state.urls.add(url);
                 const anchor = node("a");

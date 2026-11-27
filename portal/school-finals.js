@@ -7,11 +7,11 @@
     function close(){if(dialog){dialog.close();dialog.remove();dialog=undefined;}}
     function clear(){generation++;controller?.abort();controller=undefined;close();host?.classList.remove("school-finals");context=host=source=undefined;busy=false;}
     function message(text,error=false){if(!host)return;const n=host.querySelector('.school-final-status');if(n){n.textContent=text;n.className='school-final-status control-message'+(error?' error':'');}}
-    function errorText(e){return ['22023','PT409'].includes(e?.code)?e.message:['PGRST202','42883','42P01'].includes(e?.code)?'Falta instalar la actualización de Control Escolar en Supabase.':'No se confirmó la respuesta. Actualiza para comprobar las notas antes de volver a publicar.';}
+    function errorText(e){return ['22023','PT409'].includes(e?.code)?window.PortalTerms.seminarian(e.message):['PGRST202','42883','42P01'].includes(e?.code)?'Falta instalar la actualización de Control Escolar en Supabase.':'No se confirmó la respuesta. Actualiza para comprobar las notas antes de volver a publicar.';}
     async function rpc(name,args){controller=new AbortController();const r=await window.PortalAuth.getClient().rpc(name,args).retry(false).abortSignal(controller.signal);if(r.error)throw {...r.error,status:r.status};return r.data;}
     function valid(data){return data?.course?.id===context.courseId&&/^[a-f0-9]{32}$/.test(data.token)&&Array.isArray(data.students)&&data.students.length<=500&&data.students.every(s=>uuid.test(s.enrollment_id)&&typeof s.name==='string'&&[s.published_score,s.draft_score].every(x=>x===null||typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=100));}
     async function reload(notice=''){
-        if(!host||!context)return;const operation=++generation;controller?.abort();close();source=undefined;host.replaceChildren(el('p','Cargando alumnos y finales…','school-final-status control-message'));
+        if(!host||!context)return;const operation=++generation;controller?.abort();close();source=undefined;host.replaceChildren(el('p','Cargando seminaristas y finales…','school-final-status control-message'));
         try{const data=await rpc('portal_school_finals_read',{p_course:context.courseId});if(operation!==generation)return;if(!valid(data))throw new Error('Respuesta inválida');source=data;draw();message(notice);}
         catch(e){if(operation!==generation||context?.onUnauthorized(e))return;message(errorText(e),true);host.append(button('Actualizar',()=>void reload()));}
     }
@@ -19,7 +19,7 @@
         const heading=el('div',undefined,'school-final-heading'),title=el('div');title.append(el('h2','Calificación final'),el('p',source.course.name+' · '+source.course.period_name));heading.append(title,button('Actualizar notas',()=>void reload()));
         host.replaceChildren(heading,el('p','Captura las notas finales proporcionadas por el docente. Al confirmar, se publican en el historial y las boletas. Las actividades y ponderaciones se conservan.'),el('p','Escala de 0 a 10. Un espacio vacío conserva la nota actual.','learning-meta'));
         const status=el('p','','school-final-status control-message');status.setAttribute('role','status');host.append(status);
-        if(!source.students.length){message('No hay alumnos activos inscritos en esta clase.');return;}
+        if(!source.students.length){message('No hay seminaristas activos inscritos en esta clase.');return;}
         const form=el('form',undefined,'school-final-form'),scroll=el('div',undefined,'learning-table-scroll school-final-scroll'),table=el('table',undefined,'learning-grades-table'),head=el('thead'),row=el('tr'),body=el('tbody'),inputs=[];
         for(const label of ['Seminarista','Matrícula','Final publicada','Final a publicar'])row.append(el('th',label));head.append(row);table.append(head,body);scroll.append(table);
         for(const s of source.students){const tr=el('tr'),name=el('th',s.name),cell=el('td'),input=el('input');name.scope='row';input.type='number';input.min='0';input.max='10';input.step='0.1';input.inputMode='decimal';input.setAttribute('aria-label','Calificación final de '+s.name);

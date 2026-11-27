@@ -61,6 +61,7 @@ async def setup(browser,data,heading,*,mobile=False,deny_print=False):
     }};
   }})};
  }''',{'issue':data,'source':source,'deny':deny_print})
+ await page.add_script_tag(path=str(ROOT/'portal/portal-terms.js'))
  await page.add_script_tag(path=str(ROOT/'portal/report-period.js'))
  await page.add_script_tag(path=str(ROOT/'portal/report-cards.js'))
  await page.evaluate('window.PortalReportCards.mount(window.__record,async()=>{})')

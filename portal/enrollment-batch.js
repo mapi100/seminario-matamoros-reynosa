@@ -59,7 +59,7 @@
     function sync() {
         $("batchEnrollmentForm").setAttribute("aria-busy", String(loading || saving));
         $("batchEnrollmentSave").disabled = loading || saving || uncertain || !selected.size;
-        $("batchEnrollmentSave").textContent = saving ? "Inscribiendo…" : "Inscribir " + selected.size + (selected.size === 1 ? " alumno" : " alumnos");
+        $("batchEnrollmentSave").textContent = saving ? "Inscribiendo…" : "Inscribir " + selected.size + (selected.size === 1 ? " seminarista" : " seminaristas");
         $("batchEnrollmentSearch").disabled = loading || saving;
         $("batchEnrollmentStage").disabled = loading || saving || !filtersReady;
         $("batchEnrollmentSemester").disabled = loading || saving || !stages.some(stage => stage.code === $("batchEnrollmentStage").value);
@@ -87,13 +87,13 @@
             label.append(check, info, state); li.append(label); list.append(li);
             check.addEventListener("change", () => { if (check.checked) selected.add(row.id); else selected.delete(row.id); sync(); });
         }
-        if (!list.children.length) list.append(node("li", rows.length ? "No hay alumnos que coincidan con la etapa, el semestre y la búsqueda. Puedes cambiar los filtros o ver todas las etapas." : "Todavía no hay alumnos activos disponibles.", "batch-enrollment-empty"));
+        if (!list.children.length) list.append(node("li", rows.length ? "No hay seminaristas que coincidan con la etapa, el semestre y la búsqueda. Puedes cambiar los filtros o ver todas las etapas." : "Todavía no hay seminaristas activos disponibles.", "batch-enrollment-empty"));
         sync();
     }
     async function load() {
         if (!profile || !course || saving) return;
         const operation = ++generation; controller?.abort(); controller = new AbortController(); loading = true;
-        $("batchEnrollmentList").replaceChildren(); status("Cargando alumnos y sus inscripciones…"); sync();
+        $("batchEnrollmentList").replaceChildren(); status("Cargando seminaristas y sus inscripciones…"); sync();
         try {
             const [result, formations] = await Promise.all([
                 window.PortalAuth.getClient().rpc("portal_enrollment_candidates", { p_class: course.id }).retry(false).abortSignal(controller.signal),
@@ -115,16 +115,16 @@
             const missing = rows.filter(row => row.stage_code === null).length;
             $("batchEnrollmentFormationHelp").textContent = missing ? missing+" sin etapa en este periodo. Regístrala en Etapas y semestres para agruparlos." : "Etapas y semestres registrados para el periodo de esta clase.";
             uncertain = false; loading = false; render();
-            status("Selecciona alumnos. Las bajas se reactivan y los ya inscritos se omiten.");
+            status("Selecciona seminaristas. Las bajas se reactivan y los ya inscritos se omiten.");
         } catch (error) {
             if (operation !== generation || denied(error)) return;
             controller?.abort();
-            uncertain = true; status(["PGRST202", "42883"].includes(error?.code) ? "La inscripción múltiple todavía no está habilitada. Contacta al responsable del portal." : error?.code === "22023" ? error.message : "No se pudieron cargar los alumnos. Pulsa Actualizar lista para reintentar.", true);
+            uncertain = true; status(["PGRST202", "42883"].includes(error?.code) ? "La inscripción múltiple todavía no está habilitada. Contacta al responsable del portal." : error?.code === "22023" ? window.PortalTerms.seminarian(error.message) : "No se pudieron cargar los seminaristas. Pulsa Actualizar lista para reintentar.", true);
         } finally { if (operation === generation) { loading = false; sync(); } }
     }
     async function save() {
         if (!profile || !course || loading || saving || uncertain || !selected.size) return;
-        if (selected.size > 500) { status("Selecciona un máximo de 500 alumnos por operación.", true); return; }
+        if (selected.size > 500) { status("Selecciona un máximo de 500 seminaristas por operación.", true); return; }
         const operation = generation, ids = [...selected].sort(); saving = true; render(); status("Guardando " + ids.length + " inscripciones…");
         try {
             const result = await window.PortalAuth.getClient().rpc("portal_enroll_students", { p_class: course.id, p_students: ids }).retry(false).abortSignal(controller.signal);
@@ -137,7 +137,7 @@
         } catch (error) {
             if (operation !== generation || denied(error)) return;
             uncertain = true;
-            status(error?.code === "22023" ? error.message + " Pulsa Actualizar lista." : "No se pudo confirmar la inscripción. Pulsa Actualizar lista para revisar quiénes quedaron inscritos antes de volver a guardar.", true);
+            status(error?.code === "22023" ? window.PortalTerms.seminarian(error.message) + " Pulsa Actualizar lista." : "No se pudo confirmar la inscripción. Pulsa Actualizar lista para revisar quiénes quedaron inscritos antes de volver a guardar.", true);
         } finally { if (operation === generation) { saving = false; render(); } }
     }
     $("batchEnrollmentForm").addEventListener("submit", event => { event.preventDefault(); void save(); });

@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="school-workflow.css?v=20261105-control-1">
     <link rel="stylesheet" href="report-cards.css?v=20261105-promedio-1">
     <link rel="stylesheet" href="kardex.css?v=20261022-kardex-1">
+    <link rel="stylesheet" href="group-finals.css?v=20261127-grupos-1">
     <link rel="stylesheet" href="formation.css?v=20261101-grupos-1">
     <link rel="stylesheet" href="formation-groups.css?v=20261101-quitar-1">
     <link rel="stylesheet" href="personal-record.css?v=20261022-expediente-1">
@@ -116,7 +117,7 @@
                     <div class="login-help">
                         <button id="localForgotPassword" class="text-button" type="button">¿Olvidaste tu contraseña?</button>
                     </div>
-                    <p class="access-note">Acceso exclusivo para alumnos, profesores y personal autorizado del Seminario.</p>
+                    <p class="access-note">Acceso exclusivo para seminaristas, profesores y personal autorizado del Seminario.</p>
                 </section>
             </div>
         </section>
@@ -186,10 +187,10 @@
             </section>
 
             <section id="personalRecordSection" class="dashboard-card personal-record-section" data-screen="mi-perfil expedientes" hidden aria-labelledby="personalRecordTitle">
-                <div class="personal-heading"><div><p class="personal-eyebrow">EXPEDIENTE DEL SEMINARIO</p><h2 id="personalRecordTitle">Mis datos personales</h2><p id="personalRecordIntro">Completa tus datos por secciones. Puedes guardar aunque falte información.</p></div><div class="personal-actions"><button id="personalChooseOther" type="button" class="back-link" hidden>Cambiar alumno</button><button id="personalReload" type="button" class="back-link">Actualizar datos</button></div></div>
-                <p class="personal-privacy">El expediente completo solo está disponible para el alumno y Control Escolar. El nombre se comparte con las listas académicas; la CURP y el nacimiento se vinculan al kardex.</p>
+                <div class="personal-heading"><div><p class="personal-eyebrow">EXPEDIENTE DEL SEMINARIO</p><h2 id="personalRecordTitle">Mis datos personales</h2><p id="personalRecordIntro">Completa tus datos por secciones. Puedes guardar aunque falte información.</p></div><div class="personal-actions"><button id="personalChooseOther" type="button" class="back-link" hidden>Cambiar seminarista</button><button id="personalReload" type="button" class="back-link">Actualizar datos</button></div></div>
+                <p class="personal-privacy">El expediente completo solo está disponible para el seminarista y Control Escolar. El nombre se comparte con las listas académicas; la CURP y el nacimiento se vinculan al kardex.</p>
                 <p id="personalStatus" class="control-message" role="status" aria-live="polite"></p>
-                <div id="personalLookup" hidden><form id="personalSearchForm" class="management-search" role="search"><label for="personalSearch">Nombre, matrícula o CURP</label><input id="personalSearch" type="search" maxlength="160" placeholder="Buscar seminarista" autocomplete="off"><button class="back-link control-create" type="submit">Buscar</button></form><ul id="personalStudents" class="personal-students"></ul><button id="personalMore" class="back-link" type="button" hidden>Mostrar más alumnos</button></div>
+                <div id="personalLookup" hidden><form id="personalSearchForm" class="management-search" role="search"><label for="personalSearch">Nombre, matrícula o CURP</label><input id="personalSearch" type="search" maxlength="160" placeholder="Buscar seminarista" autocomplete="off"><button class="back-link control-create" type="submit">Buscar</button></form><ul id="personalStudents" class="personal-students"></ul><button id="personalMore" class="back-link" type="button" hidden>Mostrar más seminaristas</button></div>
                 <div id="personalEditor" hidden>
                     <div class="personal-summary"><div><h3 id="personalStudentName"></h3><p id="personalAccount"></p><p id="personalReviewState"></p></div><div class="personal-completion"><label for="personalProgress" id="personalProgressText"></label><progress id="personalProgress" max="9" value="0"></progress><details><summary>Ver datos sugeridos pendientes</summary><ul id="personalMissing"></ul></details></div></div>
                     <form id="personalForm" novalidate autocomplete="on">
@@ -226,7 +227,7 @@
                      aria-labelledby="teachingTitle" hidden>
                 <div id="materias-asignadas">
                     <h2 id="teachingTitle">Mis cursos</h2>
-                    <p id="teachingIntro">Organiza los contenidos, las tareas y el seguimiento de tus alumnos.</p>
+                    <p id="teachingIntro">Organiza los contenidos, las tareas y el seguimiento de tus seminaristas.</p>
                 </div>
                 <p id="teachingStatus" class="teaching-status" role="status" aria-live="polite"></p>
 
@@ -254,7 +255,7 @@
                     <ul id="rosterList" class="roster-list"></ul>
                     <div class="teaching-actions">
                         <button id="rosterRetry" class="back-link" type="button" hidden>Actualizar materias</button>
-                        <button id="rosterMore" class="back-link" type="button" hidden>Ver más alumnos</button>
+                        <button id="rosterMore" class="back-link" type="button" hidden>Ver más seminaristas</button>
                     </div>
 
                     <section id="gradeEditor" class="grade-editor" aria-labelledby="gradeEditorTitle" hidden>
@@ -266,7 +267,7 @@
                             <input id="gradeScore" name="score" type="number" min="0" max="10"
                                    step="0.1" required disabled aria-describedby="gradeHelp"
                                    autocomplete="off" inputmode="decimal">
-                            <p id="gradeHelp">Un decimal; mínima aprobatoria 7.0. Guarda el borrador y después publícalo para que el alumno lo vea.</p>
+                            <p id="gradeHelp">Un decimal; mínima aprobatoria 7.0. Guarda el borrador y después publícalo para que el seminarista lo vea.</p>
                             <div class="grade-actions">
                                 <button id="gradeSave" class="back-link" type="submit" disabled>Guardar borrador</button>
                                 <button id="gradePublish" class="back-link grade-publish" type="button" disabled>Publicar calificación</button>
@@ -344,26 +345,51 @@
             </section>
 
             <section id="controlHome" class="control-home" data-screen="inicio" aria-label="Acciones de Control Escolar" hidden>
-                <a href="#personas" class="task-card"><span class="task-mark">01</span><h2>Personas</h2><p>Alumnos, sacerdotes y personal. Invita o administra su acceso.</p><span class="task-link">Administrar personas →</span></a>
+                <a href="#personas" class="task-card"><span class="task-mark">01</span><h2>Personas</h2><p>Seminaristas, sacerdotes y personal. Invita o administra su acceso.</p><span class="task-link">Administrar personas →</span></a>
                 <a href="#catalogos-academicos" class="task-card"><span class="task-mark">02</span><h2>Materias y periodos</h2><p>Organiza el catálogo y las fechas del ciclo académico.</p><span class="task-link">Organizar catálogo →</span></a>
                 <a href="#clases" class="task-card"><span class="task-mark">03</span><h2>Clases</h2><p>Abre una materia para un periodo y asigna sus profesores.</p><span class="task-link">Administrar clases →</span></a>
-                <a href="#inscripciones" class="task-card"><span class="task-mark">04</span><h2>Inscripciones</h2><p>Inscribe alumnos y consulta las altas y bajas de cada clase.</p><span class="task-link">Administrar inscripciones →</span></a>
+                <a href="#inscripciones" class="task-card"><span class="task-mark">04</span><h2>Inscripciones</h2><p>Inscribe seminaristas y consulta las altas y bajas de cada clase.</p><span class="task-link">Administrar inscripciones →</span></a>
                 <a href="#etapas" class="task-card"><span class="task-mark">06</span><h2>Etapas y semestres</h2><p>Curso Introductorio, Filosofía y Teología. Registra la etapa de cada seminarista por periodo.</p><span class="task-link">Organizar trayectoria →</span></a>
                 <a href="#kardex" class="task-card kardex-home-card"><span class="task-mark">05</span><h2>Boletas y kardex</h2><p>Prepara la boleta semestral o consulta el historial por etapa. Emite y reimprime documentos.</p><span class="task-link">Consultar documentos →</span></a>
             </section>
             <section id="kardexSection" class="dashboard-card kardex-section" data-screen="kardex" hidden aria-labelledby="kardexTitle">
-                <div class="kardex-heading"><div><p class="kardex-eyebrow">CONTROL ESCOLAR</p><h2 id="kardexTitle">Boletas y kardex</h2><p>Busca al seminarista, revisa sus calificaciones y genera su documento.</p></div><div class="kardex-actions"><a class="back-link" href="#etapas">Boletas por curso (ZIP)</a><button id="kardexInstitution" class="back-link" type="button">Datos del plantel</button><button id="kardexPrograms" class="back-link" type="button">Programas y planes</button></div></div>
-                <ol class="kardex-steps" aria-label="Pasos para generar un kardex"><li>1. Buscar alumno</li><li>2. Revisar historial</li><li>3. Emitir y guardar PDF</li></ol>
+                <div class="kardex-heading"><div><p class="kardex-eyebrow">CONTROL ESCOLAR</p><h2 id="kardexTitle">Boletas y kardex</h2><p>Consulta las calificaciones de un grupo o el historial de un seminarista.</p></div><div class="kardex-actions"><a class="back-link" href="#etapas">Boletas por curso (ZIP)</a><button id="kardexInstitution" class="back-link" type="button">Datos del plantel</button><button id="kardexPrograms" class="back-link" type="button">Programas y planes</button></div></div>
+                <div class="period-tabs" role="group" aria-label="Vista de Boletas y kardex">
+                    <button id="kardexByGroup" type="button" aria-pressed="false" aria-controls="groupFinalGrades">Por grupo</button>
+                    <button id="kardexByStudent" type="button" aria-pressed="false" aria-controls="kardexIndividual">Por seminarista</button>
+                </div>
+                <section id="groupFinalGrades" class="group-finals" aria-label="Calificaciones finales por grupo" hidden>
+                    <div class="group-finals-tools">
+                        <label>Periodo académico<select id="groupFinalPeriod" disabled></select></label>
+                        <label>Grupo<select id="groupFinalGroup" disabled></select></label>
+                        <div class="group-finals-actions">
+                            <button id="groupFinalRefresh" type="button" class="back-link">Actualizar</button>
+                            <button id="groupFinalExcel" type="button" class="back-link" disabled>Descargar Excel</button>
+                            <button id="groupFinalEdit" type="button" class="back-link" aria-pressed="false" disabled>Editar finales</button>
+                        </div>
+                    </div>
+                    <p id="groupFinalStatus" class="control-message" role="status"></p>
+                    <div id="groupFinalSummary" class="group-finals-summary"></div>
+                    <p id="groupFinalNotice" class="group-finals-notice" hidden></p>
+                    <div id="groupFinalTable" class="group-finals-scroll" role="region" aria-label="Tabla de notas finales" tabindex="0" hidden></div>
+                    <div id="groupFinalReviewBar" class="group-finals-review-bar" hidden>
+                        <p id="groupFinalDraftStatus" role="status"></p>
+                        <button id="groupFinalCancel" type="button" class="back-link">Cancelar edición</button>
+                        <button id="groupFinalReview" type="button" class="back-link control-create" disabled>Revisar y publicar</button>
+                    </div>
+                </section>
+                <div id="kardexIndividual" hidden>
+                <ol class="kardex-steps" aria-label="Pasos para generar un kardex"><li>1. Buscar seminarista</li><li>2. Revisar historial</li><li>3. Emitir y guardar PDF</li></ol>
                 <p id="kardexStatus" class="control-message" role="status" aria-live="polite"></p>
                 <div id="kardexLookup">
                     <form id="kardexSearchForm" class="kardex-search" role="search"><label for="kardexSearch">Nombre, matrícula o CURP</label><input id="kardexSearch" type="search" maxlength="160" autocomplete="off" placeholder="Busca al seminarista"><button class="back-link control-create" type="submit">Buscar</button></form>
-                    <ul id="kardexStudents" class="kardex-students"></ul><button id="kardexMore" class="back-link" type="button" hidden>Mostrar más alumnos</button>
+                    <ul id="kardexStudents" class="kardex-students"></ul><button id="kardexMore" class="back-link" type="button" hidden>Mostrar más seminaristas</button>
                 </div>
                 <div id="kardexWorkspace" hidden>
-                    <div class="kardex-student-heading"><div><h3 id="kardexStudentName"></h3><p id="kardexStudentMeta"></p></div><button id="kardexChooseOther" class="back-link" type="button">Cambiar alumno</button></div>
+                    <div class="kardex-student-heading"><div><h3 id="kardexStudentName"></h3><p id="kardexStudentMeta"></p></div><button id="kardexChooseOther" class="back-link" type="button">Cambiar seminarista</button></div>
                     <details id="reportCards" class="report-cards" hidden open>
                         <summary>Boleta semestral</summary>
-                        <p class="kardex-help">Elige alumno y periodo: se reúnen sus materias y calificaciones finales publicadas. Control Escolar revisa y emite la boleta. Escala 0 a 10, un decimal y mínima aprobatoria 7.0.</p>
+                        <p class="kardex-help">Elige seminarista y periodo: se reúnen sus materias y calificaciones finales publicadas. Control Escolar revisa y emite la boleta. Escala 0 a 10, un decimal y mínima aprobatoria 7.0.</p>
                         <div class="report-fields">
                             <label>Periodo académico<select id="reportPeriod"></select></label>
                             <label>Ciclo escolar<input id="reportCycle" maxlength="9" pattern="[0-9]{4}-[0-9]{4}" placeholder="2025-2026" autocomplete="off"></label>
@@ -378,7 +404,7 @@
                         <h3>Boletas emitidas</h3><p class="kardex-help">Cada folio conserva la copia que revisó Control Escolar.</p>
                         <ul id="reportIssues" class="kardex-students"></ul><button id="reportMore" class="back-link" type="button" hidden>Más boletas</button>
                     </details>
-                    <div class="kardex-toolbar"><label for="kardexProgram">Historial que deseas generar<select id="kardexProgram"><option value="">Historial general</option></select></label><button id="kardexRefresh" class="back-link" type="button">Actualizar historial</button><button id="kardexStudentData" class="back-link" type="button">Datos del alumno</button><button id="kardexPersonalData" class="back-link" type="button">Expediente personal</button><button id="kardexAcademicData" class="back-link" type="button">Clasificar materias</button></div>
+                    <div class="kardex-toolbar"><label for="kardexProgram">Historial que deseas generar<select id="kardexProgram"><option value="">Historial general</option></select></label><button id="kardexRefresh" class="back-link" type="button">Actualizar historial</button><button id="kardexStudentData" class="back-link" type="button">Datos del seminarista</button><button id="kardexPersonalData" class="back-link" type="button">Expediente personal</button><button id="kardexAcademicData" class="back-link" type="button">Clasificar materias</button></div>
                     <p class="kardex-help">Se utilizan las calificaciones finales publicadas. Las notas de tareas y los borradores del profesor no sustituyen la calificación final.</p>
                     <div id="kardexPreview"></div>
                     <details id="kardexRequirements"><summary>Qué falta para generar un kardex final</summary><ul id="kardexReasons"></ul></details>
@@ -386,10 +412,11 @@
                     <p id="kardexIssueStatus" class="control-message" role="status" aria-live="polite"></p>
                     <section class="kardex-issued" aria-labelledby="kardexIssuedTitle"><h3 id="kardexIssuedTitle">Kardex emitidos</h3><p>Cada emisión conserva su contenido original y su folio interno.</p><ul id="kardexIssues" class="kardex-students"></ul><button id="kardexIssuesMore" class="back-link" type="button" hidden>Más documentos</button></section>
                 </div>
+                </div>
             </section>
             <section id="classDirectory" class="dashboard-card class-directory" data-screen="clases materias-asignadas" hidden aria-labelledby="classDirectoryTitle" aria-busy="false">
                 <div class="class-directory-heading">
-                    <div><h2 id="classDirectoryTitle">Clases por curso</h2><p id="classDirectoryIntro">Elige el periodo académico, abre un curso e inscribe alumnos o asigna profesores a sus clases.</p></div>
+                    <div><h2 id="classDirectoryTitle">Clases por curso</h2><p id="classDirectoryIntro">Elige el periodo académico, abre un curso e inscribe seminaristas o asigna profesores a sus clases.</p></div>
                     <div id="classDirectoryManage"><button id="classDirectoryCreate" class="back-link control-create" type="button" disabled>Abrir clase</button><a class="back-link" href="#catalogos-academicos">Organizar materias</a></div>
                 </div>
                 <div class="class-directory-tools">
@@ -442,7 +469,7 @@
     </dialog>
 
     <dialog id="batchEnrollmentDialog" class="management-dialog batch-enrollment-dialog" aria-labelledby="batchEnrollmentTitle">
-        <div class="dialog-heading"><h2 id="batchEnrollmentTitle">Inscribir alumnos</h2><button id="batchEnrollmentClose" class="dialog-close" type="button" aria-label="Cerrar inscripción">×</button></div>
+        <div class="dialog-heading"><h2 id="batchEnrollmentTitle">Inscribir seminaristas</h2><button id="batchEnrollmentClose" class="dialog-close" type="button" aria-label="Cerrar inscripción">×</button></div>
         <div id="batchEnrollmentSummary" class="class-selection-summary"></div>
         <form id="batchEnrollmentForm" aria-busy="false">
             <div class="batch-enrollment-filters">
@@ -456,7 +483,7 @@
             <p id="batchEnrollmentCount" role="status" aria-live="polite"></p>
             <ul id="batchEnrollmentList" class="batch-enrollment-list" aria-label="Seminaristas disponibles"></ul>
             <p id="batchEnrollmentStatus" class="control-message" role="status" aria-live="polite"></p>
-            <div class="dialog-actions"><button id="batchEnrollmentSave" class="back-link control-create" type="submit" disabled>Inscribir alumnos</button><button id="batchEnrollmentCancel" class="back-link" type="button">Cancelar</button></div>
+            <div class="dialog-actions"><button id="batchEnrollmentSave" class="back-link control-create" type="submit" disabled>Inscribir seminaristas</button><button id="batchEnrollmentCancel" class="back-link" type="button">Cancelar</button></div>
         </form>
     </dialog>
     <dialog id="managementDialog" class="management-dialog" aria-labelledby="managementDialogTitle">
@@ -498,38 +525,41 @@
         integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK"
         crossorigin="anonymous" defer></script>
     <script src="supabase-config.js?v=20261021-aula-1" defer></script>
-    <script src="auth.js?v=20261022-expediente-1" defer></script>
+    <script src="portal-terms.js?v=20261127-seminaristas-1" defer></script>
+    <script src="auth.js?v=20261127-seminaristas-1" defer></script>
     <script src="grade-scale.js?v=20261027-boletas-1" defer></script>
-    <script src="course-groups.js?v=20261101-organizer-1" defer></script>
-    <script src="course-organizer.js?v=20261101-clases-1" defer></script>
+    <script src="course-groups.js?v=20261127-seminaristas-1" defer></script>
+    <script src="course-organizer.js?v=20261127-seminaristas-1" defer></script>
     <script src="course-instructors.js?v=20261117-docentes-1" defer></script>
-    <script src="class-directory.js?v=20261117-docentes-1" defer></script>
-    <script src="enrollment-batch.js?v=20261101-etapas-1" defer></script>
-    <script src="subjects.js?v=20261031-cursos-1" defer></script>
-    <script src="grade-editor.js?v=20261027-boletas-1" defer></script>
-    <script src="teaching.js?v=20261117-cursos-docentes-1" defer></script>
+    <script src="class-directory.js?v=20261127-seminaristas-1" defer></script>
+    <script src="enrollment-batch.js?v=20261127-seminaristas-1" defer></script>
+    <script src="subjects.js?v=20261127-seminaristas-1" defer></script>
+    <script src="grade-editor.js?v=20261127-seminaristas-1" defer></script>
+    <script src="teaching.js?v=20261127-seminaristas-1" defer></script>
     <script src="course-images.js?v=20261026-auto-1" defer></script>
     <script src="course-colors.js?v=20261026-auto-1" defer></script>
     <script src="pdf-preview.js?v=20261027-local-2" defer></script>
     <script src="content-files.js?v=20261027-lector-1" defer></script>
     <script src="deletion.js?v=20261022-admin-1" defer></script>
-    <script src="formation-groups.js?v=20261105-control-1" defer></script>
-    <script src="formation.js?v=20261101-grupos-1" defer></script>
+    <script src="formation-groups.js?v=20261127-seminaristas-1" defer></script>
+    <script src="formation.js?v=20261127-seminaristas-1" defer></script>
     <script src="report-period.js?v=20261125-periodo-1" defer></script>
-    <script src="report-pdf.js?v=20261125-periodo-1" defer></script>
-    <script src="report-batch.js?v=20261105-control-1" defer></script>
-    <script src="school-finals.js?v=20261105-control-1" defer></script>
-    <script src="report-cards.js?v=20261125-periodo-1" defer></script>
-    <script src="kardex.js?v=20261027-boletas-1" defer></script>
-    <script src="personal-files.js?v=20261103-archivos-1" defer></script>
-    <script src="personal-record.js?v=20261104-datos-1" defer></script>
-    <script src="management.js?v=20261104-datos-1" defer></script>
+    <script src="report-pdf.js?v=20261127-grupos-1" defer></script>
+    <script src="report-batch.js?v=20261127-seminaristas-1" defer></script>
+    <script src="school-finals.js?v=20261127-seminaristas-1" defer></script>
+    <script src="report-cards.js?v=20261127-seminaristas-1" defer></script>
+    <script src="grade-workbook.js?v=20261127-grupos-1" defer></script>
+    <script src="group-finals.js?v=20261127-grupos-1" defer></script>
+    <script src="kardex.js?v=20261127-seminaristas-1" defer></script>
+    <script src="personal-files.js?v=20261127-seminaristas-1" defer></script>
+    <script src="personal-record.js?v=20261127-seminaristas-1" defer></script>
+    <script src="management.js?v=20261127-seminaristas-1" defer></script>
     <script src="control.js?v=20261101-organizer-1" defer></script>
-    <script src="learning-files.js?v=20261021-aula-1" defer></script>
-    <script src="category-grades.js?v=20261107-categorias-1" defer></script>
-    <script src="weighted-grades.js?v=20261107-categorias-1" defer></script>
-    <script src="learning.js?v=20261117-docentes-1" defer></script>
-    <script src="workspace.js?v=20261105-control-1" defer></script>
-    <script src="panel.js?v=20261117-cursos-docentes-1" defer></script>
+    <script src="learning-files.js?v=20261127-seminaristas-1" defer></script>
+    <script src="category-grades.js?v=20261127-seminaristas-1" defer></script>
+    <script src="weighted-grades.js?v=20261127-seminaristas-1" defer></script>
+    <script src="learning.js?v=20261127-seminaristas-1" defer></script>
+    <script src="workspace.js?v=20261127-grupos-1" defer></script>
+    <script src="panel.js?v=20261127-seminaristas-1" defer></script>
 </body>
 </html>

@@ -513,7 +513,7 @@ async def main():
         await nav(page, 'calificaciones')
         await expect(page.locator('.weighted-table')).to_contain_text('=FORMULA DE PRUEBA')
         async with page.expect_download() as pending:
-            await page.get_by_role('button', name='Exportar alumnos mostrados', exact=True).click()
+            await page.get_by_role('button', name='Exportar seminaristas mostrados', exact=True).click()
         download = await pending.value
         import csv, io
         exported = list(csv.reader(io.StringIO(Path(await download.path()).read_text(encoding='utf-8-sig'))))

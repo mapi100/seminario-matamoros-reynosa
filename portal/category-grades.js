@@ -8,7 +8,7 @@
     function close(force=false){if(busy&&!force)return;if(dialog){dialog.close();dialog.remove();dialog=undefined;}}
     function clear(){version++;controller?.abort();close(true);state?.target.classList.remove("category-book");state=undefined;busy=false;}
     function note(message,error=false){if(!state)return;state.status.textContent=message;state.status.className='learning-status'+(error?' error':'');}
-    function errorText(e){if(e?.code==='PT409')return 'Las notas o los porcentajes cambiaron. Cierra y actualiza el libro antes de continuar.';if(['PGRST202','42883','42P01'].includes(e?.code)||e?.message==='Acción inválida')return 'Falta instalar la actualización de captura por categorías en Supabase.';if(e?.code==='22023')return e.message;return 'No se confirmó la respuesta. Cierra y actualiza el libro para comprobar el resultado antes de volver a guardar.';}
+    function errorText(e){if(e?.code==='PT409')return 'Las notas o los porcentajes cambiaron. Cierra y actualiza el libro antes de continuar.';if(['PGRST202','42883','42P01'].includes(e?.code)||e?.message==='Acción inválida')return 'Falta instalar la actualización de captura por categorías en Supabase.';if(e?.code==='22023')return window.PortalTerms.seminarian(e.message);return 'No se confirmó la respuesta. Cierra y actualiza el libro para comprobar el resultado antes de volver a guardar.';}
     async function write(action,data){controller=new AbortController();const timer=setTimeout(()=>controller.abort(),25000);try{const r=await window.PortalAuth.getClient().rpc('portal_gradebook_write',{p_course:state.ctx.courseId,p_action:action,p_data:data}).retry(false).abortSignal(controller.signal);if(r.error)throw {...r.error,status:r.status};if(r.data?.saved!==true)throw Error('Sin confirmación');return r.data;}finally{clearTimeout(timer);}}
     function modal(title){
         close();const d=el('dialog',undefined,'learning-dialog category-dialog'),h=el('h2',title);h.id='categoryDialogTitle';d.setAttribute('aria-labelledby',h.id);d.append(h);document.body.append(d);dialog=d;
@@ -45,14 +45,14 @@
         try{for(const row of state.rows){const m=marks(row);if(enabled().some(c=>m[c]!==row.original[c]))students.push({id:row.student.enrollment_id,token:row.student.summary.token,marks:m});}}
         catch(e){note(e.message,true);return;}
         if(!students.length){note('No hay notas modificadas para guardar.');return;}
-        const form=modal('Guardar categorías como borrador');form.fields.append(el('p','Se guardarán las categorías de '+students.length+' alumnos. Las finales publicadas y las boletas conservarán sus valores.'));
+        const form=modal('Guardar categorías como borrador');form.fields.append(el('p','Se guardarán las categorías de '+students.length+' seminaristas. Las finales publicadas y las boletas conservarán sus valores.'));
         const save=button('Guardar borrador',()=>void submit(form,'category_marks_save',{publish:false,students}),true),cancel=button('Cancelar',()=>close());cancel.dataset.cancel='true';form.actions.append(save,cancel);form.d.showModal();
     }
     function review(){
         if(busy)return;const candidates=[];
         try{for(const row of state.rows){const m=marks(row);candidates.push({row,m,average:average(m)});}}catch(e){note(e.message,true);return;}
         const form=modal('Revisar y publicar finales'),list=el('div',undefined,'category-review-list'),fields=[];
-        form.fields.append(el('p','Las categorías y la final se publicarán juntas para los alumnos seleccionados. Puedes ajustar la final; el cálculo original se conservará.'));
+        form.fields.append(el('p','Las categorías y la final se publicarán juntas para los seminaristas seleccionados. Puedes ajustar la final; el cálculo original se conservará.'));
         for(const c of candidates){const box=el('section',undefined,'category-review-row'),pick=checkbox(c.row.student.name),adjustLabel=el('label','Final ajustada (opcional)'),adjust=number('Ajuste final de '+c.row.student.name);adjustLabel.append(adjust);pick.input.disabled=c.average===null;pick.input.checked=c.average!==null;adjust.disabled=c.average===null;
             box.append(pick.label,el('p',c.average===null?'Pendiente: completa las categorías que cuentan.':'Final calculada: '+format(c.average)+' · Publicada: '+format(c.row.student.final_score)),adjustLabel);list.append(box);fields.push({...c,pick,adjust});}
         const reasonLabel=el('label','Motivo de ajustes o correcciones (mínimo 10 caracteres si corresponde)'),reason=el('textarea');reason.rows=2;reason.maxLength=1000;reasonLabel.append(reason);
@@ -65,9 +65,9 @@
         });sync();form.d.showModal();
     }
     function render(target,data,ctx){
-        clear();target.classList.add("category-book");state={target,data,ctx,rows:[]};const heading=el('div',undefined,'weighted-toolbar');heading.append(el('h2','Calificaciones por categoría'),button('Configurar evaluación',configuration,true),button('Actualizar libro',()=>ctx.refresh()),button('Exportar alumnos mostrados',ctx.exportCSV));
+        clear();target.classList.add("category-book");state={target,data,ctx,rows:[]};const heading=el('div',undefined,'weighted-toolbar');heading.append(el('h2','Calificaciones por categoría'),button('Configurar evaluación',configuration,true),button('Actualizar libro',()=>ctx.refresh()),button('Exportar seminaristas mostrados',ctx.exportCSV));
         const status=el('p','','learning-status');status.setAttribute('role','status');state.status=status;target.replaceChildren(heading,status);
-        if(!data.published){target.append(el('p','Configura los porcentajes para capturar una nota de Tareas, Exámenes, Proyectos y Participación por alumno. No se requieren actividades.'));return;}
+        if(!data.published){target.append(el('p','Configura los porcentajes para capturar una nota de Tareas, Exámenes, Proyectos y Participación por seminarista. No se requieren actividades.'));return;}
         target.append(el('p',data.published.categories.map(c=>labels[c.code]+': '+c.weight+' %'+(c.weight===0?' (no cuenta)':'')).join(' · ')),el('p','Escala de 0 a 10. La final se calcula al completar las categorías que cuentan. Vacío significa pendiente; 0 es una nota real. Guardar borrador conserva la final publicada. Revisar y publicar finales confirma las categorías y la final juntas.'));
         const scroll=el('div',undefined,'learning-table-scroll category-scroll');scroll.tabIndex=0;scroll.setAttribute('aria-label','Calificaciones por categoría; desplázate para ver las columnas');const table=el('table',undefined,'learning-grades-table category-table'),head=el('thead'),hr=el('tr'),body=el('tbody');for(const label of ['Seminarista',...codes.map(c=>labels[c]),'Final calculada','Final publicada']){const th=el('th',label);th.scope='col';hr.append(th);}head.append(hr);table.append(head,body);scroll.append(table);target.append(scroll);
         for(const student of data.students){const tr=el('tr'),name=el('th',student.name),row={student,inputs:{},original:{}};name.scope='row';tr.append(name);
@@ -79,8 +79,8 @@
             for(const i of Object.values(row.inputs))i.addEventListener('input',sync);sync();
         }
         const actions=el('div',undefined,'category-actions');actions.append(button('Guardar borrador',draft),button('Revisar y publicar finales',review,true));target.append(actions);
-        if(!data.students.length){actions.querySelectorAll('button').forEach(b=>b.disabled=true);target.append(el('p','No hay alumnos activos inscritos.'));}
-        const pagination=el('div',undefined,'category-actions');if(ctx.offset)pagination.append(button('Anterior',()=>ctx.refresh(ctx.offset-30)));pagination.append(el('p','Alumnos '+(data.students.length?ctx.offset+1:0)+'–'+(ctx.offset+data.students.length)));if(data.has_more)pagination.append(button('Siguiente',()=>ctx.refresh(ctx.offset+30)));target.append(pagination);
+        if(!data.students.length){actions.querySelectorAll('button').forEach(b=>b.disabled=true);target.append(el('p','No hay seminaristas activos inscritos.'));}
+        const pagination=el('div',undefined,'category-actions');if(ctx.offset)pagination.append(button('Anterior',()=>ctx.refresh(ctx.offset-30)));pagination.append(el('p','Seminaristas '+(data.students.length?ctx.offset+1:0)+'–'+(ctx.offset+data.students.length)));if(data.has_more)pagination.append(button('Siguiente',()=>ctx.refresh(ctx.offset+30)));target.append(pagination);
         const advanced=el('details'),summary=el('summary','Más opciones');advanced.append(summary,el('p','Si necesitas evaluar actividades individuales, puedes conservarlas y usar el libro por actividades.'),button('Evaluar mediante actividades',ctx.configureActivities));target.append(advanced);
     }
     function configureExisting(target,data,ctx){clear();const status=el('p','','learning-status');target.prepend(status);state={target,data,ctx,status,rows:[]};configuration();}

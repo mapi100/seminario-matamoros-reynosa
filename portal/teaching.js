@@ -68,7 +68,7 @@
         position.after(section);
         section.dataset.screen = "inicio materias-asignadas";
         document.getElementById("teachingTitle").textContent = "Mis cursos";
-        document.getElementById("teachingIntro").textContent = "Organiza los contenidos, las tareas y el seguimiento de tus alumnos.";
+        document.getElementById("teachingIntro").textContent = "Organiza los contenidos, las tareas y el seguimiento de tus seminaristas.";
         section.hidden = true;
         link.hidden = true;
         section.setAttribute("aria-busy", "false");
@@ -103,17 +103,17 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = "back-link teaching-open";
-        button.textContent = "Ver alumnos";
+        button.textContent = "Ver seminaristas";
         button.setAttribute("aria-expanded", "false");
         button.setAttribute("aria-controls", "rosterSection");
-        button.setAttribute("aria-label", "Ver alumnos de " + course.subjects.name + ", " + course.academic_periods.name);
+        button.setAttribute("aria-label", "Ver seminaristas de " + course.subjects.name + ", " + course.academic_periods.name);
         button.addEventListener("click", function () {
             if (section.hidden) return;
             clearRoster();
             activeCourse = course;
             activeButton = button;
             button.setAttribute("aria-expanded", "true");
-            rosterTitle.textContent = "Alumnos de " + course.subjects.name;
+            rosterTitle.textContent = "Seminaristas de " + course.subjects.name;
             rosterPeriod.textContent = course.academic_periods.name;
             roster.hidden = false;
             void loadRoster();
@@ -168,7 +168,7 @@
         } catch {
             if (operation !== version || section.hidden) return;
             // Un error puede significar que cambiaron las asignaciones; retirar
-            // también el listado de alumnos que hubiera quedado abierto.
+            // también el listado de seminaristas que hubiera quedado abierto.
             clearRoster();
             status.className = "teaching-status error";
             status.textContent = "No fue posible consultar tus materias asignadas. Comprueba tu conexión y vuelve a intentarlo.";
@@ -193,7 +193,7 @@
         rosterMore.disabled = true;
         rosterRetry.hidden = true;
         rosterStatus.className = "teaching-status";
-        rosterStatus.textContent = rosterOffset ? "Cargando más alumnos…" : "Cargando alumnos…";
+        rosterStatus.textContent = rosterOffset ? "Cargando más seminaristas…" : "Cargando seminaristas…";
         try {
             // RPC de solo lectura: PostgreSQL vuelve a comprobar que el profesor
             // está activo y tiene esta materia y periodo asignados.
@@ -206,7 +206,7 @@
                 .abortSignal(rosterController.signal);
             if (operation !== rosterVersion || sessionVersion !== version || roster.hidden) return;
             if (error) throw error;
-            if (!Array.isArray(data)) throw new Error("Respuesta de alumnos inválida");
+            if (!Array.isArray(data)) throw new Error("Respuesta de seminaristas inválida");
             const students = data.slice(0, pageSize);
             const pageIds = new Set();
             const items = students.map(student => {
@@ -214,7 +214,7 @@
                     !student || typeof student.enrollment_id !== "string" || !uuid.test(student.enrollment_id) ||
                     typeof student.student_name !== "string" || !student.student_name.trim() ||
                     shownStudents.has(student.enrollment_id) || pageIds.has(student.enrollment_id)
-                ) throw new Error("Alumno inválido");
+                ) throw new Error("Seminarista inválido");
                 pageIds.add(student.enrollment_id);
                 const item = document.createElement("li");
                 item.className = "roster-row";
@@ -250,8 +250,8 @@
             rosterOffset += items.length;
             rosterMore.hidden = data.length <= pageSize;
             rosterStatus.textContent = rosterOffset
-                ? rosterOffset + (rosterOffset === 1 ? " alumno mostrado." : " alumnos mostrados.")
-                : "No hay alumnos activos inscritos en esta materia y periodo.";
+                ? rosterOffset + (rosterOffset === 1 ? " seminarista mostrado." : " seminaristas mostrados.")
+                : "No hay seminaristas activos inscritos en esta materia y periodo.";
         } catch {
             if (operation !== rosterVersion || sessionVersion !== version || roster.hidden) return;
             window.PortalGradeEditor?.clear();
@@ -259,7 +259,7 @@
             shownStudents.clear();
             rosterOffset = 0;
             rosterStatus.className = "teaching-status error";
-            rosterStatus.textContent = "No fue posible consultar la lista de alumnos. Actualiza tus materias y vuelve a abrir la lista.";
+            rosterStatus.textContent = "No fue posible consultar la lista de seminaristas. Actualiza tus materias y vuelve a abrir la lista.";
             rosterRetry.hidden = false;
             rosterMore.hidden = true;
         } finally {
@@ -281,7 +281,7 @@
             document.getElementById("classDirectory").after(section);
             section.dataset.screen = "materias-asignadas";
             document.getElementById("teachingTitle").textContent = "Mis cursos como profesor";
-            document.getElementById("teachingIntro").textContent = "Estas son las materias que impartes. Entra para agregar materiales, capturar calificaciones o consultar a tus alumnos.";
+            document.getElementById("teachingIntro").textContent = "Estas son las materias que impartes. Entra para agregar materiales, capturar calificaciones o consultar a tus seminaristas.";
         }
         section.hidden = false;
         link.hidden = false;

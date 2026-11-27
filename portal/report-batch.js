@@ -8,7 +8,7 @@
     function clear(){close(true);profile=recheck=undefined;for(const u of urls)URL.revokeObjectURL(u);urls.clear();}
     function denied(e){if(e?.code==='42501'||[401,403].includes(e?.status)){const v=recheck;clear();void v?.();return true;}return false;}
     async function rpc(name,args){const c=new AbortController();controllers.add(c);try{const r=await window.PortalAuth.getClient().rpc(name,args).retry(false).abortSignal(c.signal);if(r.error)throw {...r.error,status:r.status};return r.data;}finally{controllers.delete(c);}}
-    function errorText(e){return ['PT409','22023'].includes(e?.code)?e.message:['PGRST202','42883','42P01'].includes(e?.code)?'Falta instalar la actualización de boletas por grupo en Supabase.':e instanceof Error?e.message:'No se confirmó la respuesta. Comprueba el mismo lote antes de iniciar otro.';}
+    function errorText(e){return ['PT409','22023'].includes(e?.code)?window.PortalTerms.seminarian(e.message):['PGRST202','42883','42P01'].includes(e?.code)?'Falta instalar la actualización de boletas por grupo en Supabase.':e instanceof Error?window.PortalTerms.seminarian(e.message):'No se confirmó la respuesta. Comprueba el mismo lote antes de iniciar otro.';}
     function scope(period,code){const m=/^(CI|[1-4][FT])-([1-8])$/.exec(code||'');if(!uuid.test(period)||!m)return null;const semester=Number(m[2]),stage=m[1]==='CI'?'introductorio':m[1].endsWith('F')?'filosofia':'teologia';if(m[1]!=='CI'&&Number(m[1][0])!==Math.ceil(semester/2))return null;return {period,group:code,stage,semester};}
     function validPlan(p,s){return p?.period_id===s.period&&p.group_code===s.group&&p.stage===s.stage&&p.semester===s.semester&&/^[a-f0-9]{32}$/.test(p.token)&&Array.isArray(p.items)&&p.items.length<=200&&new Set(p.items.map(x=>x.student_id)).size===p.items.length&&p.items.every(x=>uuid.test(x.student_id)&&typeof x.name==='string'&&['pending','reuse','issue'].includes(x.action)&&Array.isArray(x.preview?.reasons));}
     function validResult(r,s,p,request){const wanted=new Set(p.items.filter(x=>x.action!=='pending').map(x=>x.student_id));return r?.saved===true&&r.batch_id===request&&r.period_id===s.period&&r.group_code===s.group&&uuid.test(r.batch_id)&&Array.isArray(r.documents)&&r.documents.length===wanted.size&&new Set(r.documents.map(d=>d.student_id)).size===wanted.size&&r.documents.every(d=>uuid.test(d.id)&&wanted.has(d.student_id)&&typeof d.folio==='string'&&d.snapshot?.student?.id===d.student_id&&d.snapshot?.period?.id===s.period)&&Array.isArray(r.pending);}
@@ -25,12 +25,12 @@
         function sync(){const ready=plan?.items.filter(x=>x.action!=='pending').length||0,issue=plan?.items.some(x=>x.action==='issue');checkLabel.hidden=!issue||Boolean(pendingRequest);download.textContent=pendingRequest?'Comprobar / descargar ZIP':issue?'Emitir listas y descargar ZIP ('+ready+')':'Descargar ZIP ('+ready+')';download.disabled=busy||!ready||issue&&!check.checked&&!pendingRequest;refresh.disabled=busy;cancel.disabled=busy;check.disabled=busy;}
         check.addEventListener('change',sync);
         async function load(){
-            if(busy||!alive())return;const reading=++readVersion;for(const c of controllers)c.abort();plan=undefined;pendingRequest=lastResult=undefined;check.checked=false;list.replaceChildren();status.textContent='Revisando alumnos y calificaciones…';sync();
+            if(busy||!alive())return;const reading=++readVersion;for(const c of controllers)c.abort();plan=undefined;pendingRequest=lastResult=undefined;check.checked=false;list.replaceChildren();status.textContent='Revisando seminaristas y calificaciones…';sync();
             try{const p=await rpc('portal_report_group_read',{p_period:s.period,p_stage:s.stage,p_semester:s.semester});if(!alive()||reading!==readVersion)return;if(!validPlan(p,s))throw new Error('Respuesta de boletas inválida');plan=p;subtitle.textContent=p.period_name+' · '+s.group;
                 const eligible=p.items.filter(x=>x.action!=='pending').length,newCopies=p.items.filter(x=>x.action==='issue').length;
                 summary.textContent=eligible+' de '+p.items.length+' boletas listas para descargar. '+newCopies+' requieren emisión; '+(eligible-newCopies)+' ya están emitidas y actualizadas.';
                 if(!p.items.length)list.append(el('li','No hay seminaristas con inscripciones activas en este bloque y periodo.'));
-                for(const item of p.items){const li=el('li');li.append(el('strong',item.name),el('small',item.action==='pending'?'Pendiente: '+item.preview.reasons.join(' '):item.action==='reuse'?'Emitida y actualizada: se reutilizará su folio.':'Lista para emitir y guardar.'));list.append(li);}
+                for(const item of p.items){const li=el('li');li.append(el('strong',item.name),el('small',item.action==='pending'?'Pendiente: '+window.PortalTerms.seminarian(item.preview.reasons.join(' ')):item.action==='reuse'?'Emitida y actualizada: se reutilizará su folio.':'Lista para emitir y guardar.'));list.append(li);}
                 status.textContent=eligible<p.items.length?'El ZIP incluirá las listas y un manifiesto con las pendientes. No se crean boletas incompletas.':'Revisa el grupo antes de descargar.';
             }catch(e){if(alive()&&reading===readVersion&&!denied(e)){status.textContent=errorText(e);status.className='control-message error';}}
             finally{if(alive()&&reading===readVersion)sync();}
@@ -49,7 +49,7 @@
                     await new Promise(resolve=>requestAnimationFrame(resolve));
                 }
                 manifest.push('','PENDIENTES:');if(!result.pending.length)manifest.push('Ninguna.');
-                for(const p of result.pending)manifest.push(p.name+': '+p.reasons.join(' '));
+                for(const p of result.pending)manifest.push(p.name+': '+window.PortalTerms.seminarian(p.reasons.join(' ')));
                 files.push({name:'LEEME_DEL_LOTE.txt',bytes:new TextEncoder().encode(manifest.join('\r\n'))});
                 // Revalidar al finalizar la generación, incluso si cambió el rol mientras
                 // se preparaban los PDF. La misma solicitud nunca duplica los folios.

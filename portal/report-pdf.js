@@ -86,12 +86,14 @@
     // ZIP sin recompresión: los PDF ya llevan sus flujos comprimidos.
     const crcTable=Uint32Array.from({length:256},(_,n)=>{for(let i=0;i<8;i++)n=n&1?0xedb88320^(n>>>1):n>>>1;return n>>>0;});
     function crc32(data){let n=0xffffffff;for(const b of data)n=crcTable[(n^b)&255]^(n>>>8);return(n^0xffffffff)>>>0;}
-    function zip(files){
+    function zip(files,{allowPaths=false}={}){
         if(!Array.isArray(files)||!files.length||files.length>201)throw new Error("Lote ZIP inválido");
         const encoder=new TextEncoder(),local=[],central=[];let offset=0;const seen=new Set();
         const header=(length)=>{const bytes=new Uint8Array(length);return {bytes,v:new DataView(bytes.buffer)};};
         for(const file of files){
-            if(typeof file.name!=="string"||file.name.includes("/")||file.name.includes("\\")||file.name.includes("..")||seen.has(file.name)||!(file.bytes instanceof Uint8Array))throw new Error("Nombre/archivo ZIP inválido");
+            if(typeof file.name!=="string"||!file.name||file.name.includes("\\")||file.name.includes("..")||
+                (allowPaths ? file.name.split("/").some(part=>!part||part==="."||part.includes(":")) : file.name.includes("/"))||
+                seen.has(file.name)||!(file.bytes instanceof Uint8Array))throw new Error("Nombre/archivo ZIP inválido");
             seen.add(file.name);const name=encoder.encode(file.name),data=file.bytes,crc=crc32(data);
             const h=header(30);h.v.setUint32(0,0x04034b50,true);h.v.setUint16(4,20,true);h.v.setUint16(6,0x800,true);h.v.setUint16(12,33,true);h.v.setUint32(14,crc,true);h.v.setUint32(18,data.length,true);h.v.setUint32(22,data.length,true);h.v.setUint16(26,name.length,true);
             local.push(h.bytes,name,data);

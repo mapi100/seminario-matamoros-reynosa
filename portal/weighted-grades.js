@@ -16,7 +16,7 @@
     function message(target, value, error = false) { target.textContent = value; target.className = "learning-status " + (error ? "error" : "success"); target.setAttribute("role", "status"); }
     function errorText(error) {
         if (error?.code === "PT409") return "Los datos cambiaron. Cierra esta ventana y actualiza el libro antes de continuar.";
-        if (error?.code === "22023" && typeof error.message === "string") return error.message.slice(0, 400);
+        if (error?.code === "22023" && typeof error.message === "string") return window.PortalTerms.seminarian(error.message).slice(0, 400);
         if (["PGRST202", "42883", "42P01"].includes(error?.code)) return "Falta instalar la actualización de ponderaciones en Supabase. Contacta al responsable del portal.";
         return "No se pudo confirmar la operación. Actualiza el libro para revisar el resultado antes de intentarlo otra vez.";
     }
@@ -121,15 +121,15 @@
         const overview = el("section", null, "learning-card weighted-overview");
         overview.append(el("h3", data.published ? "Criterios publicados" : "Configura cómo se evalúa esta clase"));
         overview.append(text(data.published ? data.published.categories.map(c => labels[c.code] + ": " + num(c.weight) + " %").join(" · ") : "Reparte el 100 % entre tareas, exámenes, proyectos y participación. Después clasifica las actividades y publica tus criterios."));
-        if (data.draft && JSON.stringify(data.draft) !== JSON.stringify(data.published)) overview.append(text("Hay un borrador de criterios pendiente de publicación. Los alumnos siguen viendo los criterios publicados."));
+        if (data.draft && JSON.stringify(data.draft) !== JSON.stringify(data.published)) overview.append(text("Hay un borrador de criterios pendiente de publicación. Los seminaristas siguen viendo los criterios publicados."));
                 if (data.published && data.assignments.some(a => !data.published.items.some(i => i.id === a.id))) overview.append(text("Hay actividades nuevas por clasificar. Revisa Configurar evaluación antes de publicar finales.", "learning-status error"));
         target.append(overview);
-        const tools = el("div", null, "weighted-toolbar"); tools.append(btn("Actualizar libro", reload), btn("Exportar alumnos mostrados", exportCSV), btn(current.quick ? "Vista de consulta" : "Captura rápida", () => { current.quick = !current.quick; target.replaceChildren(); staff(target, data); })); target.append(tools);
+        const tools = el("div", null, "weighted-toolbar"); tools.append(btn("Actualizar libro", reload), btn("Exportar seminaristas mostrados", exportCSV), btn(current.quick ? "Vista de consulta" : "Captura rápida", () => { current.quick = !current.quick; target.replaceChildren(); staff(target, data); })); target.append(tools);
         if (current.quick) {
             tools.append(btn("Guardar borradores", () => saveGrid(false)), btn("Guardar y publicar notas", () => saveGrid(true), false));
-            target.append(text("Captura las notas directamente en la tabla. Los espacios vacíos siguen pendientes. Guardar borradores conserva las notas visibles del alumno; Guardar y publicar las actualiza."));
+            target.append(text("Captura las notas directamente en la tabla. Los espacios vacíos siguen pendientes. Guardar borradores conserva las notas visibles del seminarista; Guardar y publicar las actualiza."));
         }
-        const body = table(target, ["Alumno", ...codes.map(c => labels[c]), "Promedio actual publicado", "Vista previa con borradores", "Peso evaluado", "Final publicada", ...data.assignments.map(a => a.title)]);
+        const body = table(target, ["Seminarista", ...codes.map(c => labels[c]), "Promedio actual publicado", "Vista previa con borradores", "Peso evaluado", "Final publicada", ...data.assignments.map(a => a.title)]);
         for (const student of data.students) {
             const row = el("tr"), name = el("th", student.name); name.scope = "row"; row.append(name);
             for (const code of codes) row.append(el("td", score(student.summary.categories?.find(c => c.code === code)?.average)));
@@ -145,10 +145,10 @@
             }
             body.append(row);
         }
-        if (!data.students.length) target.append(text("Todavía no hay alumnos activos inscritos en esta clase."));
+        if (!data.students.length) target.append(text("Todavía no hay seminaristas activos inscritos en esta clase."));
         const pagination = el("div", null, "weighted-toolbar");
         if (current.offset) pagination.append(btn("Anterior", () => reload(current.offset - 30)));
-        pagination.append(text("Alumnos " + (data.students.length ? current.offset + 1 : 0) + "–" + (current.offset + data.students.length)));
+        pagination.append(text("Seminaristas " + (data.students.length ? current.offset + 1 : 0) + "–" + (current.offset + data.students.length)));
         if (data.has_more) pagination.append(btn("Siguiente", () => reload(current.offset + 30))); target.append(pagination);
     }
     async function render(target, ctx, offset = 0, quick = false) {
@@ -158,7 +158,7 @@
             const data = await rpc("portal_gradebook_read", { p_course: ctx.courseId, p_resource: ctx.canManage ? "book" : "own", p_offset: offset, p_limit: 30 });
             if (token !== version || !target.isConnected) return;
             if (!Array.isArray(data.assignments) || data.assignments.length > 100 || !data.assignments.every(a => uuid.test(a.id) && typeof a.title === "string")) throw new Error("Actividades inválidas");
-            if (ctx.canManage && (!Array.isArray(data.students) || data.students.length > 30 || !data.students.every(s => uuid.test(s.enrollment_id) && Array.isArray(s.grades) && Array.isArray(s.exemptions) && s.summary && s.draft_summary))) throw new Error("Alumnos inválidos");
+            if (ctx.canManage && (!Array.isArray(data.students) || data.students.length > 30 || !data.students.every(s => uuid.test(s.enrollment_id) && Array.isArray(s.grades) && Array.isArray(s.exemptions) && s.summary && s.draft_summary))) throw new Error("Seminaristas inválidos");
             if (!ctx.canManage && !data.summary) throw new Error("Promedio inválido");
             current.data = data; target.replaceChildren(); if (ctx.canManage && (data.published?.entry_mode === "categories" || !data.published)) window.PortalCategoryGrades.render(target,data,categoryContext()); else if (ctx.canManage) staff(target, data); else own(target, data);
         } catch (error) {
@@ -177,7 +177,7 @@
             const s = data.students.find(s => s.enrollment_id === e.dataset.enrollment), g = s.grades.find(g => g.assignment_id === e.dataset.assignment);
             return { enrollment_id: s.enrollment_id, assignment_id: e.dataset.assignment, token: s.summary.token, score: window.PortalGradeScale.toWire(e.value, g?.score), feedback: g?.feedback || "", revision: g?.revision || 0 };
         }) }));
-        form.fields.append(text("Se guardarán " + changed.length + " notas modificadas. " + (publish ? "Los alumnos verán estas notas y se recalcularán sus promedios actuales." : "Las calificaciones publicadas de los alumnos conservarán sus valores."))); form.open();
+        form.fields.append(text("Se guardarán " + changed.length + " notas modificadas. " + (publish ? "Los seminaristas verán estas notas y se recalcularán sus promedios actuales." : "Las calificaciones publicadas de los seminaristas conservarán sus valores."))); form.open();
     }
     function newActivity() {
         const form = modal("Nueva actividad evaluable", "Continuar", async () => ({})); form.save.type = "button";
@@ -233,7 +233,7 @@
             preview.replaceChildren(...issues.map(i => text(i, "learning-status error")));
             const saved = JSON.stringify(source) === JSON.stringify(data.draft);
             publish.disabled = !saved || issues.length > 0;
-            if (!saved) preview.append(text("Guarda este borrador para revisarlo antes de publicar. Los promedios de los alumnos todavía no cambian."));
+            if (!saved) preview.append(text("Guarda este borrador para revisarlo antes de publicar. Los promedios de los seminaristas todavía no cambian."));
         }
         update(); form.open();
     }
@@ -262,10 +262,10 @@
         if (g.url) { try { const u = new URL(g.url); if (["https:", "http:"].includes(u.protocol) && !u.username && !u.password) { const a = link("Abrir trabajo entregado", u.href); a.target = "_blank"; a.rel = "noopener noreferrer"; form.fields.append(a); } } catch {} }
         if (a.requires_submission !== false) { const files = el("div"); form.fields.append(files); window.PortalLearningFiles?.render(files, { courseId: current.ctx.courseId, assignmentId: a.id, enrollmentId: student.enrollment_id, canManage: true }); }
         const mark = input(form.fields, "Calificación (0 a 10)", { type: "number", grade: true, value: window.PortalGradeScale.format(g.score) });
-        const feedback = input(form.fields, "Comentarios para el alumno", { textarea: true, value: g.feedback || "" }); feedback.maxLength = 4000;
-        const publish = input(form.fields, "Publicar esta calificación para el alumno", { type: "checkbox", value: true });
+        const feedback = input(form.fields, "Comentarios para el seminarista", { textarea: true, value: g.feedback || "" }); feedback.maxLength = 4000;
+        const publish = input(form.fields, "Publicar esta calificación para el seminarista", { type: "checkbox", value: true });
         const zero = btn("Registrar cero por no entregar", () => { mark.value = "0"; feedback.value = "No entregada. Calificación registrada por el profesor."; exempt.checked = false; toggle(); }); form.fields.append(zero);
-        const exempt = input(form.fields, "Exentar esta actividad para este alumno", { type: "checkbox", value: Boolean(exemption) });
+        const exempt = input(form.fields, "Exentar esta actividad para este seminarista", { type: "checkbox", value: Boolean(exemption) });
         const reason = input(form.fields, "Motivo de la exención", { textarea: true, value: exemption?.reason || "" }); reason.minLength = 5;
         form.fields.append(text("La exención se publica al guardar y redistribuye el peso entre las demás actividades de la misma categoría. Para quitarla, desmarca la opción y guarda una nota."));
         if (typeof g.published_score === "number" && !exemption) form.actions.prepend(btn("Retirar publicación", () => {
@@ -279,11 +279,11 @@
         const students = current.data.students;
         const form = modal("Revisar calificaciones finales", "Publicar finales seleccionadas", () => {
             const selected = fields.filter(f => f.check.checked);
-            if (!confirm.checked || !selected.length) throw { code: "22023", message: "Selecciona al menos un alumno y confirma las notas finales." };
+            if (!confirm.checked || !selected.length) throw { code: "22023", message: "Selecciona al menos un seminarista y confirma las notas finales." };
             return write("final_publish", { confirmed: true, reason: reason.value.trim(), students: selected.map(f => ({ id: f.student.enrollment_id, token: f.student.summary.token, override: f.override.value === "" ? null : window.PortalGradeScale.toWire(f.override.value) })) });
         });
-        form.d.classList.add("weighted-configuration"); form.fields.append(text("Se muestran los alumnos de esta página. Se comprueban nuevamente sus notas al publicar. Los pendientes impiden cerrar la calificación."));
-        const body = table(form.fields, ["Seleccionar", "Alumno", "Calculada", "Final publicada", "Ajuste manual (opcional)", "Revisión"]), fields = [];
+        form.d.classList.add("weighted-configuration"); form.fields.append(text("Se muestran los seminaristas de esta página. Se comprueban nuevamente sus notas al publicar. Los pendientes impiden cerrar la calificación."));
+        const body = table(form.fields, ["Seleccionar", "Seminarista", "Calculada", "Final publicada", "Ajuste manual (opcional)", "Revisión"]), fields = [];
         for (const student of students) {
             const row = el("tr"), choice = el("td"), adjustment = el("td"), check = input(choice, "Seleccionar a " + student.name, { type: "checkbox", value: false }); check.disabled = !student.summary.ready;
             const override = input(adjustment, "Ajuste de " + student.name, { type: "number", grade: true }); override.disabled = !student.summary.ready;
@@ -293,7 +293,7 @@
         const confirm = input(form.fields, "He revisado las notas seleccionadas y confirmo su publicación en el historial académico", { type: "checkbox", required: true }); form.open();
     }
     function exportCSV() {
-        const data = current.data, rows = [["Alumno", ...codes.map(c => labels[c]), "Promedio actual publicado (0–10)", "Promedio con borradores (0–10)", "Peso evaluado (%)", "Final publicada (0–10)"]];
+        const data = current.data, rows = [["Seminarista", ...codes.map(c => labels[c]), "Promedio actual publicado (0–10)", "Promedio con borradores (0–10)", "Peso evaluado (%)", "Final publicada (0–10)"]];
         for (const s of data.students) rows.push([s.name, ...codes.map(c => window.PortalGradeScale.format(s.summary.categories.find(x => x.code === c)?.average)), window.PortalGradeScale.format(s.summary.average), window.PortalGradeScale.format(s.draft_summary.average), s.summary.coverage, window.PortalGradeScale.format(s.final_score)]);
         const csv = rows.map(row => row.map(value => '"' + String(value ?? "").replace(/^[=+@\-\t\r]/, "'$&").replace(/"/g, '""') + '"').join(",")).join("\r\n");
         const url = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" })), a = link("", url); a.download = "promedios-clase.csv"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);

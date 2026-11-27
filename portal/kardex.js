@@ -5,6 +5,7 @@
     const examLabels = {ORD:"Ordinaria",EXT:"Extraordinaria",EQ:"Equivalencia",REV:"Revalidación"};
     const repeatLabels = {all:"Todas las calificaciones finales publicadas",latest:"Última calificación publicada de cada materia",best:"Mejor calificación publicada de cada materia"};
     let active=false, opened=false, recheck, generation=0, selection=0, pendingStudent, studentId, programId=null, record, programs=[], offset=0, issuesOffset=0, dialog, dialogToken=0, dialogBusy=false, issuing=false, issueRequest, printTitle, oldTitle;
+    let pane, paneRevision=0, individualReady=false;
     const controllers = new Set(), urls = new Set();
     const number = new Intl.NumberFormat("es-MX", {maximumFractionDigits:2});
     const api = () => window.PortalAuth.getClient();
@@ -16,6 +17,8 @@
     function cleanupPrint() { $("kardexPrintRoot")?.remove();document.body.classList.remove("kardex-printing");if(document.title===printTitle)document.title=oldTitle;printTitle=undefined;oldTitle=undefined; }
     function closeDialog(force=false) { if(dialogBusy&&!force)return;dialogToken++;dialogBusy=false;if(dialog){dialog.close();dialog.remove();dialog=undefined;} }
     function leave() {
+        window.PortalGroupFinals?.leave();pane=undefined;paneRevision++;individualReady=false;
+        $("groupFinalGrades").hidden=true;$("kardexIndividual").hidden=true;
         window.PortalReportCards?.clear();generation++;selection++;opened=false;issuing=false;issueRequest=undefined;studentId=undefined;programId=null;record=undefined;
         for(const c of controllers)c.abort();controllers.clear();closeDialog(true);cleanupPrint();
         for(const url of urls)URL.revokeObjectURL(url);urls.clear();
@@ -25,7 +28,7 @@
     }
     function clear() { active=false;recheck=undefined;pendingStudent=undefined;leave(); }
     function denied(error) { if(error?.code!=="42501"&&![401,403].includes(error?.status))return false;const verify=recheck;clear();if(verify)void verify();return true; }
-    function errorText(error) { return ["22023","PT409","23505"].includes(error?.code)&&typeof error.message==="string"&&error.message.length<350?error.message:["PGRST202","42883","42P01"].includes(error?.code)?"El apartado Kardex necesita instalarse en Supabase. Contacta al responsable del portal.":"No se pudo confirmar la operación. Comprueba tu conexión y vuelve a consultar."; }
+    function errorText(error) { return ["22023","PT409","23505"].includes(error?.code)&&typeof error.message==="string"&&error.message.length<350?window.PortalTerms.seminarian(error.message):["PGRST202","42883","42P01"].includes(error?.code)?"El apartado Kardex necesita instalarse en Supabase. Contacta al responsable del portal.":"No se pudo confirmar la operación. Comprueba tu conexión y vuelve a consultar."; }
     async function rpc(name,args) {
         const c=new AbortController();controllers.add(c);
         try { const response=await api().rpc(name,args).retry(false).abortSignal(c.signal);if(response.error)throw {...response.error,status:response.status};if(!response.data||typeof response.data!=="object")throw new Error("Respuesta inválida");return response.data; }
@@ -38,10 +41,10 @@
     }
     async function loadPrograms() { const result=[];let from=0;for(let page=0;page<20;page++){const data=await list("programs",{program:null,offset:from,limit:100});if(!data.items.every(p=>uuid.test(p.id)&&typeof p.name==="string"&&typeof p.plan_name==="string"))throw new Error("Programa inválido");result.push(...data.items);from+=data.items.length;if(!data.has_more)return result;}throw new Error("Demasiados programas"); }
     async function search(reset=true) {
-        if(!active||!opened)return;const g=generation,op=++selection;$("kardexMore").disabled=true;if(reset){offset=0;$("kardexStudents").replaceChildren();}note("Buscando alumnos…");
+        if(!active||!opened)return;const g=generation,op=++selection;$("kardexMore").disabled=true;if(reset){offset=0;$("kardexStudents").replaceChildren();}note("Buscando seminaristas…");
         try { const data=await list("students",{student:null,program:null,search:$("kardexSearch").value.trim(),offset});if(!active||!opened||g!==generation||op!==selection)return;
-            for(const person of data.items){if(!uuid.test(person.id)||typeof person.full_name!=="string")throw new Error("Alumno inválido");const li=node("li"),info=node("div");info.append(node("strong",person.full_name),node("p",(person.student_number||"Matrícula pendiente")+" · "+(person.active?"Activo":"Inactivo · historial disponible")));li.append(info,button("Ver historial",()=>void selectStudent(person.id)));$("kardexStudents").append(li);}
-            offset+=data.items.length;$("kardexMore").hidden=!data.has_more;note(offset?offset+" alumnos mostrados.":"No hay alumnos que coincidan con la búsqueda.");
+            for(const person of data.items){if(!uuid.test(person.id)||typeof person.full_name!=="string")throw new Error("Seminarista inválido");const li=node("li"),info=node("div");info.append(node("strong",person.full_name),node("p",(person.student_number||"Matrícula pendiente")+" · "+(person.active?"Activo":"Inactivo · historial disponible")));li.append(info,button("Ver historial",()=>void selectStudent(person.id)));$("kardexStudents").append(li);}
+            offset+=data.items.length;$("kardexMore").hidden=!data.has_more;note(offset?offset+" seminaristas mostrados.":"No hay seminaristas que coincidan con la búsqueda.");
         } catch(error){if(active&&g===generation&&op===selection&&!denied(error))note(errorText(error),"error");}
         finally { if(g===generation&&op===selection)$("kardexMore").disabled=false; }
     }
@@ -56,9 +59,9 @@
     async function loadRecord() {
         if(!active||!opened||!studentId)return;const g=generation,op=++selection,target=studentId,selectedProgram=programId;window.PortalReportCards?.clear();record=undefined;issueRequest=undefined;$("kardexPreview").replaceChildren();$("kardexIssues").replaceChildren();$("kardexWorkspace").hidden=true;syncIssue();note("Consultando historial completo…");
         try { const data=await read("record",{student:target,program:selectedProgram});if(!active||!opened||g!==generation||op!==selection)return;if(!validRecord(data)||data.student.id!==target)throw new Error("Kardex inválido");record=data;void window.PortalReportCards?.mount(data,recheck);
-            $("kardexStudentName").textContent=data.student.full_name;$("kardexStudentMeta").textContent=(data.student.student_number||"Registra la matrícula para emitir")+" · "+(data.student.active?"Alumno activo":"Alumno inactivo: historial conservado");
+            $("kardexStudentName").textContent=data.student.full_name;$("kardexStudentMeta").textContent=(data.student.student_number||"Registra la matrícula para emitir")+" · "+(data.student.active?"Seminarista activo":"Seminarista inactivo: historial conservado");
             $("kardexProgram").replaceChildren(new Option("Historial general: todos los programas",""),...programs.map(p=>new Option(p.name+" · "+p.plan_name,p.id)));$("kardexProgram").value=selectedProgram||"";
-            $("kardexPreview").append(paper(data));$("kardexReasons").replaceChildren(...data.final_reasons.map(text=>node("li",text)));$("kardexRequirements").hidden=data.final_ready;
+            $("kardexPreview").append(paper(data));$("kardexReasons").replaceChildren(...data.final_reasons.map(text=>node("li",window.PortalTerms.seminarian(text))));$("kardexRequirements").hidden=data.final_ready;
             $("kardexKind").querySelector('[value="final"]').disabled=!data.final_ready;if(!data.final_ready)$("kardexKind").value="partial";
             $("kardexLookup").hidden=true;$("kardexWorkspace").hidden=false;$("kardexNotes").value="";note("","",$("kardexIssueStatus"));
             note(data.stats.unclassified?data.stats.unclassified+" inscripciones todavía no tienen programa. Usa Clasificar materias para organizarlas.":"Historial actualizado.",data.stats.unclassified?"":"success");syncIssue();await loadIssues(true);
@@ -68,7 +71,7 @@
         if(!active||!opened||!studentId)return;const g=generation,op=selection,id=studentId;if(reset){issuesOffset=0;$("kardexIssues").replaceChildren();}$("kardexIssuesMore").disabled=true;
         try { const data=await list("issues",{student:id,program:null,offset:issuesOffset});if(!active||g!==generation||op!==selection)return;
             for(const item of data.items){if(!uuid.test(item.id)||typeof item.folio!=="string")throw new Error("Documento inválido");const li=node("li"),info=node("div"),actions=node("div",undefined,"kardex-actions");info.append(node("strong",item.folio),node("p",(item.kind==="final"?"Final":"Parcial")+" · "+date(item.issued_at)+" · "+(item.program_name||"Historial general")));actions.append(button("Ver documento",()=>void showIssue(item.id)),button("Imprimir / Guardar PDF",()=>void exportIssue(item.id,"print")),button("Descargar CSV",()=>void exportIssue(item.id,"csv")));li.append(info,actions);$("kardexIssues").append(li);}
-            issuesOffset+=data.items.length;$("kardexIssuesMore").hidden=!data.has_more;if(!issuesOffset)$("kardexIssues").append(node("li","Todavía no se ha emitido un kardex para este alumno."));
+            issuesOffset+=data.items.length;$("kardexIssuesMore").hidden=!data.has_more;if(!issuesOffset)$("kardexIssues").append(node("li","Todavía no se ha emitido un kardex para este seminarista."));
         } catch(error){if(active&&g===generation&&!denied(error))note("No se pudieron consultar los documentos emitidos. Actualiza el historial antes de emitir otro.","error",$("kardexIssueStatus"));}
         finally { if(g===generation)$("kardexIssuesMore").disabled=false; }
     }
@@ -78,7 +81,7 @@
         const name=node("div"),folio=node("div",undefined,"kardex-paper-folio"),institution=data.institution,program=data.program,scale=data.method.display_scale;
         name.append(node("h2",institution.name),node("p",institution.campus),node("h3","KARDEX ACADÉMICO"),node("p",issued?(issued.kind==="final"?"Historial final institucional":"Historial parcial institucional"):"VISTA PREVIA · SIN EMITIR","kardex-paper-label"));
         folio.append(node("strong",issued?.folio||"Folio pendiente de emisión"),node("p",issued?date(issued.issued_at):"Documento en preparación"));header.append(logo,name,folio);el.append(header);
-        const details=node("div",undefined,"kardex-paper-data");datum(details,"Alumno",data.student.full_name);datum(details,"Matrícula",data.student.student_number);datum(details,"CURP",data.student.curp);datum(details,"Fecha de nacimiento",data.student.birth_date?date(data.student.birth_date):null);datum(details,"Ingreso",data.student.entered_on?date(data.student.entered_on):null);datum(details,"Egreso",data.student.completed_on?date(data.student.completed_on):null);datum(details,"Programa",program?.name||"Historial general del Seminario");datum(details,"Plan de estudios",program?.plan_name);datum(details,"Nivel / modalidad",[program?.education_level,program?.modality].filter(Boolean).join(" · "));datum(details,"CCT del plantel",institution.cct);datum(details,"RVOE del programa",program?.rvoe_number);datum(details,"Autoridad y fecha del RVOE",[program?.rvoe_authority,program?.rvoe_date?date(program.rvoe_date):null].filter(Boolean).join(" · "));if(institution.address)datum(details,"Domicilio del plantel",institution.address);if(institution.issue_place)datum(details,"Lugar de emisión",institution.issue_place);el.append(details);
+        const details=node("div",undefined,"kardex-paper-data");datum(details,"Seminarista",data.student.full_name);datum(details,"Matrícula",data.student.student_number);datum(details,"CURP",data.student.curp);datum(details,"Fecha de nacimiento",data.student.birth_date?date(data.student.birth_date):null);datum(details,"Ingreso",data.student.entered_on?date(data.student.entered_on):null);datum(details,"Egreso",data.student.completed_on?date(data.student.completed_on):null);datum(details,"Programa",program?.name||"Historial general del Seminario");datum(details,"Plan de estudios",program?.plan_name);datum(details,"Nivel / modalidad",[program?.education_level,program?.modality].filter(Boolean).join(" · "));datum(details,"CCT del plantel",institution.cct);datum(details,"RVOE del programa",program?.rvoe_number);datum(details,"Autoridad y fecha del RVOE",[program?.rvoe_authority,program?.rvoe_date?date(program.rvoe_date):null].filter(Boolean).join(" · "));if(institution.address)datum(details,"Domicilio del plantel",institution.address);if(institution.issue_place)datum(details,"Lugar de emisión",institution.issue_place);el.append(details);
         const summary=node("div",undefined,"kardex-summary");for(const [label,value] of [["Promedio · escala 0–"+scale,data.stats.average===null?"Sin calcular":grade(data.stats.average,scale,issued?(data.method.decimals??2):1)],["Finales publicadas",data.stats.graded],["Finales pendientes",data.stats.pending],["Créditos acreditados",data.stats.credits_earned===null?"Sin calcular":number.format(data.stats.credits_earned)]]){const item=node("div");item.append(node("span",label),node("strong",value));summary.append(item);}el.append(summary);
         const scroll=node("div",undefined,"kardex-table-scroll"),table=node("table",undefined,"kardex-table"),thead=node("thead"),head=node("tr");for(const title of ["Clave","Materia","Créditos / horas","Evaluación","Calificación","Situación / observaciones"])head.append(node("th",title));thead.append(head);table.append(thead);const tbody=node("tbody");let period;
         for(const row of data.rows){if(period!==row.period_id){period=row.period_id;const formation=data.formation_history?.find(r=>r.period_id===row.period_id);const tr=node("tr",undefined,"kardex-period-row"),th=node("th",row.period_name+(formation?" · "+formation.stage_name+" · Semestre "+formation.semester+" de "+formation.semesters:""));th.colSpan=6;tr.append(th);tbody.append(tr);}const tr=node("tr"),subject=node("td");subject.append(node("span",row.name));if(!program)subject.append(node("p",row.program_name||"Sin programa asignado","kardex-paper-notes"));
@@ -128,20 +131,20 @@
         field(d.fields,"rvoe_date","Fecha del RVOE",row.rvoe_date,{type:"date"});field(d.fields,"repeat_policy","Materias repetidas en el promedio",row.repeat_policy||"all",{options:Object.entries(repeatLabels)});field(d.fields,"weighted","Ponderar el promedio por créditos",row.weighted,{type:"checkbox"});d.fields.append(node("p","Escala institucional: 0 a 10, un decimal y mínima aprobatoria 7.0. Un kardex final requiere el plan completo.","kardex-dialog-help"));
     }
     async function programsDialog() {
-        const g=generation;try{const result=await loadPrograms();if(!active||!opened||g!==generation)return;programs=result;const d=newDialog("Programas y planes",null);d.fields.classList.add("kardex-dialog-wide");d.fields.append(button("Nuevo programa",()=>programDialog(),"back-link control-create"));const ul=node("ul",undefined,"kardex-students kardex-dialog-wide");for(const p of programs){const li=node("li"),info=node("div"),actions=node("div",undefined,"kardex-actions");info.append(node("strong",p.name),node("p",p.plan_name));const stage=window.PortalFormation?.stages.find(s=>s.code===p.formation_stage);if(stage)info.append(node("p",stage.ecclesial_name+" · "+stage.semesters+" semestres"));actions.append(button("Editar programa",()=>programDialog(p)),button("Materias y créditos",()=>void curriculumDialog(p)));li.append(info,actions);ul.append(li);}if(!programs.length)ul.append(node("li","Registra el programa y su plan una vez; después podrás asignarlo a los alumnos."));d.fields.append(ul);}
+        const g=generation;try{const result=await loadPrograms();if(!active||!opened||g!==generation)return;programs=result;const d=newDialog("Programas y planes",null);d.fields.classList.add("kardex-dialog-wide");d.fields.append(button("Nuevo programa",()=>programDialog(),"back-link control-create"));const ul=node("ul",undefined,"kardex-students kardex-dialog-wide");for(const p of programs){const li=node("li"),info=node("div"),actions=node("div",undefined,"kardex-actions");info.append(node("strong",p.name),node("p",p.plan_name));const stage=window.PortalFormation?.stages.find(s=>s.code===p.formation_stage);if(stage)info.append(node("p",stage.ecclesial_name+" · "+stage.semesters+" semestres"));actions.append(button("Editar programa",()=>programDialog(p)),button("Materias y créditos",()=>void curriculumDialog(p)));li.append(info,actions);ul.append(li);}if(!programs.length)ul.append(node("li","Registra el programa y su plan una vez; después podrás asignarlo a los seminaristas."));d.fields.append(ul);}
         catch(error){if(active&&g===generation&&!denied(error))note(errorText(error),"error");}
     }
-    function studentDialog() { if(!record)return;const row=record.student;const d=newDialog("Datos del alumno",({form})=>write("student_save",{...values(form),student_id:row.id,revision:row.revision}));field(d.fields,"student_number","Matrícula",row.student_number,{max:40});field(d.fields,"curp","CURP (si está disponible)",row.curp,{max:18});field(d.fields,"birth_date","Fecha de nacimiento",row.birth_date,{type:"date"});field(d.fields,"entered_on","Fecha de ingreso",row.entered_on,{type:"date"});field(d.fields,"completed_on","Fecha de egreso",row.completed_on,{type:"date"});d.fields.append(node("p","El nombre proviene de Personas. La matrícula identifica al alumno en los documentos; la CURP solo se guarda si la conoces y confirmas.","kardex-dialog-help")); }
+    function studentDialog() { if(!record)return;const row=record.student;const d=newDialog("Datos del seminarista",({form})=>write("student_save",{...values(form),student_id:row.id,revision:row.revision}));field(d.fields,"student_number","Matrícula",row.student_number,{max:40});field(d.fields,"curp","CURP (si está disponible)",row.curp,{max:18});field(d.fields,"birth_date","Fecha de nacimiento",row.birth_date,{type:"date"});field(d.fields,"entered_on","Fecha de ingreso",row.entered_on,{type:"date"});field(d.fields,"completed_on","Fecha de egreso",row.completed_on,{type:"date"});d.fields.append(node("p","El nombre proviene de Personas. La matrícula identifica al seminarista en los documentos; la CURP solo se guarda si la conoces y confirmas.","kardex-dialog-help")); }
     async function curriculumDialog(program) {
         let rows=[],from=0,dirty=false;const d=newDialog("Materias y créditos · "+program.name,()=>write("curriculum_save",{program_id:program.id,items:rows.map(r=>({subject_id:r.data.subject_id,revision:r.data.revision,included:r.included.checked,credits:r.credits.value===""?null:Number(r.credits.value),hours:r.hours.value===""?null:Number(r.hours.value),term:r.term.value.trim()}))}));
-        const controls=node("div",undefined,"kardex-actions kardex-dialog-wide"),searchInput=node("input");searchInput.type="search";searchInput.placeholder="Buscar materia por código o nombre";searchInput.setAttribute("aria-label","Buscar materia del plan");const next=button("Siguiente página",()=>void loadPage(from+50)),prev=button("Página anterior",()=>void loadPage(Math.max(0,from-50)));controls.append(searchInput,button("Buscar materias",()=>void loadPage(0)),prev,next);d.fields.append(node("p","Marca las materias que integran el plan. Los créditos no se duplican cuando el alumno repite una materia. Guarda esta página antes de cambiar de búsqueda o página.","kardex-dialog-help"),controls);
+        const controls=node("div",undefined,"kardex-actions kardex-dialog-wide"),searchInput=node("input");searchInput.type="search";searchInput.placeholder="Buscar materia por código o nombre";searchInput.setAttribute("aria-label","Buscar materia del plan");const next=button("Siguiente página",()=>void loadPage(from+50)),prev=button("Página anterior",()=>void loadPage(Math.max(0,from-50)));controls.append(searchInput,button("Buscar materias",()=>void loadPage(0)),prev,next);d.fields.append(node("p","Marca las materias que integran el plan. Los créditos no se duplican cuando el seminarista repite una materia. Guarda esta página antes de cambiar de búsqueda o página.","kardex-dialog-help"),controls);
         const target=node("div",undefined,"kardex-table-scroll kardex-dialog-wide");d.fields.append(target);
         async function loadPage(offset){if(!d.live())return;if(dirty&&!confirm("Hay cambios sin guardar en esta página. ¿Deseas descartarlos?"))return;d.save.disabled=true;try{const data=await list("curriculum",{program:program.id,search:searchInput.value.trim(),offset,limit:50});if(!d.live())return;from=offset;rows=[];dirty=false;target.replaceChildren();const table=node("table",undefined,"kardex-table kardex-edit-table"),head=node("tr");for(const label of ["En plan","Materia","Créditos","Horas","Semestre / etapa"])head.append(node("th",label));table.append(head);for(const item of data.items){const tr=node("tr"),included=node("input"),credits=node("input"),hours=node("input"),formationStage=window.PortalFormation?.stages.find(s=>s.code===program.formation_stage),term=node(formationStage?"select":"input");included.type="checkbox";included.checked=item.included;included.setAttribute("aria-label","Incluir "+item.code);for(const input of [credits,hours]){input.type="number";input.min="0";input.max="9999";input.step="0.01";}credits.value=item.credits??"";hours.value=item.hours??"";credits.setAttribute("aria-label","Créditos de "+item.code);hours.setAttribute("aria-label","Horas de "+item.code);if(formationStage){term.append(new Option("Selecciona semestre",""));for(let n=1;n<=formationStage.semesters;n++)term.append(new Option("Semestre "+n+" de "+formationStage.semesters,String(n)));if(item.term&&!Array.from(term.options).some(o=>o.value===item.term))term.append(new Option("Por clasificar: "+item.term,item.term));term.required=included.checked;included.addEventListener("change",()=>{term.required=included.checked;});}else{term.type="text";term.maxLength=60;}term.value=item.term||"";term.setAttribute("aria-label","Semestre de "+item.code);for(const value of [included,item.code+" · "+item.name,credits,hours,term]){const td=node("td");td.append(value instanceof Node?value:node("span",value));tr.append(td);}table.append(tr);rows.push({data:item,included,credits,hours,term});}target.append(table);prev.disabled=from===0;next.disabled=!data.has_more;note(rows.length?rows.length+" materias mostradas. Guarda los cambios de esta página.":"No hay materias que coincidan.","",d.message);d.save.disabled=!rows.length;}
             catch(error){if(d.live()&&!denied(error))note(errorText(error),"error",d.message);}}
         target.addEventListener("input",()=>{dirty=true;});void loadPage(0);
     }
     async function academicDialog() {
-        const g=generation,op=selection,id=studentId;try{const source=await read("record",{student:id,program:null});if(!active||g!==generation||op!==selection||id!==studentId||!validRecord(source))return;const rows=[];const d=newDialog("Clasificar materias del alumno",()=>write("academic_save",{student_id:id,items:rows.map(r=>({enrollment_id:r.data.enrollment_id,revision:r.data.revision,program_id:r.program.value||null,exam_type:r.exam.value||null,notes:r.notes.value.trim()}))}));
+        const g=generation,op=selection,id=studentId;try{const source=await read("record",{student:id,program:null});if(!active||g!==generation||op!==selection||id!==studentId||!validRecord(source))return;const rows=[];const d=newDialog("Clasificar materias del seminarista",()=>write("academic_save",{student_id:id,items:rows.map(r=>({enrollment_id:r.data.enrollment_id,revision:r.data.revision,program_id:r.program.value||null,exam_type:r.exam.value||null,notes:r.notes.value.trim()}))}));
             d.fields.append(node("p","Asigna el programa y el tipo de evaluación a cada inscripción. Esta pantalla no cambia las calificaciones publicadas. Si una materia pertenece a otro programa, asígnala al programa correspondiente.","kardex-dialog-help"));
             const bulk=node("div",undefined,"kardex-actions kardex-dialog-wide"),bulkProgram=node("select"),bulkExam=node("select");bulkProgram.setAttribute("aria-label","Programa para filas sin clasificar");bulkProgram.append(new Option("Selecciona programa",""),...programs.map(p=>new Option(p.name+" · "+p.plan_name,p.id)));bulkExam.setAttribute("aria-label","Evaluación para filas sin tipo");bulkExam.append(new Option("Selecciona evaluación",""),...Object.entries(examLabels).map(([key,label])=>new Option(label,key)));bulk.append(bulkProgram,button("Aplicar a filas sin programa",()=>{if(bulkProgram.value)for(const row of rows)if(!row.program.value)row.program.value=bulkProgram.value;}),bulkExam,button("Aplicar a filas sin evaluación",()=>{if(bulkExam.value)for(const row of rows)if(!row.exam.value)row.exam.value=bulkExam.value;}));d.fields.append(bulk);
             const scroll=node("div",undefined,"kardex-table-scroll kardex-dialog-wide"),table=node("table",undefined,"kardex-table kardex-edit-table"),head=node("tr");for(const label of ["Periodo / materia","Final publicada","Programa","Evaluación","Observaciones"])head.append(node("th",label));table.append(head);
@@ -160,18 +163,60 @@
                 try{await Promise.all([...root.querySelectorAll("img")].map(image=>image.complete?Promise.resolve():new Promise(resolve=>{image.onload=resolve;image.onerror=resolve;})));if(active&&g===generation)window.print();}finally{cleanupPrint();}
             }else{
                 const snapshot=data.snapshot,s=snapshot.student,scale=snapshot.method.display_scale;
-                const rows=[["Folio interno","Matrícula","Alumno","CURP","Programa","Plan","Periodo","Etapa","Semestre de etapa","Clave","Materia","Créditos","Horas","Evaluación","Calificación","Escala","Observaciones","Promedio"]];
+                const rows=[["Folio interno","Matrícula","Seminarista","CURP","Programa","Plan","Periodo","Etapa","Semestre de etapa","Clave","Materia","Créditos","Horas","Evaluación","Calificación","Escala","Observaciones","Promedio"]];
                 for(const r of snapshot.rows){const formation=snapshot.formation_history?.find(f=>f.period_id===r.period_id);rows.push([data.folio,s.student_number,s.full_name,s.curp,snapshot.program?.name||r.program_name||"Historial general",snapshot.program?.plan_name,r.period_name,formation?.stage_name,formation?formation.semester+" de "+formation.semesters:"",r.code,r.name,r.credits,r.hours,examLabels[r.exam_type]||"Sin registrar",r.score===null?"Pendiente":grade(r.score,scale,snapshot.method.decimals??2),scale,r.notes,snapshot.stats.average===null?"Sin calcular":grade(snapshot.stats.average,scale,snapshot.method.decimals??2)]);}
                 const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.map(row=>row.map(csvCell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"}));urls.add(url);const a=node("a");a.href=url;a.download=data.folio.replace(/[^A-Za-z0-9_-]/g,"-")+".csv";document.body.append(a);a.click();a.remove();setTimeout(()=>{URL.revokeObjectURL(url);urls.delete(url);},1000);
             }
         }catch(error){if(active&&g===generation&&!denied(error))note(errorText(error),"error",$("kardexIssueStatus"));}
     }
-    async function openRoute() {
-        if(!active||opened)return;opened=true;section.hidden=false;const g=generation;note("Preparando Kardex…");
-        try{const result=await loadPrograms();if(!active||!opened||g!==generation)return;programs=result;if(pendingStudent){const target=pendingStudent;pendingStudent=undefined;await selectStudent(target);}else await search();}
-        catch(error){if(active&&g===generation&&!denied(error))note(errorText(error),"error");}
+    async function openIndividual() {
+        const g=generation, operation=paneRevision;
+        const current=()=>active&&opened&&pane==="student"&&g===generation&&operation===paneRevision;
+        note("Preparando Kardex…");
+        try {
+            const result=await loadPrograms();
+            if(!current())return;
+            programs=result;
+            individualReady=true;
+            if(pendingStudent){
+                const target=pendingStudent;pendingStudent=undefined;
+                await selectStudent(target);
+            }else if(studentId)await loadRecord();
+            else await search();
+        }catch(error){if(current()&&!denied(error))note(errorText(error),"error");}
     }
+    function selectPane(next, automatic=false) {
+        if(!active||!opened||pane===next||next==="group"&&!window.PortalGroupFinals)return;
+        if(pane==="group"&&!window.PortalGroupFinals.canLeave())return;
+        pane=next;paneRevision++;individualReady=false;
+        const grouped=next==="group";
+        $("kardexByGroup").setAttribute("aria-pressed",String(grouped));
+        $("kardexByStudent").setAttribute("aria-pressed",String(!grouped));
+        $("groupFinalGrades").hidden=!grouped;
+        $("kardexIndividual").hidden=grouped;
+        if(grouped)window.PortalGroupFinals.open({
+            onDenied:denied,
+            onUnavailable:automatic?()=>selectPane("student"):undefined
+        });
+        else {window.PortalGroupFinals?.leave();void openIndividual();}
+    }
+    function openRoute() {
+        if(!active||opened)return;
+        opened=true;section.hidden=false;
+        selectPane(pendingStudent||!window.PortalGroupFinals?"student":"group",true);
+    }
+    $("kardexByGroup").addEventListener("click",()=>selectPane("group"));
+    $("kardexByStudent").addEventListener("click",()=>selectPane("student"));
     $("kardexSearchForm").addEventListener("submit",event=>{event.preventDefault();void search();});$("kardexMore").addEventListener("click",()=>void search(false));$("kardexIssuesMore").addEventListener("click",()=>void loadIssues(false));$("kardexRefresh").addEventListener("click",()=>void loadRecord());$("kardexChooseOther").addEventListener("click",()=>{window.PortalReportCards?.clear();studentId=undefined;record=undefined;selection++;$("kardexWorkspace").hidden=true;$("kardexLookup").hidden=false;void search();});$("kardexProgram").addEventListener("change",()=>{programId=$("kardexProgram").value||null;void loadRecord();});$("kardexInstitution").addEventListener("click",()=>void institutionDialog());$("kardexPrograms").addEventListener("click",()=>void programsDialog());$("kardexStudentData").addEventListener("click",studentDialog);$("kardexPersonalData").addEventListener("click",()=>{if(active&&opened&&studentId)window.PortalPersonalRecord?.requestStudent(studentId);});$("kardexAcademicData").addEventListener("click",()=>void academicDialog());$("kardexIssue").addEventListener("click",()=>void issue());$("kardexKind").addEventListener("change",syncIssue);
     window.addEventListener("afterprint",cleanupPrint);
-    window.PortalKardex=Object.freeze({clear,leave,openRoute,show(verify){clear();active=true;recheck=verify;},requestStudent(id){if(!active||!uuid.test(id))return;pendingStudent=id;if(opened){pendingStudent=undefined;void selectStudent(id);}else location.hash="kardex";}});
+    window.PortalKardex=Object.freeze({clear,leave,openRoute,show(verify){clear();active=true;recheck=verify;},
+        canNavigate(route){return route==="kardex"||pane!=="group"||window.PortalGroupFinals.canLeave();},
+        requestStudent(id){
+            if(!active||!uuid.test(id))return;
+            if(!opened){pendingStudent=id;location.hash="kardex";return;}
+            if(pane==="student"&&individualReady){void selectStudent(id);return;}
+            pendingStudent=id;selectPane("student");
+            if(pane!=="student")pendingStudent=undefined;
+        }
+    });
 })();

@@ -11,7 +11,7 @@
     function note(text, error = false) { $("reportStatus").textContent = text; $("reportStatus").className = "control-message" + (error ? " error" : ""); }
     function missing(error) { return ["PGRST202", "42883", "42P01"].includes(error?.code); }
     function denied(error) { if (!["42501"].includes(error?.code) && ![401,403].includes(error?.status)) return false; const check = verify; clear(); if (check) void check(); return true; }
-    function errorText(error) { return ["22023", "PT409"].includes(error?.code) ? String(error.message).slice(0, 350) : "No se pudo consultar la boleta. Comprueba tu conexión y actualiza la vista previa."; }
+    function errorText(error) { return ["22023", "PT409"].includes(error?.code) ? window.PortalTerms.seminarian(error.message).slice(0, 350) : "No se pudo consultar la boleta. Comprueba tu conexión y actualiza la vista previa."; }
     async function rpc(name, args) {
         const c = new AbortController(); controllers.add(c);
         try { const r = await window.PortalAuth.getClient().rpc(name, args).retry(false).abortSignal(c.signal); if (r.error) throw { ...r.error, status: r.status }; return r.data; }
@@ -40,8 +40,8 @@
         const rows = source.rows.filter(r => r.period_id === period.id && r.enrollment_active === true).map(r => ({ ...r, source_score: r.score, score: r.score === null ? null : Number(window.PortalGradeScale.format(r.score)) }));
         const reasons = [];
         if (!rows.length) reasons.push("No hay materias inscritas en este periodo.");
-        if (!source.student.student_number) reasons.push("Registra la matrícula en Datos del alumno.");
-        if (!form) reasons.push("Asigna la etapa y el semestre del alumno para este periodo.");
+        if (!source.student.student_number) reasons.push("Registra la matrícula en Datos del seminarista.");
+        if (!form) reasons.push("Asigna la etapa y el semestre del seminarista para este periodo.");
         rows.filter(r => r.score === null).forEach(r => reasons.push("Falta publicar la calificación final de " + r.name + "."));
         return { version: 1, scale: 10, decimals: 1, pass_mark: 7, student: source.student, institution: { name: "SEMINARIO DE MATAMOROS-REYNOSA" }, period, formation: form, ...options(), rows, ready: false, reasons };
     }
@@ -54,7 +54,7 @@
             catch (error) { if (!missing(error)) throw error; result = fallback(); result.reasons.push("La vista previa está disponible. Para emitir y guardar boletas falta habilitar este apartado en Supabase."); }
             if (g !== generation || r !== revision) return;
             if (!valid(result) || result.ready && !/^[a-f0-9]{32}$/.test(result.token) || result.student.id !== student || result.period.id !== $("reportPeriod").value) throw new Error("Respuesta inválida");
-            preview = result; $("reportPreview").append(paper(result)); $("reportReasons").replaceChildren(...result.reasons.map(t => el("li", t)));
+            preview = result; $("reportPreview").append(paper(result)); $("reportReasons").replaceChildren(...result.reasons.map(t => el("li", window.PortalTerms.seminarian(t))));
             note(result.ready ? "Boleta preparada. Revisa las materias, notas, ciclo y firmantes antes de emitir." : "La boleta todavía tiene requisitos pendientes."); sync();
         } catch (error) { if (g === generation && r === revision && !denied(error)) note(errorText(error), true); }
     }
@@ -71,7 +71,7 @@
             $("reportPeriod").replaceChildren(...source.periods.map(p => new Option(p.name, p.id)));
             $("reportRector").value = source.institution.rector_name || "";
             $("reportPrefect").value = source.institution.prefect_name || "";
-            if (source.periods.length) { $("reportCycle").value = cycle(source.periods[0]); void refresh(); } else note("El alumno todavía no tiene periodos con materias o etapa registrada.");
+            if (source.periods.length) { $("reportCycle").value = cycle(source.periods[0]); void refresh(); } else note("El seminarista todavía no tiene periodos con materias o etapa registrada.");
             void loadIssues();
         } catch (error) { if (g === generation && !denied(error)) note(errorText(error), true); }
     }
@@ -115,7 +115,7 @@
         try { const d = await read("issues", { p_offset: from }); if (g !== generation || s !== student) return;
             if (!Array.isArray(d.items) || d.items.length > 30 || typeof d.has_more !== "boolean") throw new Error("Lista inválida");
             for (const i of d.items) { if (!uuid.test(i.id) || typeof i.folio !== "string") throw new Error("Documento inválido"); const li = el("li"), info = el("div"); info.append(el("strong", i.folio), el("p", i.period_name)); li.append(info, button("Ver / imprimir boleta", () => void openIssue(i.id))); $("reportIssues").append(li); }
-            offset += d.items.length; $("reportMore").hidden = !d.has_more; if (!offset) $("reportIssues").append(el("li", "Todavía no hay boletas emitidas para este alumno."));
+            offset += d.items.length; $("reportMore").hidden = !d.has_more; if (!offset) $("reportIssues").append(el("li", "Todavía no hay boletas emitidas para este seminarista."));
         } catch (error) { if (g === generation && !denied(error)) { $("reportMore").hidden = true; $("reportIssues").append(el("li", missing(error) ? "El archivo de boletas estará disponible cuando se habilite este apartado." : "No se pudo consultar el archivo de boletas. Actualiza para volver a intentarlo.")); } }
         finally { if (g === generation) $("reportMore").disabled = false; }
     }

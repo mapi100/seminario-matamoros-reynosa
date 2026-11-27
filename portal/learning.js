@@ -470,7 +470,7 @@
                 const feedback = node("section", undefined, "learning-card"); toolbar(feedback, "Evaluación publicada"); feedback.append(paragraph(score(assignment.published_score), "learning-score-large"));
                 if (assignment.published_feedback) feedback.append(paragraph(assignment.published_feedback)); target.append(feedback);
             }
-        } else if (canManage()) target.append(paragraph("Abre el libro de calificaciones para revisar las entregas de cada alumno, guardar borradores y publicar resultados.", "learning-meta"));
+        } else if (canManage()) target.append(paragraph("Abre el libro de calificaciones para revisar las entregas de cada seminarista, guardar borradores y publicar resultados.", "learning-meta"));
     }
     function renderCourseAnnouncements(target) {
         toolbar(target, "Anuncios del curso", canManage() ? [button("Nuevo anuncio", () => announcementDialog())] : []);
@@ -516,18 +516,18 @@
     function pagination(target, offset, hasMore, action) {
         const row = node("div", undefined, "learning-pagination");
         if (offset) row.append(button("Anterior", () => action(Math.max(0, offset - 30)), "learning-button secondary"));
-        row.append(paragraph("Alumnos " + (offset + 1) + "–" + (offset + (gradebook?.students?.length || 30)), "learning-meta"));
+        row.append(paragraph("Seminaristas " + (offset + 1) + "–" + (offset + (gradebook?.students?.length || 30)), "learning-meta"));
         if (hasMore) row.append(button("Siguiente", () => action(offset + 30), "learning-button secondary")); target.append(row);
     }
     async function renderParticipants(target, offset = 0) {
-        toolbar(target, "Lista de alumnos");
+        toolbar(target, "Lista de seminaristas");
         const operation = courseVersion, current = generation, id = courseId;
-        const list = node("ul", undefined, "learning-participants"); target.append(list); note("Consultando alumnos…");
+        const list = node("ul", undefined, "learning-participants"); target.append(list); note("Consultando seminaristas…");
         try {
             const data = await request("participants", id, offset, 30);
             if (!active || current !== generation || operation !== courseVersion || tab !== "participantes") return;
             if (!validCollection(data.items, 30)) throw new Error("Lista inválida");
-            if (!data.items.length) empty(list, "Todavía no hay alumnos activos inscritos en esta clase.");
+            if (!data.items.length) empty(list, "Todavía no hay seminaristas activos inscritos en esta clase.");
             for (const item of data.items) list.append(node("li", item.name));
             note("");
             const nav = node("div", undefined, "learning-pagination");
@@ -554,16 +554,16 @@
     function drawGradebook(target, data, offset) {
         target.append(paragraph("Guarda las notas como borrador y publícalas cuando estén listas. Las notas de actividades no reemplazan automáticamente la calificación final del curso.", "learning-meta"));
         if (!data.assignments.length) { empty(target, "Crea una tarea para agregar una columna a este libro de calificaciones."); return; }
-        if (!data.students.length) { empty(target, "Control Escolar todavía no ha inscrito alumnos activos en esta clase."); return; }
+        if (!data.students.length) { empty(target, "Control Escolar todavía no ha inscrito seminaristas activos en esta clase."); return; }
         const actions = node("div", undefined, "learning-grade-actions");
         const saveAll = button("Guardar borradores", () => void saveGrid(false)); saveAll.id = "learningGradeSave";
         const publishAll = button("Publicar calificaciones", () => void saveGrid(true), "learning-button secondary"); publishAll.id = "learningGradePublish";
         const refresh = button("Actualizar libro", () => { target.replaceChildren(); void renderGradebook(target, pageOffset); }, "learning-button secondary");
-        const exportButton = button("Exportar alumnos mostrados", exportGradebook, "learning-button secondary");
+        const exportButton = button("Exportar seminaristas mostrados", exportGradebook, "learning-button secondary");
         actions.append(saveAll, publishAll, exportButton, refresh); target.append(actions);
         const wrapper = node("div", undefined, "learning-gradebook-scroll"); wrapper.tabIndex = 0; wrapper.setAttribute("aria-label", "Libro de calificaciones; desplázate horizontalmente para ver las tareas");
         const table = node("table", undefined, "learning-gradebook"); table.id = "learningGradebook";
-        const head = node("thead"), labels = node("tr"); labels.append(node("th", "Alumno"), node("th", "Final publicada"));
+        const head = node("thead"), labels = node("tr"); labels.append(node("th", "Seminarista"), node("th", "Final publicada"));
         for (const assignment of data.assignments) labels.append(node("th", assignment.title)); head.append(labels); table.append(head);
         const body = node("tbody");
         for (const student of data.students) {
@@ -594,7 +594,7 @@
             if (/^[\s\u0000-\u0020\u200B-\u200D\uFEFF]*[=+\-@]/u.test(text)) text = "'" + text;
             return '"' + text.replaceAll('"', '""') + '"';
         };
-        const heading = ["Alumno", "Calificación final publicada"];
+        const heading = ["Seminarista", "Calificación final publicada"];
         for (const assignment of gradebook.assignments) heading.push(assignment.title + " (borrador)", assignment.title + " (publicada)");
         const rows = [heading];
         for (const student of gradebook.students) {
@@ -607,9 +607,9 @@
         }
         const csv = "\uFEFF" + rows.map(row => row.map(escape).join(",")).join("\r\n");
         const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-        const download = document.createElement("a"); download.href = url; download.download = "calificaciones-" + course.course.code.replace(/[^a-zA-Z0-9_-]/g, "_") + "-alumnos-mostrados.csv";
+        const download = document.createElement("a"); download.href = url; download.download = "calificaciones-" + course.course.code.replace(/[^a-zA-Z0-9_-]/g, "_") + "-seminaristas-mostrados.csv";
         document.body.append(download); download.click(); download.remove(); setTimeout(() => URL.revokeObjectURL(url), 0);
-        note("Archivo exportado con los " + gradebook.students.length + " alumnos mostrados en esta página.", "success");
+        note("Archivo exportado con los " + gradebook.students.length + " seminaristas mostrados en esta página.", "success");
     }
     async function saveGrid(publish) {
         if (!active || !canManage() || !gradebook || pendingWrites.has("grid")) return;
@@ -786,7 +786,7 @@
     function editData(row, data) { return row.id ? { ...data, id: row.id, revision: row.revision || 0 } : data; }
     function writeError(error) {
         if (error?.code === "PT409" || error?.code === "23505") return "El registro cambió o ya existe. Cierra el formulario y actualiza el curso antes de continuar.";
-        if (error?.code === "22023") return typeof error.message === "string" && error.message.length <= 300 ? error.message : "Revisa los datos del formulario.";
+        if (error?.code === "22023") return typeof error.message === "string" && error.message.length <= 300 ? window.PortalTerms.seminarian(error.message) : "Revisa los datos del formulario.";
         return "No se pudo confirmar el cambio. Actualiza el curso antes de volver a intentarlo.";
     }
     async function submitModal(action, id, data, token, after) {
@@ -884,7 +884,7 @@
         select.id = "learning-field-grading_category"; select.name = "grading_category"; label.htmlFor = select.id;
         for (const [value, caption] of [["tasks", "Tarea"], ["exams", "Examen"], ["projects", "Proyecto"], ["participation", "Participación"], ["practice", "Práctica sin valor"]]) { const option = node("option", caption); option.value = value; select.append(option); }
         select.value = row.grading_category || "tasks"; group.append(label, select); dialog.fields.append(group);
-        field(dialog.fields, "requires_submission", "El alumno debe entregar un trabajo en el portal", { type: "checkbox", value: row.requires_submission !== false, help: "Desmárcalo para exámenes presenciales o participación. Las ponderaciones se revisan en Configurar evaluación." });
+        field(dialog.fields, "requires_submission", "El seminarista debe entregar un trabajo en el portal", { type: "checkbox", value: row.requires_submission !== false, help: "Desmárcalo para exámenes presenciales o participación. Las ponderaciones se revisan en Configurar evaluación." });
         field(dialog.fields, "title", "Título de la tarea", { required: true, value: row.title });
         field(dialog.fields, "instructions", "Instrucciones", { textarea: true, value: row.instructions });
         field(dialog.fields, "due_at", "Fecha y hora de entrega", { type: "datetime-local", value: localDate(row.due_at), help: "Se utiliza la zona horaria de tu dispositivo." });
@@ -931,7 +931,7 @@
                 if (publish) await write("grade_publish", id, { assignment_id: assignment.id, enrollment_id: student.enrollment_id, revision });
                 if (!active || current !== generation || token !== modalToken) return;
                 modalBusy = false; closeModal();
-                const target = $("learningContent"); target.replaceChildren(); await renderGradebook(target, pageOffset); note(publish ? "Evaluación publicada. El alumno ya puede consultarla." : "Borrador guardado. El alumno sigue viendo la última evaluación publicada.", "success");
+                const target = $("learningContent"); target.replaceChildren(); await renderGradebook(target, pageOffset); note(publish ? "Evaluación publicada. El seminarista ya puede consultarla." : "Borrador guardado. El seminarista sigue viendo la última evaluación publicada.", "success");
                 dashboardPromise = loadDashboard();
             } catch (error) {
                 if (!active || current !== generation || token !== modalToken || unauthorized(error)) return;
@@ -940,13 +940,13 @@
         };
         const dialog = openDialog("Evaluar: " + student.name, (form, token) => saveGrade(form, token, false), "Guardar borrador");
         dialog.fields.append(node("h3", assignment.title));
-        if (grade.submitted_at) dialog.fields.append(paragraph("Entregada: " + date(grade.submitted_at), "learning-meta")); else empty(dialog.fields, "El alumno todavía no tiene una entrega registrada. Puedes registrar una calificación si corresponde.");
+        if (grade.submitted_at) dialog.fields.append(paragraph("Entregada: " + date(grade.submitted_at), "learning-meta")); else empty(dialog.fields, "El seminarista todavía no tiene una entrega registrada. Puedes registrar una calificación si corresponde.");
         if (grade.body) dialog.fields.append(paragraph(grade.body));
         const resource = external("Abrir trabajo entregado ↗", grade.url); if (resource) dialog.fields.append(resource);
         const files = node("div", undefined, "learning-files-area"); dialog.fields.append(files);
         window.PortalLearningFiles?.render(files, { courseId, assignmentId: assignment.id, canManage: true, enrollmentId: student.enrollment_id });
         field(dialog.fields, "score", "Calificación", { type: "number", required: true, min: 0, max: 10, step: 0.1, value: window.PortalGradeScale.format(grade.score) });
-        field(dialog.fields, "feedback", "Comentarios para el alumno", { textarea: true, rows: 5, max: 4000, value: grade.feedback });
+        field(dialog.fields, "feedback", "Comentarios para el seminarista", { textarea: true, rows: 5, max: 4000, value: grade.feedback });
         dialog.fields.append(paragraph("Última calificación publicada: " + score(grade.published_score), "learning-meta"));
         const publishButton = button("Publicar evaluación", () => { if (dialog.form.reportValidity()) void saveGrade(dialog.form, dialog.token, true); }, "learning-button secondary"); dialog.actions.insertBefore(publishButton, dialog.actions.lastChild);
         if (typeof grade.published_score === "number") {

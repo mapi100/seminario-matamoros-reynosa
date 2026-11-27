@@ -12,7 +12,7 @@
     function mount(host,options){
         if(current?.host===host)return;clear();if(!host||!uuid.test(options.studentId))return;
         const s={host,student:options.studentId,alive:true,busy:false,locked:false,loaded:false,items:[],urls:new Set(),controller:new AbortController(),onBusy:options.onBusy};current=s;
-        const count=node('p',undefined,'personal-files-count'),help=node('p','Hasta 10 PDF en total, de 5 MB por archivo. Solo el alumno y Control Escolar pueden acceder. Los archivos se guardan al pulsar Subir PDF.','personal-files-help');
+        const count=node('p',undefined,'personal-files-count'),help=node('p','Hasta 10 PDF en total, de 5 MB por archivo. Solo el seminarista y Control Escolar pueden acceder. Los archivos se guardan al pulsar Subir PDF.','personal-files-help');
         const fields=node('div',undefined,'personal-files-upload'),typeLabel=node('label','Tipo de documento'),select=node('select');select.id='personalFileKind';
         select.append(new Option('Selecciona el tipo de documento',''));for(const [name,types]of groups){const group=node('optgroup');group.label=name;for(const [key,label]of types)group.append(new Option(label,key));select.append(group);}typeLabel.append(select);
         const fileLabel=node('label','Seleccionar PDF'),input=node('input');input.id='personalFileInput';input.type='file';input.accept='.pdf,application/pdf';input.multiple=true;fileLabel.append(input);

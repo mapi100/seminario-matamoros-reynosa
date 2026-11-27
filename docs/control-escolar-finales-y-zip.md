@@ -10,6 +10,16 @@ Actualización del 5 de noviembre de 2026. Preparada y probada localmente; requi
 
 Requiere las actualizaciones existentes de aula virtual, ponderaciones, organización por curso y boletas. Incluye la actualización de boletas vigentes `20261105000000_report_card_current_enrollments.sql` instalada antes de esta entrega. Si aparece un mensaje sobre dependencias faltantes, conserva el error para revisar el esquema; no vuelvas a ejecutar todas las migraciones antiguas.
 
+## Consultar, editar y exportar finales por grupo
+
+1. Abre **Boletas y kardex → Por grupo** y elige el periodo y el grupo. **Pendiente** indica una inscripción activa sin final publicada. Un guion indica que no hay una inscripción activa para esa materia.
+2. Pulsa **Editar finales**. Cambia las celdas necesarias. Una celda vacía conserva la nota actual. Usa **Revisar y publicar** para comprobar las notas anteriores y nuevas, registrar el motivo cuando se requiera y confirmar la publicación.
+3. **Descargar Excel** guarda un archivo `.xlsx` con las hojas **Calificaciones** y **Estadísticas**. El promedio grupal usa los promedios semestrales completos. Los conteos por materia separan aprobadas, reprobadas y pendientes.
+
+La consulta incluye los grupos históricos. Las cuentas y clases inactivas quedan en solo lectura. Las inscripciones fuera del grupo seleccionado se pueden consultar en **Por seminarista**. Las boletas y los kardex emitidos conservan su copia con el folio registrado.
+
+Para habilitar esta vista, ejecuta [la migración de finales por grupo](../supabase/migrations/20261127000000_group_final_grades.sql) en **Supabase → SQL Editor** y publica la actualización del portal. La migración depende de la captura de finales de Control Escolar descrita arriba. Solo instala funciones y permisos. La publicación de varias materias se confirma en una transacción, con comprobación de cambios concurrentes y la auditoría existente.
+
 ## Entrar a cualquier materia
 
 **Mis cursos → periodo académico → bloque (CI-1, 1F-1, etc.) → Entrar al curso.**
@@ -64,7 +74,9 @@ Comandos de verificación:
 
 ```sh
 python3 supabase/tests/run_school_workflow_local.py
+python3 supabase/tests/run_group_final_grades_local.py
 python3 tests/portal_school_workflow.py
+python3 tests/portal_group_final_grades.py
 python3 tests/portal_staff_teaching.py
 python3 tests/portal_report_zip.py
 python3 tests/portal_class_directory.py
@@ -72,4 +84,4 @@ python3 tests/portal_report_print.py
 python3 tests/portal_learning.py
 ```
 
-Se requieren Docker/PostgreSQL 17 para la primera prueba; Python con Playwright, Chromium y Poppler para las pruebas de navegador/PDF. Las pruebas no requieren claves de Supabase.
+Se requieren Docker/PostgreSQL 17 para las pruebas SQL y Playwright con Chromium para las de navegador. Las pruebas PDF usan Poppler y la de Excel usa openpyxl. Las pruebas no requieren claves de Supabase.
