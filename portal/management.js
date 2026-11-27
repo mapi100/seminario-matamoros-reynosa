@@ -4,16 +4,22 @@
     const section=$("managementSection"),list=$("managementList"),message=$("managementMessage"),dialog=$("managementDialog"),form=$("managementForm"),fields=$("managementFields"),formMessage=$("managementFormMessage"),save=$("managementSave");
     const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const labels={student:"Seminarista",professor:"Profesor",control_escolar:"Control Escolar"};
-    const config={people:["Personas","Administra seminaristas, sacerdotes y personal autorizado.","Invitar persona"],classes:["Clases","Una clase reúne una materia y un periodo académico.","Abrir clase"],enrollments:["Inscripciones","Inscribe seminaristas y conserva el historial de altas y bajas.","Inscribir seminarista"],assignments:["Profesores asignados","Asigna a cada profesor las clases que impartirá.","Asignar profesor"],events:["Actividad","Consulta los cambios realizados por Control Escolar.",""]};
+    const config={people:["Personas","Administra seminaristas, sacerdotes y personal autorizado.","Invitar persona"],classes:["Clases","Una clase reúne una materia y un periodo académico.","Abrir clase"],enrollments:["Inscripciones","Inscribe seminaristas y conserva el historial de altas y bajas.","Inscribir seminarista"],assignments:["Profesores asignados","Asigna a cada profesor las clases que impartirá.","Asignar profesor"],events:["Actividad","Consulta tus avisos y el historial de cambios administrativos.",""]};
     const actions={student_number_saved:"Matrícula actualizada",student_file_uploaded:"Archivo del expediente agregado",student_file_removed:"Archivo del expediente retirado",formation_removed:"Etapa y semestre retirados del periodo",class_group_saved:"Curso de la clase actualizado",formation_saved:"Etapa y semestre actualizados",student_record_saved:"Expediente personal actualizado",student_record_reviewed:"Expediente personal revisado",class_create:"Clase abierta",class_state:"Estado de clase actualizado",enroll:"Seminarista inscrito",assign:"Profesor asignado",enrollment_state:"Inscripción actualizada",assignment_state:"Asignación actualizada",person_update:"Persona actualizada",person_invited:"Invitación enviada",subject_update:"Materia editada",period_update:"Periodo editado",subject_created:"Materia creada",period_created:"Periodo creado",kardex_issue:"Kardex emitido",kardex_student_save:"Expediente actualizado",kardex_academic_save:"Materias de kardex clasificadas",kardex_program_save:"Programa de kardex actualizado",kardex_curriculum_save:"Plan de estudios actualizado",kardex_institution_save:"Datos de plantel actualizados",class_delete:"Clase eliminada",subject_delete:"Materia eliminada",period_delete:"Periodo eliminado"};
     let active=false,resource,version=0,controller,recheck,offset=0,busy=false,modalVersion=0,modalController,modalAction,modalBusy=false,uncertain=false,onSaved,returnFocus,requestId;
+    const filters=$("peopleRoleFilters"),filterButtons=[...filters.querySelectorAll("[data-person-role]")];
+    let personRole="",submittedSearch="";
+    function selectRole(role) {
+        personRole=role;
+        for(const button of filterButtons)button.setAttribute("aria-pressed",String(button.dataset.personRole===role));
+    }
     const dateFormat=new Intl.DateTimeFormat("es-MX",{dateStyle:"medium",timeStyle:"short"});
     function text(value,max=200){return typeof value==="string"&&value.trim()&&value.length<=max;}
     function element(tag,content,className){const node=document.createElement(tag);if(content!==undefined)node.textContent=content;if(className)node.className=className;return node;}
     function note(value,type="",target=message){target.textContent=value;target.className="control-message"+(type?" "+type:"");}
     function api(){return window.PortalAuth.getClient();}
     function cancelModal(){modalVersion++;modalController?.abort();modalController=undefined;modalBusy=false;uncertain=false;fields.replaceChildren();note("","",formMessage);save.disabled=false;form.setAttribute("aria-busy","false");for(const id of ["managementCancel","managementCancelBottom"])$(id).disabled=false;if(dialog.open)dialog.close();if(returnFocus?.isConnected)returnFocus.focus();returnFocus=undefined;}
-    function leave(){version++;controller?.abort();busy=false;resource=undefined;offset=0;list.replaceChildren();note("");section.hidden=true;cancelModal();}
+    function leave(){window.PortalActivityNotices?.leave();filters.hidden=true;selectRole("");submittedSearch="";version++;controller?.abort();busy=false;resource=undefined;offset=0;list.replaceChildren();note("");section.hidden=true;cancelModal();}
     function clear(){active=false;recheck=undefined;leave();$("managementSearch").value="";}
     function forbidden(error){if(error?.code!=="42501"&&![401,403].includes(error?.status))return false;const verify=recheck;clear();if(verify)void verify();return true;}
     function validRow(row,kind){if(!row||!uuid.test(row.id))return false;if(kind==="people")return text(row.full_name,160)&&Object.hasOwn(labels,row.role)&&typeof row.active==="boolean"&&Number.isInteger(row.management_revision)&&row.management_revision>=0&&(row.email===null||text(row.email,320));if(kind==="classes")return uuid.test(row.subject_id)&&uuid.test(row.period_id)&&text(row.code,40)&&text(row.subject_name,160)&&text(row.period_name,120)&&typeof row.active==="boolean"&&Number.isSafeInteger(row.students)&&row.students>=0&&Number.isSafeInteger(row.professors)&&row.professors>=0;if(kind==="events")return text(row.action,80)&&text(row.actor_name,160)&&text(row.created_at,80)&&Number.isFinite(Date.parse(row.created_at));return uuid.test(row.person_id)&&uuid.test(row.class_id)&&text(row.full_name,160)&&text(row.subject_name,160)&&text(row.period_name,120)&&typeof row.active==="boolean";}
@@ -27,7 +33,23 @@
         if(kind!=="events")info.append(element("span",row.active?"Activo":"Inactivo","status-pill"+(row.active?"":" inactive")));
         node.append(info,buttons);return node;
     }
-    async function read(kind,search="",from=0,limit=30,signal){let response;if(kind==="classes"||kind==="active_classes"){response=await api().rpc("portal_course_classes_read",{p_active_only:kind==="active_classes",p_search:search,p_offset:from,p_limit:limit}).abortSignal(signal);if(["PGRST202","42883"].includes(response.error?.code))response=await api().rpc("portal_admin_read",{p_resource:kind,p_search:search,p_offset:from,p_limit:limit}).abortSignal(signal);}else response=await api().rpc("portal_admin_read",{p_resource:kind,p_search:search,p_offset:from,p_limit:limit}).abortSignal(signal);if(response.error)throw {...response.error,status:response.status};const data=response.data;if(!data||!Array.isArray(data.items)||data.items.length>limit||typeof data.has_more!=="boolean")throw new Error("Respuesta inválida");return data;}
+    async function read(kind,search="",from=0,limit=30,signal,role="") {
+        const page={p_search:search,p_offset:from,p_limit:limit};
+        let response;
+        if(kind==="classes"||kind==="active_classes"){
+            response=await api().rpc("portal_course_classes_read",{...page,p_active_only:kind==="active_classes"}).abortSignal(signal);
+            if(["PGRST202","42883"].includes(response.error?.code))
+                response=await api().rpc("portal_admin_read",{...page,p_resource:kind}).abortSignal(signal);
+        }else if(kind==="people"&&role){
+            response=await api().rpc("portal_people_by_role",{...page,p_role:role}).abortSignal(signal);
+        }else{
+            response=await api().rpc("portal_admin_read",{...page,p_resource:kind}).abortSignal(signal);
+        }
+        if(response.error)throw {...response.error,status:response.status};
+        const data=response.data;
+        if(!data||!Array.isArray(data.items)||data.items.length>limit||typeof data.has_more!=="boolean")throw new Error("Respuesta inválida");
+        return data;
+    }
     async function assignments(search,signal){const rows=[],ids=new Set();let more=true;while(more){if(rows.length>=10000)throw new Error("Lista demasiado grande");const page=await read("assignments",search,rows.length,100,signal);if(page.has_more&&!page.items.length||!page.items.every(row=>validRow(row,"assignments")&&!ids.has(row.id)))throw new Error("Página inválida");for(const row of page.items){if(ids.has(row.id))throw new Error("Asignación repetida");ids.add(row.id);rows.push(row);}more=page.has_more;}return rows;}
     function professorGroups(rows){
         const groups=new Map();for(const row of rows){if(!groups.has(row.person_id))groups.set(row.person_id,{name:row.full_name,rows:[]});groups.get(row.person_id).rows.push(row);}
@@ -38,14 +60,66 @@
             for(const [period,classes] of periods){const section=element("section"),list=element("ul");section.append(element("h4",period));for(const row of classes){const item=element("li",undefined,"management-professor-class"),info=element("div");info.append(element("strong",row.subject_name),element("span",row.active?"Activa":"Inactiva","status-pill"+(row.active?"":" inactive")));const actions=element("div",undefined,"row-actions");actions.append(button(row.active?"Dar de baja":"Reactivar",()=>openModal("assignment_state",row)));if(row.active){const enter=element("a","Entrar al curso","back-link");enter.href="#curso/"+row.class_id+"/inicio";actions.append(enter);}item.append(info,actions);list.append(item);}section.append(list);body.append(section);}details.append(body);li.append(details);nodes.push(li);
         }return {nodes,count:groups.size};
     }
-    async function load(reset=true){
-        if(!active||!resource)return;const kind=resource,operation=++version;controller?.abort();controller=new AbortController();busy=true;section.setAttribute("aria-busy","true");$("managementMore").disabled=true;
-        if(reset){offset=0;list.replaceChildren();}note("Consultando…");
-        try{if(kind==="assignments"){const rows=await assignments($("managementSearch").value.trim(),controller.signal);if(!active||operation!==version||resource!==kind)return;const grouped=professorGroups(rows);list.replaceChildren(...grouped.nodes);offset=rows.length;$("managementMore").hidden=true;note(rows.length?grouped.count+(grouped.count===1?" profesor":" profesores")+" · "+rows.length+(rows.length===1?" asignación":" asignaciones")+($("managementSearch").value.trim()?(rows.length===1?" que coincide con la búsqueda.":" que coinciden con la búsqueda."):"."):"No hay profesores asignados que coincidan. Usa Asignar profesor para agregar una clase.");return;}const data=await read(kind,$("managementSearch").value.trim(),offset,30,controller.signal);if(!active||operation!==version||resource!==kind)return;if(!data.items.every(row=>validRow(row,kind)))throw new Error("Registro inválido");list.append(...data.items.map(row=>item(row,kind)));offset+=data.items.length;$("managementMore").hidden=!data.has_more;note(offset?offset+" registros mostrados.":"No hay registros que coincidan. Puedes crear uno con el botón de arriba.");if(kind==="events"&&!offset)note("La actividad aparecerá cuando Control Escolar realice cambios.");}
-        catch(error){if(!active||operation!==version||forbidden(error))return;list.replaceChildren();offset=0;$("managementMore").hidden=true;note(error?.code==="PGRST202"?"La administración todavía no está habilitada. Contacta al responsable del portal.":"No se pudo consultar la lista. Pulsa Actualizar para reintentar.","error");}
-        finally{if(operation===version){busy=false;section.setAttribute("aria-busy","false");$("managementMore").disabled=false;}}
+    async function load(reset=true) {
+        if(!active||!resource)return;
+        const kind=resource,role=personRole,operation=++version;
+        controller?.abort();controller=new AbortController();
+        busy=true;section.setAttribute("aria-busy","true");$("managementMore").disabled=true;
+        if(reset){offset=0;list.replaceChildren();submittedSearch=$("managementSearch").value.trim();}
+        const search=submittedSearch;
+        note("Consultando…");
+        try{
+            if(kind==="assignments"){
+                const rows=await assignments(search,controller.signal);
+                if(!active||operation!==version||resource!==kind)return;
+                const grouped=professorGroups(rows);
+                list.replaceChildren(...grouped.nodes);offset=rows.length;$("managementMore").hidden=true;
+                note(rows.length?grouped.count+(grouped.count===1?" profesor":" profesores")+" · "+rows.length+(rows.length===1?" asignación":" asignaciones")+
+                    (search?(rows.length===1?" que coincide con la búsqueda.":" que coinciden con la búsqueda."):"."):
+                    "No hay profesores asignados que coincidan. Usa Asignar profesor para agregar una clase.");
+                return;
+            }
+            const data=await read(kind,search,offset,30,controller.signal,role);
+            if(!active||operation!==version||resource!==kind)return;
+            if(!data.items.every(row=>validRow(row,kind)&&(!role||row.role===role)))throw new Error("Registro inválido");
+            list.append(...data.items.map(row=>item(row,kind)));
+            offset+=data.items.length;$("managementMore").hidden=!data.has_more;
+            if(kind==="people"){
+                note(offset?offset+(offset===1?" persona mostrada.":" personas mostradas."):"No hay personas que coincidan con este filtro y búsqueda.");
+            }else if(kind==="events"&&!offset){
+                note("El historial aparecerá cuando Control Escolar realice cambios.");
+            }else{
+                note(offset?offset+(offset===1?" registro mostrado.":" registros mostrados."):"No hay registros que coincidan. Puedes crear uno con el botón de arriba.");
+            }
+        }catch(error){
+            if(!active||operation!==version||forbidden(error))return;
+            list.replaceChildren();offset=0;$("managementMore").hidden=true;
+            const missing=["PGRST202","42883"].includes(error?.code);
+            note(missing?(kind==="people"&&role?"Instala la actualización de filtros de Personas en Supabase.":
+                "La administración todavía no está habilitada. Contacta al responsable del portal."):
+                "No se pudo consultar la lista. Pulsa Actualizar para reintentar.","error");
+        }finally{
+            if(operation===version){busy=false;section.setAttribute("aria-busy","false");$("managementMore").disabled=false;}
+        }
     }
-    function openResource(kind){if(!active||!Object.hasOwn(config,kind))return;if(resource===kind)return;leave();resource=kind;section.hidden=false;$("managementTitle").textContent=config[kind][0];$("managementDescription").textContent=config[kind][1];$("managementCreate").textContent=config[kind][2];$("managementCreate").hidden=kind==="events";$("managementCreate").disabled=kind==="people"&&window.PORTAL_SUPABASE_CONFIG?.features?.invitations===false;if($("managementCreate").disabled)$("managementDescription").textContent+=" El envío de invitaciones está pendiente de activación; puedes administrar las cuentas existentes.";$("managementSearchForm").hidden=kind==="events";$("managementSearch").value="";void load();}
+    function openResource(kind) {
+        if(!active||!Object.hasOwn(config,kind)||resource===kind)return;
+        leave();resource=kind;section.hidden=false;
+        const people=kind==="people",events=kind==="events";
+        $("managementTitle").textContent=config[kind][0];
+        $("managementDescription").textContent=config[kind][1];
+        $("managementCreate").textContent=config[kind][2];
+        $("managementCreate").hidden=events;
+        $("managementCreate").disabled=people&&window.PORTAL_SUPABASE_CONFIG?.features?.invitations===false;
+        if($("managementCreate").disabled)$("managementDescription").textContent+=" El envío de invitaciones está pendiente de activación; puedes administrar las cuentas existentes.";
+        filters.hidden=!people;
+        $("managementSearchForm").hidden=events;
+        $("managementSearchForm").querySelector("label").textContent=people?"Buscar personas":"Buscar en esta sección";
+        $("managementSearch").placeholder=people?"Nombre o correo":"Nombre, materia o periodo";
+        $("managementSearch").value="";
+        if(events)window.PortalActivityNotices?.open();
+        void load();
+    }
     function field(name,label,type="text",value="",options){
         const id="admin-"+name;const labelNode=element("label",label);labelNode.htmlFor=id;
         const input=document.createElement(options?"select":"input");input.id=id;input.name=name;input.required=true;if(options){for(const [key,labelText] of options)input.append(new Option(labelText,key));}else{input.type=type;input.autocomplete="off";if(type==="text")input.maxLength=160;}
@@ -98,5 +172,11 @@
     }
     form.addEventListener("submit",event=>{event.preventDefault();void submit();});dialog.addEventListener("cancel",event=>{event.preventDefault();if(!modalBusy)cancelModal();});for(const id of ["managementCancel","managementCancelBottom"])$(id).addEventListener("click",()=>{if(!modalBusy)cancelModal();});
     $("managementSearchForm").addEventListener("submit",event=>{event.preventDefault();void load();});$("managementRefresh").addEventListener("click",()=>void load());$("managementMore").addEventListener("click",()=>{if(!busy)void load(false);});$("managementCreate").addEventListener("click",()=>openModal({people:"invite",classes:"class_create",enrollments:"enroll",assignments:"assign"}[resource]));
+    for(const button of filterButtons)button.addEventListener("click",()=>{
+        const next=button.dataset.personRole;
+        if(resource!=="people"||personRole===next)return;
+        selectRole(next);
+        void load();
+    });
     window.PortalManagement=Object.freeze({clear,leave,show(verify){clear();active=true;recheck=verify;},openResource,editCatalog(kind,row,callback){openModal(kind==="subject"?"subject_update":"period_update",row,callback);},createClass(period,callback){if(active&&uuid.test(period?.id)&&text(period.name,120))openModal("class_create",{period_id:period.id,period_name:period.name},callback);},openClassAction(action,row,callback){if(!active||!["enroll","assign","class_state"].includes(action)||!uuid.test(row?.id)||!uuid.test(row.period_id)||!text(row.subject_name,160)||!text(row.period_name,120)||typeof row.active!=="boolean"||action!=="class_state"&&!row.active)return;openModal(action,{...row,fixed_class:true},callback);}});
 })();

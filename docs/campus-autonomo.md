@@ -27,6 +27,14 @@ Las bajas conservan los registros y notas. Reactivar una inscripción restaura
 la misma identidad y sus calificaciones. Desactivar una clase retira su acceso
 a alumnos y profesores; sus registros permanecen disponibles para administración.
 
+## Filtros y avisos de Control Escolar
+
+En **Personas**, elige **Todos**, **Seminaristas**, **Profesores** o **Control Escolar**. El filtro se aplica a todo el directorio y se puede combinar con la búsqueda por nombre o correo. Las cuentas inactivas aparecen con su estado.
+
+La campanita abre **Actividad** y cuenta solo los avisos sin leer de tu cuenta. Recibes un aviso cuando un profesor o Control Escolar cambia el valor de una final ya publicada, o cuando un seminarista guarda cambios en su propio expediente. El contador se consulta al entrar y se actualiza cada minuto con el portal visible. En **Marcar todo como leído**, los avisos de tu cuenta quedan leídos, incluidas las páginas anteriores, y siguen disponibles en Actividad.
+
+Para habilitar ambas funciones, ejecuta [el SQL de filtros y avisos](../supabase/migrations/20261127010000_people_filters_and_activity_notices.sql) en el SQL Editor del proyecto del Seminario, luego publica el portal. La instalación agrega funciones, tablas privadas y disparadores. No altera calificaciones ni expedientes, y registra avisos a partir de la instalación. El historial administrativo se conserva por separado.
+
 ## 1. Integrar el paquete en Windows
 
 1. Descarga `seminario-campus-autonomo.zip` y extráelo fuera del repositorio,
