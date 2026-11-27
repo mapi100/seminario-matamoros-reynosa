@@ -28,7 +28,7 @@
         return data.enrollments.every(r=>{const key=r.class_id+':'+r.student_id;if(!students.has(r.student_id)||!classes.has(r.class_id)||typeof r.active!=='boolean'||pairs.has(key))return false;pairs.add(key);return true;});
     }
     function errorText(e){return ['PGRST202','42883','42P01'].includes(e?.code)?'Falta instalar el SQL de grupos en Supabase. La consulta individual sigue disponible.':
-        ['PT409','22023'].includes(e?.code)?e.message:'No se pudo cargar el grupo. Pulsa Actualizar para reintentar.';}
+        ['PT409','22023'].includes(e?.code)?window.PortalTerms.seminarian(e.message):'No se pudo cargar el grupo. Pulsa Actualizar para reintentar.';}
     function denied(e){if(e?.code==='42501'||[401,403].includes(e?.status)){const v=verify;clear();void v?.();return true;}return false;}
     function members(g){return snapshot.students.filter(r=>code(r)===g.code).sort(compare);}
     function courses(g){return snapshot.classes.filter(r=>r.group_code===g.code).sort((a,b)=>a.name.localeCompare(b.name,'es')||a.id.localeCompare(b.id));}
@@ -176,7 +176,7 @@
                 status(result.removed+' '+label+' retirados de '+g.code+' en '+periodName+'. Las demás asignaciones se conservan.');if(kind==='classes')void window.PortalCourseGroups?.reload();void cb?.();
             }catch(e){if(gen!==generation||dialog!==d)return;if(denied(e))return;
                 message.textContent=['PGRST202','42883'].includes(e?.code)?'Falta instalar el SQL para quitar asignaciones de los grupos.':
-                    ['22023','PT409'].includes(e?.code)?e.message:'No se pudo confirmar la corrección. Cierra y actualiza para comprobar el resultado antes de repetir.';
+                    ['22023','PT409'].includes(e?.code)?window.PortalTerms.seminarian(e.message):'No se pudo confirmar la corrección. Cierra y actualiza para comprobar el resultado antes de repetir.';
                 dialogBusy=false;refreshOnClose=true;cancel.disabled=false;cancel.textContent='Cerrar y actualizar';
             }finally{if(dialog===d)d.setAttribute('aria-busy','false');}
         }

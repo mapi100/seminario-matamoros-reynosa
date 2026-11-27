@@ -46,7 +46,7 @@ async def main():
             await expect(page.locator('#batchEnrollmentSemester option')).to_have_count(7)
             await expect(page.locator('#batchEnrollmentList input')).to_have_count(8)
             await expect(page.locator('#batchEnrollmentCount')).to_contain_text('9 fuera del filtro')
-            await page.locator('#batchEnrollmentSemester').select_option('1');await expect(page.locator('#batchEnrollmentList')).to_contain_text('No hay alumnos')
+            await page.locator('#batchEnrollmentSemester').select_option('1');await expect(page.locator('#batchEnrollmentList')).to_contain_text('No hay seminaristas')
             await page.locator('#batchEnrollmentSemester').select_option('3');await expect(page.locator('#batchEnrollmentList input')).to_have_count(8)
             await page.locator('#batchEnrollmentStage').select_option('teologia');await expect(page.locator('#batchEnrollmentSemester option')).to_have_count(9)
             await page.locator('#batchEnrollmentSemester').select_option('5');await expect(page.locator('#batchEnrollmentList input')).to_have_count(8)

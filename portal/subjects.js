@@ -87,7 +87,7 @@
         const ids = enrollments.map(enrollment => enrollment.id);
         try {
             // La consulta separada conserva las materias si fallan las notas.
-            // PostgreSQL solo devuelve las notas publicadas del alumno activo.
+            // PostgreSQL solo devuelve las notas publicadas del seminarista activo.
             const { data, error } = await window.PortalAuth.getClient()
                 .from("enrollment_grades")
                 .select("enrollment_id, score")
@@ -135,7 +135,7 @@
         status.textContent = offset ? "Cargando más materias…" : "Cargando tus materias…";
 
         try {
-            // RLS filtra las inscripciones; la interfaz no decide qué alumno puede leerlas.
+            // RLS filtra las inscripciones; la interfaz no decide qué seminarista puede leerlas.
             const { data, error } = await window.PortalAuth.getClient()
                 .from("enrollments")
                 .select("id, subjects(code, name), academic_periods(name, starts_on, ends_on)")

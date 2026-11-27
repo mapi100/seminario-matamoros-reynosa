@@ -17,7 +17,7 @@ async def fixture(browser,mobile=False):
 
 async def open_batch(page):
     await w.nav(page,'clases')
-    await page.get_by_role('button',name='Inscribir alumnos',exact=True).click()
+    await page.get_by_role('button',name='Inscribir seminaristas',exact=True).click()
     await expect(page.locator('#batchEnrollmentDialog')).to_be_visible()
 
 async def done(context,state,label):
@@ -36,7 +36,7 @@ async def main():
             await page.locator('#batchEnrollmentSearch').fill('Seminarista 01');await page.locator('#batchEnrollmentList input').check()
             await page.locator('#batchEnrollmentSearch').fill('Seminarista 02');await page.locator('#batchEnrollmentSelectAll').click()
             await expect(page.locator('#batchEnrollmentCount')).to_contain_text('2 seleccionados')
-            await page.locator('#batchEnrollmentSearch').fill('No existe');await expect(page.locator('#batchEnrollmentList')).to_contain_text('No hay alumnos')
+            await page.locator('#batchEnrollmentSearch').fill('No existe');await expect(page.locator('#batchEnrollmentList')).to_contain_text('No hay seminaristas')
             await page.locator('#batchEnrollmentSearch').fill('');await expect(page.locator('#batchEnrollmentList input:checked')).to_have_count(3)
             assert await page.locator('#batchEnrollmentDialog').evaluate('(d)=>d.scrollWidth<=d.clientWidth && d.getBoundingClientRect().height<=innerHeight')
             assert await page.locator('#batchEnrollmentSave').evaluate('(b)=>{const r=b.getBoundingClientRect(),d=b.closest("dialog").getBoundingClientRect();return r.top>=d.top && r.bottom<=d.bottom-8 && r.bottom<=innerHeight}')
@@ -48,7 +48,7 @@ async def main():
             await expect(page.locator('#classDirectoryStatus')).to_contain_text('1 nuevo · 1 reactivado')
             assert data['batch_calls']==[{'p_class':w.CL,'p_students':IDS[:2]}]
             assert len(data['enrollments'])==3 and data['enrollments'][1]['id']=='91000000-0000-4000-8000-000000008888' and data['enrollments'][1]['active']
-            await page.get_by_role('button',name='Inscribir alumnos',exact=True).click();await expect(page.locator('#batchEnrollmentList input:disabled')).to_have_count(3)
+            await page.get_by_role('button',name='Inscribir seminaristas',exact=True).click();await expect(page.locator('#batchEnrollmentList input:disabled')).to_have_count(3)
             await page.keyboard.press('Escape');await expect(page.locator('#batchEnrollmentDialog')).not_to_be_visible()
             await done(c,state,('Móvil' if mobile else 'Escritorio')+': 38 candidatos, selección persistente, selección de resultados, alta y reactivación en una llamada')
 

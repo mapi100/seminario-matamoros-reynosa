@@ -176,7 +176,7 @@ async def main():
         await courses_ready(page)
         await open_roster(page)
         await expect(page.locator('.roster-student')).to_have_count(0)
-        await expect(page.locator('#rosterStatus')).to_contain_text('No hay alumnos activos')
+        await expect(page.locator('#rosterStatus')).to_contain_text('No hay seminaristas activos')
         await expect(page.locator('#rosterRetry')).to_be_hidden()
         await finished(context, state, 'roster valid empty state')
 
@@ -186,7 +186,7 @@ async def main():
             await open_roster(page)
             await expect(page.locator('.roster-student')).to_have_count(0)
             await expect(page.locator('#rosterRetry')).to_be_visible()
-            await expect(page.locator('#rosterStatus')).not_to_contain_text('No hay alumnos activos')
+            await expect(page.locator('#rosterStatus')).not_to_contain_text('No hay seminaristas activos')
             await expect(page.locator('.teaching-card')).to_have_count(2)
             before = len([url for _, url in state['requests'] if '/rest/v1/profiles' in url])
             state['roster_status'] = 200
@@ -264,7 +264,7 @@ async def main():
         await page.evaluate('Object.defineProperty(document,"visibilityState",{configurable:true,get:()=>"hidden"}); document.dispatchEvent(new Event("visibilitychange"))')
         state['profile'] = {'full_name': 'Ahora alumno', 'role': 'student', 'active': True}
         await page.evaluate('Object.defineProperty(document,"visibilityState",{configurable:true,get:()=>"visible"}); document.dispatchEvent(new Event("visibilitychange"))')
-        await expect(page.locator('#panelTitle')).to_have_text('Panel de alumno')
+        await expect(page.locator('#panelTitle')).to_have_text('Panel de seminarista')
         await expect(page.locator('#teachingSection')).to_be_hidden()
         await expect(page.locator('.roster-student')).to_have_count(0)
         assert len(state['teaching_requests']) == before

@@ -73,7 +73,7 @@
             $("classDirectoryPeriod").replaceChildren(...data.periods.map(p => new Option(p.name, p.id)));
             $("classDirectoryPeriod").value = periodId || "";
             render();
-            status(notice || (periodId && mode === "materias-asignadas" ? "Elige un bloque. Puedes entrar a todas las clases y capturar sus calificaciones finales." : periodId ? "Elige un curso y después la clase. Desde ahí puedes inscribir alumnos o asignar profesores." : "Todavía no hay periodos académicos. Agrega uno en Materias y periodos."));
+            status(notice || (periodId && mode === "materias-asignadas" ? "Elige un bloque. Puedes entrar a todas las clases y capturar sus calificaciones finales." : periodId ? "Elige un curso y después la clase. Desde ahí puedes inscribir seminaristas o asignar profesores." : "Todavía no hay periodos académicos. Agrega uno en Materias y periodos."));
             if (notice) $("classDirectoryListTitle").focus({ preventScroll: true });
         } catch (error) {
             if (!opened || operation !== generation) return;
@@ -108,7 +108,7 @@
     function classAction(action, row) {
         if (!profile || !opened || busy) return;
         const operation = generation;
-        const messages = { enroll: "Alumno inscrito en ", assign: "Profesor asignado a ", class_state: "Estado actualizado de " };
+        const messages = { enroll: "Seminarista inscrito en ", assign: "Profesor asignado a ", class_state: "Estado actualizado de " };
         const done = result => {
             if (!opened || operation !== generation) return;
             void load(periodId, result?.notice || messages[action] + row.name + ".");
@@ -132,7 +132,7 @@
             }
             item.append(actions); return item;
         }
-        const enroll = button("Inscribir alumnos", () => classAction("enroll", row), "back-link control-create");
+        const enroll = button("Inscribir seminaristas", () => classAction("enroll", row), "back-link control-create");
         const assign = button("Asignar profesor", () => classAction("assign", row));
         enroll.disabled = assign.disabled = !row.active;
         actions.append(enroll, assign);
@@ -204,7 +204,7 @@
         show(value, check) { clear(); if (value.role === "control_escolar") { profile = value; verify = check; } },
         openRoute(view = "clases") { if (!profile || opened && mode === view) return; if (opened) leave(); mode = view;
             $("classDirectoryTitle").textContent = mode === "materias-asignadas" ? "Mis cursos" : "Clases por curso";
-            $("classDirectoryIntro").textContent = mode === "materias-asignadas" ? "Control Escolar tiene acceso a todas las materias. Elige un periodo y un bloque para entrar o capturar finales." : "Elige el periodo académico, abre un curso e inscribe alumnos o asigna profesores a sus clases.";
+            $("classDirectoryIntro").textContent = mode === "materias-asignadas" ? "Control Escolar tiene acceso a todas las materias. Elige un periodo y un bloque para entrar o capturar finales." : "Elige el periodo académico, abre un curso e inscribe seminaristas o asigna profesores a sus clases.";
             $("classDirectoryManage").hidden = mode === "materias-asignadas";
             opened = true; $("classDirectory").hidden = false; void load(periodId); }
     });

@@ -27,7 +27,7 @@
     }
     function failure(error,target) {
         if(error?.code==="42501"||[401,403].includes(error?.status)) {const verify=recheck;clear();if(verify)void verify();return;}
-        const text=["22023","PT409"].includes(error?.code)&&typeof error.message==="string"&&error.message.length<250?error.message:
+        const text=["22023","PT409"].includes(error?.code)&&typeof error.message==="string"&&error.message.length<250?window.PortalTerms.seminarian(error.message):
             ["PGRST202","42883","42P01"].includes(error?.code)?"Falta instalar las etapas formativas en Supabase.":"No se pudo completar la consulta. Actualiza para reintentar.";
         note(text,"error",target);
     }
@@ -86,7 +86,7 @@
             if(!profile||!opened||g!==generation||op!==sequence)return;
             if(!Array.isArray(result?.items)||typeof result.has_more!=="boolean"||result.items.length>30)throw new Error("Lista inválida");
             for(const row of result.items){if(!uuid.test(row.id)||typeof row.full_name!=="string"||!Number.isInteger(row.revision)||
-                (row.stage_code!==null&&(!stage(row.stage_code)||!Number.isInteger(row.semester)||row.semester<1||row.semester>stage(row.stage_code).semesters)))throw new Error("Alumno inválido");
+                (row.stage_code!==null&&(!stage(row.stage_code)||!Number.isInteger(row.semester)||row.semester<1||row.semester>stage(row.stage_code).semesters)))throw new Error("Seminarista inválido");
                 const item=el("li"),info=el("div");info.append(el("h3",row.full_name),el("p",(row.student_number||"Matrícula pendiente")+" · "+(row.active?"Activo":"Inactivo")),el("p",label(row),"formation-label"));
                 item.dataset.stage=row.stage_code||"";item.append(info,button(row.revision?"Editar etapa y semestre":"Asignar etapa y semestre",()=>void edit(row)));$("formationStudents").append(item);}
             offset+=result.items.length;$("formationMore").hidden=!result.has_more;

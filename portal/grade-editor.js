@@ -168,8 +168,8 @@
             if (state.revision !== previousRevision + 1) throw new Error("Revisión inesperada");
             render(state);
             showMessage(action === "save"
-                ? "Borrador guardado. La calificación publicada del alumno conserva su valor."
-                : "Calificación publicada. El alumno podrá consultarla al actualizar su portal.", "success");
+                ? "Borrador guardado. La calificación publicada del seminarista conserva su valor."
+                : "Calificación publicada. El seminarista podrá consultarla al actualizar su portal.", "success");
         } catch (error) {
             if (operation !== version || editor.hidden) return;
             unavailable(error?.code === "PT409" || error?.status === 409

@@ -63,7 +63,7 @@
         const verify=recheck;clear(true);if(verify)void verify();return true;
     }
     function errorText(error) {
-        if(["22023","PT409"].includes(error?.code)&&typeof error.message==="string"&&error.message.length<350)return error.message;
+        if(["22023","PT409"].includes(error?.code)&&typeof error.message==="string"&&error.message.length<350)return window.PortalTerms.seminarian(error.message);
         if(["PGRST202","42883","42P01"].includes(error?.code))return "El expediente personal necesita instalarse en Supabase. Contacta al responsable del portal.";
         return "No se pudo consultar el expediente. Comprueba tu conexión y pulsa Actualizar datos.";
     }
@@ -122,7 +122,7 @@
     function render() {
         window.PortalPersonalFiles?.clear();filesHost=undefined;
         inputs.clear();panels.length=0;tabs.length=0;$("personalTabs").replaceChildren();$("personalGroups").replaceChildren();
-        $("personalStudentName").textContent=record.student.full_name;$("personalAccount").textContent=(record.student.active?"Alumno activo":"Alumno inactivo · expediente conservado")+" · "+(record.school.student_number||"Matrícula pendiente");
+        $("personalStudentName").textContent=record.student.full_name;$("personalAccount").textContent=(record.student.active?"Seminarista activo":"Seminarista inactivo · expediente conservado")+" · "+(record.school.student_number||"Matrícula pendiente");
         $("personalReviewState").textContent=record.review.reviewed?"Revisado por Control Escolar"+(record.review.reviewer?" · "+record.review.reviewer:"")+" · "+fmtDate(record.review.reviewed_at):record.updated_at?"Pendiente de revisión por Control Escolar":"Por completar";
         $("personalProgressText").textContent="Datos básicos guardados: "+record.completion.completed+" de 9";$("personalProgress").value=record.completion.completed;
         $("personalMissing").replaceChildren(...record.completion.missing.map(label=>create("li",label)));if(!record.completion.missing.length)$("personalMissing").append(create("li","Los datos básicos sugeridos están capturados."));
@@ -137,7 +137,7 @@
             if(group.title==="Datos escolares"){readonly(fields,"Matrícula",record.school.student_number);if(control())fields.append(button("Editar matrícula",()=>void editNumber()));readonly(fields,"Fecha de ingreso",fmtDate(record.school.entered_on));readonly(fields,"Fecha de egreso",fmtDate(record.school.completed_on));readonly(fields,"Inscripciones en el historial",String(record.school.enrollments));
                 const trajectory=create("div",undefined,"personal-readonly");trajectory.append(create("strong","Etapas y semestres por periodo"));for(const r of record.school.formation_history||[])trajectory.append(create("p",r.period_name+" · "+r.stage_name+" · Semestre "+r.semester+" de "+r.semesters));if(!record.school.formation_history?.length)trajectory.append(create("p","Control Escolar todavía no ha asignado tu etapa y semestre."));fields.append(trajectory);
                 const programs=create("div",undefined,"personal-readonly");programs.append(create("strong","Programas vinculados"));for(const p of record.school.programs)programs.append(create("p",p.name+" · "+p.plan_name));if(!record.school.programs.length)programs.append(create("p","Control Escolar todavía no ha clasificado tus inscripciones por programa."));fields.append(programs);
-                if(control())fields.append(button("Abrir kardex de este alumno",()=>window.PortalKardex?.requestStudent(target)));else fields.append(button("Ver mis cursos",()=>{location.hash="mis-materias";}));}
+                if(control())fields.append(button("Abrir kardex de este seminarista",()=>window.PortalKardex?.requestStudent(target)));else fields.append(button("Ver mis cursos",()=>{location.hash="mis-materias";}));}
             tabs.push(t);panels.push(panel);$("personalTabs").append(t);$("personalGroups").append(panel);
         }
         baseline=JSON.stringify(payload());dirty=false;uncertain=false;staleDraft=false;$("personalReviewTools").hidden=!control();$("personalEditor").hidden=false;$("personalLookup").hidden=true;$("personalChooseOther").hidden=!control();age();selectTab(tab);sync();
@@ -150,10 +150,10 @@
         } catch(error){if(profile&&g===generation&&op===operation&&!forbidden(error))note(errorText(error),"error");}
     }
     async function search(reset=true) {
-        if(!profile||!opened||!control())return;const g=generation,op=++operation;if(reset){offset=0;$("personalStudents").replaceChildren();}$("personalMore").disabled=true;note("Buscando alumnos…");
+        if(!profile||!opened||!control())return;const g=generation,op=++operation;if(reset){offset=0;$("personalStudents").replaceChildren();}$("personalMore").disabled=true;note("Buscando seminaristas…");
         try {const data=await rpc("portal_student_record_read",{p_resource:"students",p_search:$("personalSearch").value.trim(),p_offset:offset,p_limit:30});if(!profile||!opened||g!==generation||op!==operation)return;if(!Array.isArray(data.items)||data.items.length>30||typeof data.has_more!=="boolean")throw new Error("Lista inválida");
-            for(const p of data.items){if(!uuid.test(p.id)||typeof p.full_name!=="string")throw new Error("Alumno inválido");const li=create("li"),info=create("div");info.append(create("strong",p.full_name),create("p",(p.student_number||"Matrícula pendiente")+" · "+(p.active?"Activo":"Inactivo")));li.append(info,button("Abrir expediente",()=>{if(acceptDiscard()){tab=0;void load(p.id);}}));$("personalStudents").append(li);}
-            offset+=data.items.length;$("personalMore").hidden=!data.has_more;note(offset?offset+" alumnos mostrados.":"No hay alumnos que coincidan.");
+            for(const p of data.items){if(!uuid.test(p.id)||typeof p.full_name!=="string")throw new Error("Seminarista inválido");const li=create("li"),info=create("div");info.append(create("strong",p.full_name),create("p",(p.student_number||"Matrícula pendiente")+" · "+(p.active?"Activo":"Inactivo")));li.append(info,button("Abrir expediente",()=>{if(acceptDiscard()){tab=0;void load(p.id);}}));$("personalStudents").append(li);}
+            offset+=data.items.length;$("personalMore").hidden=!data.has_more;note(offset?offset+" seminaristas mostrados.":"No hay seminaristas que coincidan.");
         } catch(error){if(profile&&g===generation&&op===operation&&!forbidden(error))note(errorText(error),"error");}
         finally {if(g===generation&&op===operation)$("personalMore").disabled=false;}
     }
@@ -168,7 +168,7 @@
         const g=generation,op=operation,id=target;saving=true;sync();note("Guardando matrícula…");
         try {const data=await rpc("portal_student_number_save",{p_student:id,p_token:record.token,p_number:number.trim()});
             if(!profile||g!==generation||op!==operation)return;if(data.saved!==true||!valid(data,id)||data.can_review!==true)throw new Error("Guardado sin confirmar");record=data;render();note("Matrícula guardada y vinculada al kardex.","success");
-        }catch(error){if(profile&&g===generation&&op===operation&&!forbidden(error)){uncertain=true;note(["22023","PT409"].includes(error?.code)?error.message:"No se confirmó el cambio. Actualiza para comprobar la matrícula antes de repetir.","error");}}
+        }catch(error){if(profile&&g===generation&&op===operation&&!forbidden(error)){uncertain=true;note(["22023","PT409"].includes(error?.code)?window.PortalTerms.seminarian(error.message):"No se confirmó el cambio. Actualiza para comprobar la matrícula antes de repetir.","error");}}
         finally{if(g===generation&&op===operation){saving=false;sync();}}
     }
     async function mutate(review=false) {
@@ -183,8 +183,8 @@
     function navigate(route) {
         const allowed=profile&&(profile.role==="student"&&route==="mi-perfil"||control()&&route==="expedientes");
         if(!allowed){if(opened)leave();return;}
-        if(opened)return;opened=true;currentRoute=route;section.hidden=false;$("personalRecordTitle").textContent=control()?"Expedientes de alumnos":"Mis datos personales";
-        $("personalRecordIntro").textContent=control()?"Consulta y revisa el expediente vinculado a cada alumno, sus inscripciones y su kardex.":"Completa tus datos por secciones. Puedes guardar aunque falte información.";
+        if(opened)return;opened=true;currentRoute=route;section.hidden=false;$("personalRecordTitle").textContent=control()?"Expedientes de seminaristas":"Mis datos personales";
+        $("personalRecordIntro").textContent=control()?"Consulta y revisa el expediente vinculado a cada seminarista, sus inscripciones y su kardex.":"Completa tus datos por secciones. Puedes guardar aunque falte información.";
         const restore=resume?.route===route?resume:undefined;tab=restore?.tab||0;
         if(control()) {if(pendingTarget||restore?.target){const id=pendingTarget||restore.target;pendingTarget=undefined;void load(id,restore?.target===id?restore:undefined);}else{$("personalLookup").hidden=false;$("personalChooseOther").hidden=true;void search();}}
         else void load(profile.id,restore);
