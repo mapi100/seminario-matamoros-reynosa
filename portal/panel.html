@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="report-cards.css?v=20261105-promedio-1">
     <link rel="stylesheet" href="kardex.css?v=20261022-kardex-1">
     <link rel="stylesheet" href="group-finals.css?v=20261127-grupos-1">
+    <link rel="stylesheet" href="activity-notices.css?v=20261127-avisos-1">
     <link rel="stylesheet" href="formation.css?v=20261101-grupos-1">
     <link rel="stylesheet" href="formation-groups.css?v=20261101-quitar-1">
     <link rel="stylesheet" href="personal-record.css?v=20261022-expediente-1">
@@ -56,6 +57,10 @@
                 <a id="workspaceCoursesLink" href="#inicio" class="icon-link header-tool" aria-label="Mis cursos" title="Mis cursos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="10" y="3" width="5" height="5" rx="1"/><rect x="17" y="3" width="4" height="5" rx="1"/><rect x="3" y="10" width="5" height="5" rx="1"/><rect x="10" y="10" width="5" height="5" rx="1"/><rect x="17" y="10" width="4" height="5" rx="1"/><rect x="3" y="17" width="5" height="4" rx="1"/><rect x="10" y="17" width="5" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg></a>
                 <a href="#inicio" class="icon-link header-tool" data-widget-focus="learningAnnouncements" aria-label="Anuncios del campus" title="Anuncios"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v5h4l9 4V6l-9 4H4Zm4 5 1 6h3l-2-5M20 9v7"/></svg></a>
                 <a href="#inicio" class="icon-link header-tool" data-widget-focus="learningWork" aria-label="Tareas y fechas límite" title="Tareas pendientes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v17h16V4h-4M9 3h6v4H9zM8 12h8M8 16h5"/></svg></a>
+                <a id="activityNoticeBell" href="#actividad" class="icon-link activity-notice-bell" aria-label="Avisos de actividad" title="Avisos de actividad" hidden>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12a2 2 0 0 0 4 0"/></svg>
+                    <span id="activityNoticeBadge" class="activity-notice-badge" aria-hidden="true" hidden></span>
+                </a>
                 <a href="#mi-perfil" class="header-account" aria-label="Mi perfil"><span id="workspaceAvatar" class="header-avatar" aria-hidden="true">SJ</span><span id="workspaceUserName">Mi perfil</span></a>
                 <button id="logoutButton" class="back-link dashboard-logout" type="button" disabled hidden>Cerrar sesión</button>
             </div>
@@ -435,6 +440,25 @@
             </section>
             <section id="managementSection" class="dashboard-card management-section" data-screen="personas inscripciones profesores actividad" hidden>
                 <div class="management-heading"><div><h2 id="managementTitle"></h2><p id="managementDescription"></p></div><button id="managementCreate" type="button" class="back-link control-create">Nuevo</button></div>
+                <div id="peopleRoleFilters" class="period-tabs people-role-filters" role="group" aria-label="Filtrar personas por rol" hidden>
+                    <button type="button" data-person-role="" aria-pressed="true">Todos</button>
+                    <button type="button" data-person-role="student" aria-pressed="false">Seminaristas</button>
+                    <button type="button" data-person-role="professor" aria-pressed="false">Profesores</button>
+                    <button type="button" data-person-role="control_escolar" aria-pressed="false">Control Escolar</button>
+                </div>
+                <section id="activityNoticePanel" class="activity-notice-panel" aria-labelledby="activityNoticeTitle" hidden>
+                    <div class="activity-notice-heading">
+                        <h3 id="activityNoticeTitle">Avisos</h3>
+                        <button type="button" class="back-link" id="activityNoticeReadAll" disabled>Marcar todo como leído</button>
+                    </div>
+                    <p id="activityNoticeStatus" class="control-message" role="status"></p>
+                    <ul id="activityNoticeList" class="activity-notice-list"></ul>
+                    <div class="activity-notice-actions">
+                        <button type="button" class="back-link" id="activityNoticeRetry" hidden>Actualizar avisos</button>
+                        <button type="button" class="back-link" id="activityNoticeMore" hidden>Mostrar más avisos</button>
+                    </div>
+                </section>
+                <h3 id="activityHistoryTitle" class="activity-history-title" hidden>Historial administrativo</h3>
                 <form id="managementSearchForm" class="management-search" role="search"><label for="managementSearch">Buscar en esta sección</label><input id="managementSearch" type="search" maxlength="160" placeholder="Nombre, materia o periodo" autocomplete="off"><button type="submit" class="back-link">Buscar</button><button id="managementRefresh" type="button" class="back-link">Actualizar</button></form>
                 <p id="managementMessage" class="control-message" role="status" aria-live="polite"></p>
                 <ul id="managementList" class="management-list"></ul>
@@ -553,13 +577,14 @@
     <script src="kardex.js?v=20261127-seminaristas-1" defer></script>
     <script src="personal-files.js?v=20261127-seminaristas-1" defer></script>
     <script src="personal-record.js?v=20261127-seminaristas-1" defer></script>
-    <script src="management.js?v=20261127-seminaristas-1" defer></script>
+    <script src="activity-notices.js?v=20261127-avisos-1" defer></script>
+    <script src="management.js?v=20261127-avisos-1" defer></script>
     <script src="control.js?v=20261101-organizer-1" defer></script>
     <script src="learning-files.js?v=20261127-seminaristas-1" defer></script>
     <script src="category-grades.js?v=20261127-seminaristas-1" defer></script>
     <script src="weighted-grades.js?v=20261127-seminaristas-1" defer></script>
     <script src="learning.js?v=20261127-seminaristas-1" defer></script>
     <script src="workspace.js?v=20261127-grupos-1" defer></script>
-    <script src="panel.js?v=20261127-seminaristas-1" defer></script>
+    <script src="panel.js?v=20261127-avisos-1" defer></script>
 </body>
 </html>

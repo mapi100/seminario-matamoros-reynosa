@@ -61,6 +61,7 @@
         window.PortalReportBatch?.clear();
         window.PortalSchoolFinals?.clear();
         window.PortalControl?.clear();
+        window.PortalActivityNotices?.clear();
         window.PortalManagement?.clear();
         window.PortalDeletion?.clear();
         window.PortalKardex?.clear();
@@ -207,6 +208,7 @@
                 window.PortalLearning?.show(result.profile, verifyAccess);
                 window.PortalPersonalRecord?.show(result.profile, verifyAccess);
                 window.PortalFormation?.show(result.profile, verifyAccess);
+                window.PortalActivityNotices?.show(result.profile, verifyAccess);
                 window.PortalWorkspace?.show(result.profile);
             } else {
                 showUnavailable("No fue posible verificar tu acceso. Comprueba tu conexión e inténtalo nuevamente.");

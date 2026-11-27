@@ -123,7 +123,8 @@ async def fixture(browser, *, mobile=False, session=True, profile=None, rows=Non
                 status=200; data={'periods':[],'period_id':None,'subjects':[],'classes':[]}
             elif path=='/rest/v1/rpc/portal_course_groups_read':
                 status=200; data={'items':state.get('course_groups',[])}
-            elif path in ['/rest/v1/rpc/portal_group_final_grades_read', '/rest/v1/rpc/portal_report_card_read']:
+            elif path in ['/rest/v1/rpc/portal_group_final_grades_read', '/rest/v1/rpc/portal_report_card_read',
+                          '/rest/v1/rpc/portal_control_activity_read']:
                 status=404; data={'code':'PGRST202','message':'Function not yet installed in this fixture'}
             elif path=='/rest/v1/rpc/portal_formation_read':
                 assert request.post_data_json=={'p_resource':'own'}

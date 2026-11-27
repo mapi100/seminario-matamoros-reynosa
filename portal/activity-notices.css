@@ -1,0 +1,35 @@
+.people-role-filters { gap: 7px; margin: 17px 0 15px; }
+.people-role-filters button { padding: 8px 16px; font-weight: 600; white-space: nowrap; }
+.activity-notice-bell { position: relative; }
+.activity-notice-badge {
+    position: absolute; top: -5px; right: -6px;
+    min-width: 19px; height: 19px; padding: 0 3px; display: grid; place-items: center;
+    border-radius: 999px; border: 1.5px solid var(--theme-header,#fff);
+    background: #c91e33; color: #fff; font-size: 11px; font-weight: 700; line-height: 1;
+}
+.activity-notice-panel { margin: 21px 0 26px; padding: 16px; border: 1px solid var(--theme-line); border-radius: 5px; }
+.activity-notice-heading, .activity-notice-list li { display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+.activity-notice-heading { margin-bottom: 8px; flex-wrap: wrap; }
+.activity-notice-heading h3, .activity-history-title { color: var(--theme-ink); font-size: 16px; margin: 0 0 8px; }
+.activity-notice-heading h3 { margin: 0; }
+.activity-notice-list { list-style: none; padding: 0; margin: 0; }
+.activity-notice-list li { padding: 13px 2px; border-top: 1px solid var(--theme-line); }
+.activity-notice-list li strong { color: var(--theme-ink); font-weight: 600; }
+.activity-notice-list li p { color: var(--theme-muted); font-size: 14px; margin: 3px 0 0; overflow-wrap: anywhere; }
+.activity-notice-list li time { display: block; color: var(--theme-muted); font-size: 12px; margin-top: 2px; }
+.activity-notice-list li[data-unread="true"] strong::before {
+    content: ""; display: inline-block; background: var(--theme-accent); border-radius: 50%;
+    width: 7px; height: 7px; margin-right: 8px; vertical-align: 2px;
+}
+.activity-notice-list .back-link { flex-shrink: 0; }
+.activity-notice-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.activity-notice-actions:not(:has(button:not([hidden]))) { display: none; }
+.activity-notice-panel .control-message:empty { display: none; }
+@media (max-width: 640px) {
+    .people-role-filters { flex-wrap: wrap; gap: 4px 6px; }
+    .people-role-filters button { padding-inline: 8px; }
+    .activity-notice-list li { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+@media (max-width: 420px) {
+    .activity-notice-bell { width: 30px; }
+}
