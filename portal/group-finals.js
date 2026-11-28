@@ -247,13 +247,17 @@
         for (const [id, value] of draftValues) {
             const item = model.cells.get(id);
             try {
-                const score = scale.toWire(value.replace(",", "."), item.cell.score);
+                const score = draftScore(value, item.cell.score);
                 if (score !== item.cell.score) changes.push({ ...item, score });
             } catch {
                 invalid = true;
             }
         }
         return { changes, invalid };
+    }
+
+    function draftScore(value, previous) {
+        return value === "" ? null : scale.toWire(value.replace(",", "."), previous);
     }
 
     function sync() {
@@ -271,7 +275,7 @@
         $("groupFinalDraftStatus").textContent = invalid ? "Corrige las notas marcadas. Usa valores de 0 a 10 con un decimal."
             : changes.length > 500 ? "Publica un máximo de 500 notas por vez."
             : changes.length ? changes.length + (changes.length === 1 ? " cambio sin publicar" : " cambios sin publicar")
-            : "Cambia una nota o captura una pendiente.";
+            : "Captura una nota o borra el número para dejarla pendiente.";
         $("groupFinalReview").disabled = busy || !changes.length || changes.length > 500 || invalid;
     }
 
@@ -298,8 +302,8 @@
             let invalid = false;
             const text = input.value.trim();
             draftValues.delete(cell.enrollment_id);
-            if (text && text !== original) {
-                try { marked = scale.toWire(text.replace(",", "."), cell.score) !== cell.score; }
+            if (text !== original) {
+                try { marked = draftScore(text, cell.score) !== cell.score; }
                 catch { invalid = true; }
                 if (marked || invalid) draftValues.set(cell.enrollment_id, text);
             }
@@ -309,7 +313,7 @@
             sync();
         }
         input.addEventListener("input", changed);
-        input.addEventListener("blur", () => { if (!input.value.trim()) input.value = original; });
+        input.addEventListener("blur", () => { if (!input.value.trim()) input.value = ""; });
         td.classList.add("group-grade-editable");
         td.classList.toggle("group-grade-failed", cell.score !== null && cell.score < minimum);
         editor.append(input);
@@ -413,10 +417,11 @@
         const list = node("ul", null, "group-finals-changes");
         for (const { student, course, cell, score } of changes) {
             const li = node("li");
-            li.append(node("strong", student.name), node("span", " · " + course.name + " · " + formatScore(cell.score) + " → " + scale.format(score)));
+            li.append(node("strong", student.name), node("span", " · " + course.name + " · " + formatScore(cell.score) + " → " + formatScore(score)));
             list.append(li);
         }
-        const needsReason = changes.some(({ cell }) => cell.requires_reason);
+        const hasPending = changes.some(({ score }) => score === null);
+        const needsReason = changes.some(({ cell, score }) => score !== null && cell.requires_reason);
         const reasonLabel = node("label", needsReason ? "Motivo de la captura o corrección" : "Motivo (opcional)", "group-finals-reason");
         const reason = node("textarea");
         reason.maxLength = 1000;
@@ -437,9 +442,13 @@
         const actions = node("div", null, "group-finals-actions");
         let needsRefresh = false;
         const cancel = button("Volver", dismiss);
-        const submit = button("Publicar " + changes.length + (changes.length === 1 ? " final" : " finales"), () => void publish(), true);
+        const submitText = hasPending
+            ? changes.length === 1 ? "Confirmar cambio" : "Confirmar cambios"
+            : "Publicar " + changes.length + (changes.length === 1 ? " final" : " finales");
+        const submit = button(submitText, () => void publish(), true);
         function syncDialog() {
-            submit.disabled = busy || needsRefresh || !confirmed.checked || (needsReason && reason.value.trim().length < 10);
+            submit.disabled = busy || needsRefresh || (!hasPending && !confirmed.checked) ||
+                (needsReason && reason.value.trim().length < 10);
             confirmed.disabled = reason.disabled = busy || needsRefresh;
             cancel.disabled = busy;
         }
@@ -453,7 +462,10 @@
         reason.addEventListener("input", syncDialog);
         const periodName = catalog.periods.find(p => p.id === snapshot.period_id).name;
         actions.append(cancel, submit);
-        d.append(title, node("p", snapshot.group_code + " · " + periodName), list, reasonLabel, confirmLabel, notice, actions);
+        d.append(title, node("p", snapshot.group_code + " · " + periodName), list);
+        if (!hasPending || needsReason) d.append(reasonLabel);
+        if (!hasPending) d.append(confirmLabel);
+        d.append(notice, actions);
         d.addEventListener("cancel", event => { event.preventDefault(); dismiss(); });
         document.body.append(d);
         syncDialog();
@@ -465,7 +477,7 @@
             sync();
             syncDialog();
             notice.className = "control-message";
-            notice.textContent = "Publicando calificaciones finales…";
+            notice.textContent = "Guardando cambios en las calificaciones finales…";
             try {
                 const result = await rpc("portal_group_final_grades_save", {
                     p_period: snapshot.period_id, p_group: snapshot.group_code, p_token: snapshot.token,
@@ -481,7 +493,10 @@
                 model = updated;
                 closeDialog();
                 setEditing(false);
-                status(changes.length === 1 ? "Calificación final publicada." : "Calificaciones finales publicadas.", "success");
+                const savedText = hasPending
+                    ? "Cambios guardados en las calificaciones finales."
+                    : changes.length === 1 ? "Calificación final publicada." : "Calificaciones finales publicadas.";
+                status(savedText, "success");
             } catch (error) {
                 if (version !== generation || checkAccess(error)) return;
                 needsRefresh = true;

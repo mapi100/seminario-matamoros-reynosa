@@ -16,12 +16,13 @@ def person(number, name, role, active=True):
     return row
 
 
-def notice(number, kind='final_corrected', name='Seminarista de prueba'):
+def notice(number, kind='final_corrected', name='Seminarista de prueba', actor='Profesor de prueba'):
     return {
         'id': number, 'student_name': name, 'kind': kind, 'read': False,
         'created_at': '2026-11-27T17:00:00Z',
-        'subject_name': 'Catecismo I' if kind == 'final_corrected' else None,
-        'period_name': 'AGO-DIC 2026' if kind == 'final_corrected' else None
+        'subject_name': 'Catecismo I' if kind != 'personal_updated' else None,
+        'period_name': 'AGO-DIC 2026' if kind != 'personal_updated' else None,
+        'actor_name': name if kind == 'personal_updated' else actor
     }
 
 
@@ -38,8 +39,9 @@ async def setup(browser, mobile=False, role='control_escolar'):
         'actor_name': 'Control de prueba', 'created_at': '2026-11-27T17:45:00Z'
     }]
     state = {
-        'notes': [notice(n) for n in range(1, 23)] + [
-            notice(23, name='<img src=x onerror=alert(1)>'),
+        'notes': [notice(n) for n in range(1, 22)] + [
+            notice(22, actor=None),
+            notice(23, actor='<img src=x onerror=alert(1)>'),
             notice(24, kind='personal_updated', name='Seminarista Dos')],
         'calls': [], 'marks': [], 'gate': None, 'started': asyncio.Event(), 'denied': False, 'mark_error': False
     }
@@ -143,8 +145,11 @@ async def main():
         notices = page.locator('#activityNoticeList li')
         await expect(notices).to_have_count(20)
         await expect(notices.first).to_contain_text('Datos personales actualizados')
+        await expect(notices.first).to_contain_text('Seminarista Dos actualizó')
         await expect(notices.nth(1)).to_contain_text('<img src=x')
         assert await notices.nth(1).locator('img').count() == 0
+        await expect(notices.nth(2)).to_contain_text('Autor sin identificar')
+        await expect(notices.nth(3)).to_contain_text('Cambio hecho por Profesor de prueba')
         await expect(badge).to_have_text('24')
         await notices.first.get_by_role('button', name='Marcar como leído').click()
         await expect(badge).to_have_text('23')
@@ -157,9 +162,11 @@ async def main():
         await expect(page.locator('#activityNoticeList li[data-unread="true"]')).to_have_count(0)
         await expect(page.get_by_role('button', name='Marcar todo como leído')).to_be_disabled()
 
-        data['notes'].append(notice(25))
+        data['notes'].append(notice(25, kind='final_pending', actor='Control Uno'))
         await bell.click()
         await expect(badge).to_have_text('1')
+        await expect(notices.first).to_contain_text('Calificación final devuelta a pendiente')
+        await expect(notices.first).to_contain_text('Cambio hecho por Control Uno')
         data['mark_error'] = True
         await page.get_by_role('button', name='Marcar todo como leído').click()
         await expect(page.locator('#activityNoticeStatus')).to_contain_text('No se pudo confirmar')

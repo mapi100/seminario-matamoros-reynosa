@@ -5,7 +5,8 @@ import run_kardex_local as fixture
 
 h = fixture.h
 q = h.quote
-MIGRATION = h.ROOT / 'supabase/migrations/20261127010000_people_filters_and_activity_notices.sql'
+MIGRATIONS = h.ROOT / 'supabase/migrations'
+MIGRATION = MIGRATIONS / '20261128000000_pending_final_grades_and_notice_authors.sql'
 READER = h.uid(190)
 ASSIGNMENT = h.uid(191)
 FIRST_ENROLLMENT = h.uid(192)
@@ -45,6 +46,7 @@ def student_save(who, details):
 
 def main():
     fixture.bootstrap()
+    h.sql((MIGRATIONS / '20261127010000_people_filters_and_activity_notices.sql').read_text())
     h.check('la instalación no genera avisos de notas históricas', read() == {'items': [], 'unread': 0, 'next_before': None})
     h.sql(f"""
         insert into auth.users(id,email) values('{READER}','segunda-control@example.invalid');
@@ -91,6 +93,12 @@ def main():
     h.check('borrador de profesor no notifica', read()['unread'] == 0)
     h.sql(h.actor(h.P, f"select public.publish_teaching_grade('{ASSIGNMENT}','{h.EA}',1)", commit=True))
     h.check('corrección docente notifica exactamente una vez', read()['unread'] == 1)
+    historical_id = read()['items'][0]['id']
+    mark(actor=READER, notice=historical_id)
+    h.sql(MIGRATION.read_text())
+    h.check('recupera la autoría histórica con la auditoría de la misma transacción',
+            read()['items'][0]['actor_name'] == 'Profesor')
+    h.check('asignar autor a un aviso histórico conserva su lectura', read(READER)['items'][0]['read'])
 
     h.sql(f"""
         update public.profiles set active=true where id='{h.B}';
@@ -121,14 +129,16 @@ def main():
     page = read()
     h.check('edición propia efectiva sí, otras acciones del expediente y actividad no',
             page['unread'] == 4 and [x['kind'] for x in page['items']] == ['personal_updated'] + ['final_corrected'] * 3)
+    h.check('nombres del seminarista, Control Escolar y profesor visibles en los avisos',
+            [x['actor_name'] for x in page['items']] == ['Seminarista Alfa', 'Control Escolar', 'Control Escolar', 'Profesor'])
     h.check('aviso no expone valores personales ni notas',
-            all(set(x) == {'id','kind','created_at','student_name','subject_name','period_name','read'} for x in page['items'])
+            all(set(x) == {'id','kind','created_at','student_name','subject_name','period_name','read','actor_name'} for x in page['items'])
             and '5550100000' not in json.dumps(page['items']))
     h.check('consulta de campana solo devuelve el número', read(count=True) == {'unread': 4, 'items': [], 'next_before': None})
 
     latest = page['items'][0]['id']
     h.check('marca uno', mark(notice=latest)['unread'] == 3 and read()['items'][0]['read'])
-    h.check('leer es independiente por cuenta', read(READER)['unread'] == 4 and not read(READER)['items'][0]['read'])
+    h.check('leer es independiente por cuenta', read(READER)['unread'] == 3 and not read(READER)['items'][0]['read'])
     h.check('marca uno es idempotente', mark(notice=latest)['unread'] == 3)
     h.test('no permite marcar todos por omisión', h.actor(h.C, "select public.portal_control_activity_mark()"), error='22023')
 
@@ -141,12 +151,25 @@ def main():
             set(x['id'] for x in first['items']).isdisjoint(x['id'] for x in second['items']))
     h.check('marcar todo incluye avisos fuera de la primera página', mark(all_notices=True)['unread'] == 0 and
             all(x['read'] for x in read(before=first['next_before'])['items']))
-    h.check('marca todo no borra avisos ni cambia otra cuenta', len(read()['items']) == 20 and read(READER)['unread'] == 27)
+    h.check('marca todo no borra avisos ni cambia otra cuenta', len(read()['items']) == 20 and read(READER)['unread'] == 26)
 
     school_save(h.EA, 92)
     h.check('un aviso nuevo reaparece después de marcar todo', read()['unread'] == 1 and not read()['items'][0]['read'])
     h.sql(MIGRATION.read_text())
-    h.check('reinstalación conserva los estados y no crea duplicados', read()['unread'] == 1 and read(READER)['unread'] == 28)
+    h.check('reinstalación conserva los estados y no crea duplicados', read()['unread'] == 1 and read(READER)['unread'] == 27)
+
+    group = json.loads(h.sql(h.actor(h.C, f"select public.portal_group_final_grades_read('{h.T}','CI-1')")).stdout)['snapshot']
+    items = q(json.dumps([{'enrollment_id': h.EA, 'score': None}]))
+    h.sql(h.actor(h.C, f"select public.portal_group_final_grades_save('{h.T}','CI-1',"
+        f"{q(group['token'])},{items}::jsonb,'',true)", commit=True))
+    page = read()
+    h.check('retirar una final notifica una vez con el autor y la materia',
+            page['unread'] == 2 and page['items'][0]['kind'] == 'final_pending' and
+            page['items'][0]['actor_name'] == 'Control Escolar' and page['items'][0]['subject_name'] == 'Historia')
+    h.sql(f"insert into public.control_activity_notices(kind,student_id,subject_id,period_id) "
+          f"values('final_corrected','{h.A}','{h.S}','{h.T}')")
+    h.sql(MIGRATION.read_text())
+    h.check('aviso histórico sin auditoría coincidente queda sin autor', read()['items'][0]['actor_name'] is None)
     print('PASS filtros completos, fuentes exactas, permisos y lecturas por cuenta')
 
 

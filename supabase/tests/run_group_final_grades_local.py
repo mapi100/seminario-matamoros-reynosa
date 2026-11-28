@@ -6,7 +6,7 @@ import run_kardex_local as fixture
 
 h = fixture.h
 q = h.quote
-MIGRATION = h.ROOT / 'supabase/migrations/20261127000000_group_final_grades.sql'
+MIGRATION = h.ROOT / 'supabase/migrations/20261128000000_pending_final_grades_and_notice_authors.sql'
 READ = 'public.portal_group_final_grades_read'
 SAVE = 'public.portal_group_final_grades_save'
 
@@ -109,6 +109,7 @@ def main():
     h.test('RPC conserva un decimal visible', publish([grade(h.EA, 87.3)], token=token), error='22023')
     h.test('corregir publicada exige motivo', publish([grade(h.EA, 88)], token=token, reason=''), error='22023')
     h.test('nota duplicada rechaza el lote', publish([grade(h.EA, 88)] * 2, token=token), error='22023')
+    h.test('un elemento sin campo score no borra la nota', publish([{'enrollment_id': h.EA}], token=token), error='22023')
     for wrong in [other_group_enrollment, alumni_enrollment, inactive_enrollment, fixture.E3]:
         h.test('no modifica inscripciones ajenas, históricas o inactivas',
                publish([grade(h.EA, 88), grade(wrong, 86)], token=token), error='22023')
@@ -130,6 +131,8 @@ def main():
     """)
     changes = [grade(h.EA, 88), grade(fixture.E2, 87)]
     h.test('fallo en una segunda materia revierte la primera', publish(changes, token=token), error='P0001')
+    h.test('fallo al dejar pendiente revierte la corrección numérica del lote',
+           publish([grade(h.EA, 88), grade(fixture.E2, None)], token=token), error='P0001')
     h.check('no dejó notas ni auditorías parciales',
             saved_rows('enrollment_grades') == original_scores and saved_rows('enrollment_grade_events').strip() == '[]')
     h.sql("drop trigger test_group_failure on public.enrollment_grades; drop function public.test_group_failure()")
@@ -144,6 +147,31 @@ def main():
     no_op = json.loads(h.sql(publish(changes, token=result['snapshot']['token'], reason='')).stdout)
     h.check('las notas iguales no crean revisiones', no_op['changed'] == 0 and saved_rows('enrollment_grade_events') == audit)
     h.check('conserva datos de otras inscripciones', actual[alumni_enrollment] == 70 and actual[inactive_enrollment] == 91)
+
+    h.sql(f"update public.enrollment_grade_drafts set revision=revision+1,score=85,needs_publication=true,updated_by='{h.P}' "
+          f"where enrollment_id='{fixture.E2}'")
+    token = read()['snapshot']['token']
+    pending = [grade(h.EA, None), grade(fixture.E2, None), grade(new_enrollment, None)]
+    h.test('dejar pendiente requiere confirmación', publish(pending, token=token, reason='', confirm=False), error='22023')
+    cleared = json.loads(h.sql(publish(pending[:2], token=token, reason='')).stdout)
+    actual = {c['enrollment_id']: c['score'] for c in cleared['snapshot']['cells']}
+    h.check('borra solo las dos finales elegidas, sin motivo y conserva un cero real',
+            cleared['changed'] == 2 and actual[h.EA] is None and actual[fixture.E2] is None and actual[new_enrollment] == 0)
+    h.test('la auditoría de pendientes conserva el valor previo y el autor',
+           f"select string_agg(old_published_score::text,',' order by old_published_score) "
+           f"from public.enrollment_grade_events where actor_id='{h.C}' and action='unpublish' and score is null",
+           '87.00,88.00')
+    h.test('una final borrada queda sin borrador publicable, con su revisión',
+           f"select score is null and not needs_publication and revision=2 from public.enrollment_grade_drafts where enrollment_id='{h.EA}'", 't')
+    h.test('un borrador docente sin publicar conserva su nota y autor',
+           f"select score=85 and needs_publication and updated_by='{h.P}' from public.enrollment_grade_drafts where enrollment_id='{fixture.E2}'", 't')
+    h.test('el seminarista deja de ver las dos finales',
+           h.actor(h.A, f"select count(*) from public.enrollment_grades where enrollment_id in ('{h.EA}','{fixture.E2}')"), '0')
+    preview = json.loads(h.sql(h.actor(h.C, f"select public.portal_report_card_read('preview','{h.A}','{h.T}','{{}}',null,0)")).stdout)
+    h.check('la vista previa detecta las dos notas pendientes', not preview['ready'], preview)
+    audit = saved_rows('enrollment_grade_events')
+    repeated = json.loads(h.sql(publish(pending[:2], token=cleared['snapshot']['token'], reason='')).stdout)
+    h.check('borrar una nota ya pendiente no crea una revisión', repeated['changed'] == 0 and saved_rows('enrollment_grade_events') == audit)
     h.check('las copias emitidas conservan sus notas y folio', saved_rows('report_card_issues') == original_issues)
     grades = saved_rows('enrollment_grades')
     h.sql(MIGRATION.read_text())
