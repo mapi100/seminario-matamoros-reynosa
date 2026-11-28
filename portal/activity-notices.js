@@ -15,6 +15,7 @@
     });
     const titles = Object.freeze({
         final_corrected: "Calificación final corregida",
+        final_pending: "Calificación final devuelta a pendiente",
         personal_updated: "Datos personales actualizados"
     });
     const missing = new Set(["PGRST202", "42883", "42P01"]);
@@ -118,7 +119,7 @@
             (!cursor || item.id < cursor) && (i === 0 || item.id < data.items[i - 1].id) &&
             Object.hasOwn(titles, item.kind) && typeof item.read === "boolean" &&
             typeof item.created_at === "string" && Number.isFinite(Date.parse(item.created_at)) &&
-            [item.student_name, item.subject_name, item.period_name].every(label =>
+            [item.student_name, item.subject_name, item.period_name, item.actor_name ?? null].every(label =>
                 label === null || typeof label === "string" && label.length <= 160));
     }
 
@@ -131,11 +132,15 @@
             const info = node("div");
             const name = item.student_name || "Seminarista";
             const detail = item.kind === "personal_updated"
-                ? name + " actualizó los datos de su expediente."
+                ? (item.actor_name || name) + " actualizó los datos de su expediente."
                 : [name, item.subject_name, item.period_name].filter(Boolean).join(" · ");
             const time = node("time", date.format(new Date(item.created_at)));
             time.dateTime = item.created_at;
-            info.append(node("strong", titles[item.kind]), node("p", detail), time);
+            info.append(node("strong", titles[item.kind]), node("p", detail));
+            if (item.kind !== "personal_updated") {
+                info.append(node("p", item.actor_name ? "Cambio hecho por " + item.actor_name : "Autor sin identificar"));
+            }
+            info.append(time);
             row.append(info);
             if (!item.read) {
                 const button = node("button", "Marcar como leído");

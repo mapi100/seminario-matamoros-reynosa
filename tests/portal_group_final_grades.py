@@ -63,13 +63,14 @@ async def fixture(browser, role='control_escolar', mobile=False):
         if resource.endswith('_save'):
             data['writes'].append(args)
             if data['conflict']:
+                data['conflict'] = False
                 data['snapshot']['cells'][0]['score'] = 96
                 data['snapshot']['token'] = 'e' * 32
                 return await reply({'code': 'PT409', 'message': 'El grupo o sus notas cambiaron. Actualiza.'}, 409)
             assert args['p_token'] == data['snapshot']['token'] and args['p_confirmed'] is True
             for change in args['p_items']:
                 cell = next(x for x in data['snapshot']['cells'] if x['enrollment_id'] == change['enrollment_id'])
-                cell.update(score=change['score'], requires_reason=True)
+                cell.update(score=change['score'], requires_reason=change['score'] is not None)
             data['snapshot']['token'] = 'b' * 32
             return await reply({'saved': True, 'snapshot': data['snapshot'], 'changed': len(args['p_items'])})
 
@@ -174,6 +175,26 @@ async def main():
         await modal.get_by_role('button', name='Cerrar y actualizar').click()
         await expect(page.locator('#groupFinalTable tbody tr').first).to_contain_text('9.6')
         assert len(data['writes']) == 2
+
+        await page.locator('#groupFinalEdit').click()
+        await inputs.nth(0).fill('')
+        await inputs.nth(1).fill('')
+        await expect(inputs.nth(0)).to_have_value('')
+        await expect(inputs.nth(0)).to_have_attribute('placeholder', 'Pendiente')
+        await expect(page.locator('#groupFinalDraftStatus')).to_have_text('2 cambios sin publicar')
+        await page.locator('#groupFinalReview').click()
+        await expect(modal).to_contain_text('Catecismo I · 9.6 → Pendiente')
+        await expect(modal).to_contain_text('Introducción a la Biblia · 0.0 → Pendiente')
+        await expect(modal.locator('textarea')).to_have_count(0)
+        assert len(data['writes']) == 2
+        await modal.get_by_role('button', name='Confirmar cambios').click()
+        await expect(page.locator('#groupFinalTable .group-grade-pending')).to_have_text(['Pendiente', 'Pendiente'])
+        await expect(page.locator('#groupFinalTable .group-grade-failed')).to_have_text('6.5')
+        assert data['writes'][-1]['p_reason'] == ''
+        assert data['writes'][-1]['p_items'] == [
+            {'enrollment_id': ENROLLMENTS[0], 'score': None}, {'enrollment_id': ENROLLMENTS[1], 'score': None}
+        ]
+        print('PASS borrar varias notas y confirmarlas juntas como Pendiente sin escribir motivo', flush=True)
 
         await page.locator('#groupFinalGroup').select_option('CI-2')
         await expect(page.locator('#groupFinalNotice')).to_contain_text('no hay seminaristas')
